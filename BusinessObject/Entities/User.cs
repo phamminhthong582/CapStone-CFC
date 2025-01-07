@@ -1,41 +1,47 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace BusinessObject.Entities;
 
-public class User
+public partial class User
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] 
-    public int UserId { get; set; } 
+    public Guid UserId { get; set; }
 
-    [Required]
-    public string Password { get; set; }
+    public string Email { get; set; } = null!;
 
-    [Required]
-    public string FullName { get; set; }
+    public string Password { get; set; } = null!;
 
-    public string Address { get; set; }
+    public string? FullName { get; set; }
 
-    [EmailAddress]
-    public string Email { get; set; }
+    public string? Address { get; set; }
 
-    public string Phone { get; set; }
+    public string? Phone { get; set; }
 
-    public string Gender { get; set; } 
+    public string? Gender { get; set; }
 
-    public int RoleId { get; set; }
+    public DateTime? CreateAt { get; set; }
 
-    public DateTime CreateAt { get; set; }
+    public DateTime? UpdateAt { get; set; }
 
-    public DateTime UpdateAt { get; set; }
+    public bool? Status { get; set; }
 
-    public bool Status { get; set; }
+    public string? Avatar { get; set; }
 
-    public string Avatar { get; set; }
+    public int? Point { get; set; }
 
-    public string Point { get; set; }
+    public string? Otp { get; set; }
 
-    public string Otp { get; set; }
+    public Guid? RoleId { get; set; }
+
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+    public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
+
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual UserRole? Role { get; set; }
+
+    public virtual ICollection<Wallet> Wallets { get; set; } = new List<Wallet>();
 }
