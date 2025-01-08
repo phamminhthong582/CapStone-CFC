@@ -23,5 +23,6 @@ namespace BusinessObject.DTO.Request
         public string? BankNumber { get; set; }
 
         public string? MonoNumber { get; set; }
+        public bool? Status { get; set; }
     }
 }
