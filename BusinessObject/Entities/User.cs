@@ -40,6 +40,8 @@ public partial class User
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+
 
     public virtual UserRole? Role { get; set; }
 

@@ -124,6 +124,28 @@ namespace BusinessObject.Migrations
                     b.ToTable("Delivery", (string)null);
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Employee", b =>
+                {
+                    b.Property<Guid>("EmployeeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("(newid())");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EmployeeId");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Employee", (string)null);
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Feedback", b =>
                 {
                     b.Property<Guid>("FeedbackId")
@@ -280,6 +302,8 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("FlowerId");
 
+                    b.HasIndex("ProductCustomId");
+
                     b.ToTable("FlowerCustom", (string)null);
                 });
 
@@ -319,8 +343,12 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("PromotionID");
 
-                    b.Property<bool?>("Status")
-                        .HasColumnType("bit");
+                    b.Property<Guid?>("StaffId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<bool?>("Transfer")
                         .HasColumnType("bit")
@@ -483,7 +511,9 @@ namespace BusinessObject.Migrations
             modelBuilder.Entity("BusinessObject.Entities.ProductCustom", b =>
                 {
                     b.Property<Guid>("ProductCustomId")
-                        .HasColumnType("uniqueidentifier");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("(newid())");
 
                     b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime");
@@ -495,9 +525,6 @@ namespace BusinessObject.Migrations
                         .HasColumnType("bit");
 
                     b.Property<Guid?>("FlowerBasketId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("FlowerCustomId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ProductName")
@@ -522,8 +549,6 @@ namespace BusinessObject.Migrations
                     b.HasKey("ProductCustomId");
 
                     b.HasIndex("FlowerBasketId");
-
-                    b.HasIndex("FlowerCustomId");
 
                     b.ToTable("ProductCustom", (string)null);
                 });
@@ -882,6 +907,23 @@ namespace BusinessObject.Migrations
                     b.Navigation("Shipper");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Employee", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Store", "Store")
+                        .WithMany("Employees")
+                        .HasForeignKey("StoreId")
+                        .HasConstraintName("FK_Employee_Store");
+
+                    b.HasOne("BusinessObject.Entities.User", "User")
+                        .WithMany("Employees")
+                        .HasForeignKey("UserId")
+                        .HasConstraintName("FK_Employee_User");
+
+                    b.Navigation("Store");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Feedback", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Order", "Order")
@@ -926,7 +968,14 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("FlowerId")
                         .HasConstraintName("FK_FlowerCustom_Flower");
 
+                    b.HasOne("BusinessObject.Entities.ProductCustom", "ProductCustom")
+                        .WithMany("FlowerCustoms")
+                        .HasForeignKey("ProductCustomId")
+                        .HasConstraintName("FK_ProductCustom_FlowerCustom");
+
                     b.Navigation("Flower");
+
+                    b.Navigation("ProductCustom");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Order", b =>
@@ -997,14 +1046,7 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("FlowerBasketId")
                         .HasConstraintName("FK_ProductCustom_FlowerBasket");
 
-                    b.HasOne("BusinessObject.Entities.FlowerCustom", "FlowerCustom")
-                        .WithMany("ProductCustoms")
-                        .HasForeignKey("FlowerCustomId")
-                        .HasConstraintName("FK_ProductCustom_FlowerCustom");
-
                     b.Navigation("FlowerBasket");
-
-                    b.Navigation("FlowerCustom");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.ProductImage", b =>
@@ -1079,11 +1121,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("ProductCustoms");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.FlowerCustom", b =>
-                {
-                    b.Navigation("ProductCustoms");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Order", b =>
                 {
                     b.Navigation("Deliveries");
@@ -1108,6 +1145,8 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.ProductCustom", b =>
                 {
+                    b.Navigation("FlowerCustoms");
+
                     b.Navigation("OrderDetails");
                 });
 
@@ -1118,6 +1157,8 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Store", b =>
                 {
+                    b.Navigation("Employees");
+
                     b.Navigation("FlowerBaskets");
 
                     b.Navigation("Flowers");
@@ -1130,6 +1171,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Deliveries");
+
+                    b.Navigation("Employees");
 
                     b.Navigation("Feedbacks");
 

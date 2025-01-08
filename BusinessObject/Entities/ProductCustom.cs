@@ -9,8 +9,6 @@ public partial class ProductCustom
 
     public string? ProductName { get; set; }
 
-    public Guid? FlowerCustomId { get; set; }
-
     public Guid? FlowerBasketId { get; set; }
 
     public int? Quantity { get; set; }
@@ -31,7 +29,10 @@ public partial class ProductCustom
 
     public virtual FlowerBasket? FlowerBasket { get; set; }
 
-    public virtual FlowerCustom? FlowerCustom { get; set; }
+    /*    public virtual FlowerCustom? FlowerCustom { get; set; }
+    */
+    public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();
+
 
     public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 }

@@ -16,6 +16,7 @@ public partial class Order
     public string? DeliveryAddress { get; set; }
 
     public string? Note { get; set; }
+    public Guid? StaffId {  get; set; }
 
     public string? Banner { get; set; }
 
@@ -29,7 +30,7 @@ public partial class Order
 
     public DateTime? UpdateAt { get; set; }
 
-    public bool? Status { get; set; }
+    public string? Status { get; set; }
 
     public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
 

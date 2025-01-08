@@ -90,6 +90,17 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_Comment_User");
         });
+        modelBuilder.Entity<Employee>(entity =>
+        {
+            entity.ToTable("Employee");
+            entity.Property(e => e.EmployeeId).HasDefaultValueSql("(newid())");
+            entity.HasOne(d => d.User).WithMany(p => p.Employees)
+            .HasForeignKey(d => d.UserId)
+            .HasConstraintName("FK_Employee_User");
+            entity.HasOne(d => d.Store).WithMany(p => p.Employees)
+            .HasForeignKey(d => d.StoreId)
+            .HasConstraintName("FK_Employee_Store");
+         });
 
         modelBuilder.Entity<Delivery>(entity =>
         {
@@ -165,6 +176,10 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Flower).WithMany(p => p.FlowerCustoms)
                 .HasForeignKey(d => d.FlowerId)
                 .HasConstraintName("FK_FlowerCustom_Flower");
+            entity.HasOne(d => d.ProductCustom)
+       .WithMany(p => p.FlowerCustoms)
+       .HasForeignKey(d => d.ProductCustomId)
+       .HasConstraintName("FK_FlowerCustom_ProductCustom");
         });
 
         modelBuilder.Entity<Order>(entity =>
@@ -181,6 +196,8 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.PromotionId).HasColumnName("PromotionID");
             entity.Property(e => e.Transfer).HasColumnName("transfer");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.Status).HasMaxLength(255);
+
 
             entity.HasOne(d => d.Promotion).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.PromotionId)
@@ -249,7 +266,7 @@ public partial class CustomFlowerChainContext : DbContext
         {
             entity.ToTable("ProductCustom");
 
-            entity.Property(e => e.ProductCustomId).ValueGeneratedNever();
+            entity.Property(e => e.ProductCustomId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.ProductName).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
@@ -257,10 +274,12 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.FlowerBasket).WithMany(p => p.ProductCustoms)
                 .HasForeignKey(d => d.FlowerBasketId)
                 .HasConstraintName("FK_ProductCustom_FlowerBasket");
+            entity.HasMany(d => d.FlowerCustoms)
+                .WithOne(f => f.ProductCustom)
+                 .HasForeignKey(f => f.ProductCustomId) // Đặt khóa ngoại trong FlowerCustom
+               .HasConstraintName("FK_ProductCustom_FlowerCustom");
 
-            entity.HasOne(d => d.FlowerCustom).WithMany(p => p.ProductCustoms)
-                .HasForeignKey(d => d.FlowerCustomId)
-                .HasConstraintName("FK_ProductCustom_FlowerCustom");
+
         });
 
         modelBuilder.Entity<ProductImage>(entity =>
