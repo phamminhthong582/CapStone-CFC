@@ -11,11 +11,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Implement\" />
-      <Folder Include="Interface\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="AutoMapper" Version="13.0.1" />
       <PackageReference Include="MailKit" Version="4.9.0" />
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
