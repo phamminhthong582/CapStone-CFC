@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="DTO\Request\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="LinqKit.Core" Version="1.2.7" />
       <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="8.1.7" />
       <PackageReference Include="MailKit" Version="4.9.0" />

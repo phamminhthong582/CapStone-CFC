@@ -31,7 +31,7 @@ public partial class User
 
     public string? Otp { get; set; }
 
-    public Guid? RoleId { get; set; }
+    public string? RoleName { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
@@ -42,8 +42,6 @@ public partial class User
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
-
-    public virtual UserRole? Role { get; set; }
 
     public virtual ICollection<Wallet> Wallets { get; set; } = new List<Wallet>();
 }
