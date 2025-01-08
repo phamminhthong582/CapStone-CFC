@@ -38,4 +38,6 @@ public partial class Store
     public virtual ICollection<Flower> Flowers { get; set; } = new List<Flower>();
 
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+
 }
