@@ -13,7 +13,7 @@ namespace Service.Interface
     {
         Task<IEnumerable<StoreResponse>> GetStore();
         Task AddStore(StoreRequest storeRequest);
-        Task UpdateStore(StoreFlagsRequest storeFlagsRequest, Guid id);
+        Task UpdateStore(StoreRequest storeRequest, Guid id);
         Task DeleteStore(Guid id);
         Task<StoreResponse> GetStoreById(Guid id);
 
