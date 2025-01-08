@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace BusinessObject.Repositories;
 
@@ -52,13 +53,20 @@ public partial class CustomFlowerChainContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<UserRole> UserRoles { get; set; }
 
     public virtual DbSet<Wallet> Wallets { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=DESKTOP-T4BVTKU\\SQLEXPRESS;Initial Catalog=CustomFlowerChain;User ID=sa;Password=123456;Trusted_Connection=True;Trust Server Certificate=True");
+
+    private string? GetConnectionString()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", true, true).Build();
+        return configuration["ConnectionStrings:DBDefault"];
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -380,22 +388,10 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.Phone).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Role).WithMany(p => p.Users)
-                .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK_User_UserRole");
+           
         });
 
-        modelBuilder.Entity<UserRole>(entity =>
-        {
-            entity.HasKey(e => e.RoleId);
-
-            entity.ToTable("UserRole");
-
-            entity.Property(e => e.RoleId).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.RoleName).HasMaxLength(50);
-            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
-        });
+    
 
         modelBuilder.Entity<Wallet>(entity =>
         {
