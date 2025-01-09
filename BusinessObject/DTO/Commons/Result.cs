@@ -2,13 +2,21 @@
 
 public class Result<T>
 {
-    public T? Data { get; set; }
-    public bool Success { get; set; } = true;
-    public string Message { get; set; } = string.Empty;
+    public T Data { get; set; }
+    public string ResultStatus { get; set; }
+    public string[] Messages { get; set; }
 }
 
-public enum Roles
+public enum RoleName
 {
     Admin,
     Customer,
+}
+public enum ResultStatus
+{
+    Success,
+    NotFound,
+    Duplicated,
+    Error,
+
 }

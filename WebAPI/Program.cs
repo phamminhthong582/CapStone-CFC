@@ -1,10 +1,11 @@
 using BusinessObject.Repositories;
 using Microsoft.OpenApi.Models;
+using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// builder.Services.AddInfra(builder.Configuration);
+ builder.Services.AddInfra(builder.Configuration);
 builder.Services.AddDbContext<CustomFlowerChainContext>();
 
 builder.Services.AddControllers();

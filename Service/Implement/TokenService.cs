@@ -33,7 +33,7 @@ public class TokenService : ITokenService
         {
             new(ClaimTypes.NameIdentifier, user.FullName!),
             new("Id", user.UserId.ToString()),
-            // new(ClaimTypes.Role, user.RoleId),
+             new(ClaimTypes.Role, user.RoleName),
             new("FullName", user.FullName!)
         };
 
