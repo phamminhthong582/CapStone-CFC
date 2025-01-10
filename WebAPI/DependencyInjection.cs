@@ -14,9 +14,14 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         //Token 
         services.AddScoped<ITokenService, TokenService>();
-        services.AddAutoMapper(typeof(MapperConfig).Assembly);
+        
         //User
         services.AddScoped<IUserRepository, UserRepository>();
+        // Category
+        services.AddScoped<ICategoryService, CategoryService>(); 
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        
+        services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
     }
 }
