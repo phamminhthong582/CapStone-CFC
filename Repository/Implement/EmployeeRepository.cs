@@ -1,34 +1,23 @@
 ﻿using BusinessObject.Context;
-
+using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repository.Interface;
 
 namespace Repository.Implement;
 
-public class UserRepository  : IUserRepository
+public class EmployeeRepository : IEmployeeRepository
 {
     private readonly CustomFlowerChainContext _context;
 
-    public UserRepository(CustomFlowerChainContext context)
+    public EmployeeRepository(CustomFlowerChainContext context)
     {
         _context = context;
     }
-   /* public async Task<List<User?>> GetAllUsers()
-    {
-        var userlist = await _context.Users.ToListAsync();
-        return userlist;
-    }
-
-    public async Task<User?> Register(User? user)
-    {
-        var result = await _context.Users.AddAsync(user);
-        return result.Entity;
-    }*/
 
     public string? GetAdminAccount(string email, string password)
     {
-         IConfiguration config = new ConfigurationBuilder()
+        IConfiguration config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", true, true)
             .Build();
@@ -49,8 +38,14 @@ public class UserRepository  : IUserRepository
         return null;
     }
 
-   /* public async Task<User?> GetUserByEmail(string email)
+    public async Task<List<Employee?>> GetAllEmployees()
     {
-        return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
-    }*/
+        var emplist = await _context.Employees.ToListAsync();
+        return emplist;
+    }
+
+    public async Task<Employee?> GetEmployeeByEmail(string email)
+    {
+        return await _context.Employees.FirstOrDefaultAsync(x => x.Email == email);
+    }
 }

@@ -15,66 +15,77 @@ namespace Service.Implement;
 
 public class AuthService : IAuthService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IEmployeeRepository _employeeRepository;
     private readonly ITokenService _tokenService;
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
 
-    public AuthService(IUserRepository userRepository, ITokenService tokenService, IMapper mapper,
+    public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper,
         IConfiguration configuration)
     {
-        _userRepository = userRepository;
+        _employeeRepository = employeeRepository;
         _tokenService = tokenService;
         _mapper = mapper;
         _configuration = configuration;
     }
-    public async Task<Result<LoginResponse>> Login(string email, string password)
+   public async Task<Result<LoginResponse>> Login(string email, string password)
+{
+    var user = await _employeeRepository.GetEmployeeByEmail(email);
+    var admin =  _employeeRepository.GetAdminAccount(email, password);
+    if (user is null && admin is null)
     {
-/*        var user = await _userRepository.GetUserByEmail(email);
-*/        var admin = _userRepository.GetAdminAccount(email, password);
-       /* if (user is null && admin is null)
-        {
-            return new Result<LoginResponse>()
-            {
-                ResultStatus = ResultStatus.NotFound.ToString(),
-                Messages = ["Account is Not Found"]
-            };
-        }*/
-       /* else if (admin != null)
-        {
-            var userAdmin = new User
-            {
-                FullName = admin,
-                RoleName = RoleName.Admin.ToString() // Điều chỉnh nếu cần
-            };
-            var accessTokenadmin = _tokenService.GenerateToken(userAdmin);
-
-            var dataadmin = new LoginResponse()
-            {
-                AccessToken = accessTokenadmin,
-                Email = admin,
-                RoleName = RoleName.Admin.ToString()
-            };
-            return new Result<LoginResponse>()
-            {
-                Data = dataadmin,
-                Messages = ["Login successfully. Welcome Admin"],
-                ResultStatus = ResultStatus.Success.ToString()
-            };
-            
-        }*/
-        return new Result<LoginResponse>()
+        return new Result<LoginResponse>
         {
             ResultStatus = ResultStatus.NotFound.ToString(),
-            Messages = ["Login failed"]
+            Messages =  ["Account is not found"]  
         };
     }
-
-    public async Task<Result<UserResponse>> Register(RegisterRequest request)
+    else if (admin != null)
     {
-        throw new NotImplementedException();
-    }
+        var userAdmin = new Employee
+        {
+            FullName = admin, 
+        };
+        var accessTokenAdmin = _tokenService.GenerateToken(userAdmin);
+        var dataAdmin = new LoginResponse
+        {
+            AccessToken = accessTokenAdmin,
+            Email = admin, 
+            RoleName = RoleName.Admin.ToString() 
+        };
 
+        return new Result<LoginResponse>
+        {
+            Data = dataAdmin,
+            Messages =  ["Login successfully. Welcome Admin" ],
+            ResultStatus = ResultStatus.Success.ToString()
+        };
+    }
+    else if (user != null)
+    {
+        var role = user.Role?.RoleName ?? "User";
+        var accessTokenUser = _tokenService.GenerateToken(user);
+        var dataUser = new LoginResponse
+        {
+            AccessToken = accessTokenUser,
+            Email = user.Email,
+            RoleName = role
+        };
+
+        return new Result<LoginResponse>
+        {
+            Data = dataUser,
+            Messages = [ "Login successfully. Welcome User"],
+            ResultStatus = ResultStatus.Success.ToString()
+        };
+    }
+    return new Result<LoginResponse>
+    {
+        ResultStatus = ResultStatus.NotFound.ToString(),
+        Messages =["Login failed"]
+    };
+}
+   
     /*public async Task<Result<UserResponse>> CreateStoreManagerAccount(CreateStoreManagerRequest request)
     {
         var isused = await _userRepository.GetUserByEmail(request.Email);
