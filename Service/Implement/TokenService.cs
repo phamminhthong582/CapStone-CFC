@@ -23,7 +23,7 @@ public class TokenService : ITokenService
     {
         _configuration = configuration;
     }
-    public string GenerateToken(User user)
+   /* public string GenerateToken(User user)
     {
         var secretKey = _configuration["Jwt:Key"];
         var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -52,5 +52,5 @@ public class TokenService : ITokenService
 
         var token = jwtTokenHandler.CreateToken(tokenDescription);
         return jwtTokenHandler.WriteToken(token);
-    }
+    }*/
 }

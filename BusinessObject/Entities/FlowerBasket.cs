@@ -13,11 +13,15 @@ public partial class FlowerBasket
 
     public Guid? StoreId { get; set; }
 
-    public string? Decription { get; set; }
+    public string? Image { get; set; }
 
     public int? Quantity { get; set; }
 
+    public string? Decription { get; set; }
+
     public bool? Feature { get; set; }
+
+    public int? Sold { get; set; }
 
     public DateTime? CreateAt { get; set; }
 

@@ -9,21 +9,23 @@ public partial class Delivery
 
     public Guid? OrderId { get; set; }
 
-    public double? Ship { get; set; }
+    public Guid? ShipperId { get; set; }
 
     public bool? FreeShip { get; set; }
 
-    public string? OrderCode { get; set; }
+    public double? Fee { get; set; }
 
-    public Guid? ShipperId { get; set; }
+    public string? PickupLocation { get; set; }
+
+    public string? DeliveryLocation { get; set; }
 
     public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
 
-    public bool? Status { get; set; }
+    public string? Status { get; set; }
 
     public virtual Order? Order { get; set; }
 
-    public virtual User? Shipper { get; set; }
+    public virtual Employee? Shipper { get; set; }
 }

@@ -13,10 +13,12 @@ public static class DependencyInjection
         //Unit of work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
         //Authen
         services.AddScoped<IAuthService, AuthService>();
         //Token 
         services.AddScoped<ITokenService, TokenService>();
+
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         //User
         services.AddScoped<IUserRepository, UserRepository>();
@@ -24,7 +26,14 @@ public static class DependencyInjection
         services.AddScoped<IStoreService, StoreService>();
 
         // Register StoreService
-
+        
+        //User
+        services.AddScoped<IUserRepository, UserRepository>();
+        // Category
+        services.AddScoped<ICategoryService, CategoryService>(); 
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        
+        services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
     }
 }

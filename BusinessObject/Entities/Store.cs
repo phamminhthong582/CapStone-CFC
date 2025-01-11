@@ -9,7 +9,17 @@ public partial class Store
 
     public string? StoreName { get; set; }
 
+    public string? City { get; set; }
+
+    public string? District { get; set; }
+
     public string? Address { get; set; }
+
+    public bool? Status { get; set; }
+
+    public DateTime? CreateAt { get; set; }
+
+    public DateTime? UpdateAt { get; set; }
 
     public string? StorePhone { get; set; }
 
@@ -17,27 +27,13 @@ public partial class Store
 
     public string? StoreEmail { get; set; }
 
-    public string? Password { get; set; }
+    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 
-    public string? BankAccountName { get; set; }
-
-    public string? BankName { get; set; }
-
-    public string? BankNumber { get; set; }
-
-    public string? MonoNumber { get; set; }
-
-    public DateTime? CreateAt { get; set; }
-
-    public DateTime? UpdateAt { get; set; }
-
-    public bool? Status { get; set; }
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
     public virtual ICollection<FlowerBasket> FlowerBaskets { get; set; } = new List<FlowerBasket>();
 
     public virtual ICollection<Flower> Flowers { get; set; } = new List<Flower>();
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
-
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

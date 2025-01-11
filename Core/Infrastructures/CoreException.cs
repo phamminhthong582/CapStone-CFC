@@ -97,5 +97,12 @@ namespace Core.Infrastructures
         public const string UNAUTHORIZED = "Unauthorized!";
         public const string BADREQUEST = "Bad request!";
     }
+    // Category
+    public class CategoryNotFound(string message) : Exception(message)
+    {
+    }
+    public class MissingFeatureException(string message) : Exception(message)
+    {
+    }
 }
 

@@ -17,9 +17,11 @@ public partial class Refund
 
     public DateTime? UpdateAt { get; set; }
 
-    public bool? Status { get; set; }
+    public string? Status { get; set; }
 
     public virtual Order? Order { get; set; }
 
     public virtual Wallet? Waller { get; set; }
+
+    public virtual ICollection<WithdrawMoney> WithdrawMoneys { get; set; } = new List<WithdrawMoney>();
 }

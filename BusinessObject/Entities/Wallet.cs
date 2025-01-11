@@ -7,7 +7,7 @@ public partial class Wallet
 {
     public Guid WalletId { get; set; }
 
-    public Guid? UserId { get; set; }
+    public Guid? CustomerId { get; set; }
 
     public double? TotalPrice { get; set; }
 
@@ -15,9 +15,9 @@ public partial class Wallet
 
     public DateTime? UpdateAt { get; set; }
 
-    public bool? Status { get; set; }
+    public DateTime? Status { get; set; }
+
+    public virtual Customer? Customer { get; set; }
 
     public virtual ICollection<Refund> Refunds { get; set; } = new List<Refund>();
-
-    public virtual User? User { get; set; }
 }

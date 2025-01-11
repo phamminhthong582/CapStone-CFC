@@ -9,16 +9,19 @@ public partial class Order
 
     public double? OrderPrice { get; set; }
 
-    public Guid? UserId { get; set; }
+    public Guid? ProductCustomId { get; set; }
+
+    public Guid? CustomerId { get; set; }
+
+    public Guid? StaffId { get; set; }
 
     public Guid? PromotionId { get; set; }
 
     public string? DeliveryAddress { get; set; }
 
-    public string? Note { get; set; }
-    public Guid? StaffId {  get; set; }
+    public Guid? StoreId { get; set; }
 
-    public string? Banner { get; set; }
+    public string? Note { get; set; }
 
     public DateTime? DeliveryDateTime { get; set; }
 
@@ -26,11 +29,15 @@ public partial class Order
 
     public bool? Transfer { get; set; }
 
+    public bool? Refund { get; set; }
+
     public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
 
     public string? Status { get; set; }
+
+    public virtual Customer? Customer { get; set; }
 
     public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
 
@@ -40,7 +47,11 @@ public partial class Order
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
+    public virtual ProductCustom? ProductCustom { get; set; }
+
     public virtual Promotion? Promotion { get; set; }
 
     public virtual ICollection<Refund> Refunds { get; set; } = new List<Refund>();
+
+    public virtual Employee? Staff { get; set; }
 }

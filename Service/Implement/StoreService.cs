@@ -27,14 +27,12 @@ namespace Service.Implement
             {
                 StoreId = store.StoreId,
                 StoreName = store.StoreName,
+                City = store.City,
+                District = store.District,
                 Address = store.Address,
                 StorePhone = store.StorePhone,
                 StoreAvatar = store.StoreAvatar,
                 StoreEmail = store.StoreEmail,
-                BankAccountName = store.BankAccountName,
-                BankName = store.BankName,
-                BankNumber = store.BankNumber,
-                MonoNumber = store.MonoNumber,
                 CreateAt = store.CreateAt,
                 UpdateAt = store.UpdateAt,
                 Status = store.Status
@@ -52,14 +50,12 @@ namespace Service.Implement
             {
                 StoreId = store.StoreId,
                 StoreName = store.StoreName,
+                City = store.City,
+                District = store.District,
                 Address = store.Address,
                 StorePhone = store.StorePhone,
                 StoreAvatar = store.StoreAvatar,
                 StoreEmail = store.StoreEmail,
-                BankAccountName = store.BankAccountName,
-                BankName = store.BankName,
-                BankNumber = store.BankNumber,
-                MonoNumber = store.MonoNumber,
                 CreateAt = store.CreateAt,
                 UpdateAt = store.UpdateAt,
                 Status = store.Status
@@ -72,14 +68,12 @@ namespace Service.Implement
             var store = new Store
             {
                 StoreName = storeRequest.StoreName,
+                City = storeRequest.City,
+                District = storeRequest.District,
                 Address = storeRequest.Address, 
                 StorePhone = storeRequest.StorePhone,
                 StoreAvatar = storeRequest.StoreAvatar,
                 StoreEmail = storeRequest.StoreEmail,
-                BankAccountName = storeRequest.BankAccountName,
-                BankName = storeRequest.BankName,
-                BankNumber = storeRequest.BankNumber,
-                MonoNumber = storeRequest.MonoNumber, 
                 CreateAt = DateTime.Now,
                 Status = true
             };
@@ -107,15 +101,14 @@ namespace Service.Implement
                 throw new KeyNotFoundException("Store not found");
             }
             store.StoreName = storeRequest.StoreName ?? store.StoreName;  // Giữ nguyên nếu giá trị mới là null
+            store.City = storeRequest.City ?? store.City;
+            store.District = storeRequest.District ?? store.District;   
             store.Address = storeRequest.Address ?? store.Address;
             store.StorePhone = storeRequest.StorePhone ?? store.StorePhone;
             store.StoreAvatar = storeRequest.StoreAvatar ?? store.StoreAvatar;
             store.StoreEmail = storeRequest.StoreEmail ?? store.StoreEmail;
-            store.BankAccountName = storeRequest.BankAccountName ?? store.BankAccountName;
-            store.BankName = storeRequest.BankName ?? store.BankName;
-            store.BankNumber = storeRequest.BankNumber ?? store.BankNumber;
-            store.MonoNumber = storeRequest.MonoNumber ?? store.MonoNumber;
             store.Status = storeRequest.Status ?? store.Status;
+            store.UpdateAt = DateTime.Now;
             _unitOfWork.Repository<Store>().Update(store);
             await _unitOfWork.CompleteAsync();
 

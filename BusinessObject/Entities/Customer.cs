@@ -3,21 +3,29 @@ using System.Collections.Generic;
 
 namespace BusinessObject.Entities;
 
-public partial class User
+public partial class Customer
 {
-    public Guid UserId { get; set; }
+    public Guid CustomerId { get; set; }
 
-    public string Email { get; set; } = null!;
-
-    public string Password { get; set; } = null!;
+    public string? Password { get; set; }
 
     public string? FullName { get; set; }
 
+    public string? City { get; set; }
+
+    public string? Distrist { get; set; }
+
     public string? Address { get; set; }
+
+    public string? Email { get; set; }
 
     public string? Phone { get; set; }
 
-    public string? Gender { get; set; }
+    public bool? Gender { get; set; }
+
+    public DateTime? Birthday { get; set; }
+
+    public Guid? StoreId { get; set; }
 
     public DateTime? CreateAt { get; set; }
 
@@ -27,21 +35,15 @@ public partial class User
 
     public string? Avatar { get; set; }
 
-    public int? Point { get; set; }
-
     public string? Otp { get; set; }
-
-    public string? RoleName { get; set; }
-
-    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
-
-    public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual Store? Store { get; set; }
 
     public virtual ICollection<Wallet> Wallets { get; set; } = new List<Wallet>();
 }

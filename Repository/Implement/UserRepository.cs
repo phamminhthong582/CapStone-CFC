@@ -1,5 +1,5 @@
-﻿using BusinessObject.Entities;
-using BusinessObject.Repositories;
+﻿using BusinessObject.Context;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repository.Interface;
@@ -14,7 +14,7 @@ public class UserRepository  : IUserRepository
     {
         _context = context;
     }
-    public async Task<List<User?>> GetAllUsers()
+   /* public async Task<List<User?>> GetAllUsers()
     {
         var userlist = await _context.Users.ToListAsync();
         return userlist;
@@ -24,7 +24,7 @@ public class UserRepository  : IUserRepository
     {
         var result = await _context.Users.AddAsync(user);
         return result.Entity;
-    }
+    }*/
 
     public string? GetAdminAccount(string email, string password)
     {
@@ -37,7 +37,7 @@ public class UserRepository  : IUserRepository
         if (config.GetSection("AdminAccount").Exists())
         {
             string? emailJson = config["AdminAccount:adminemail"];
-            string passwordJson = config["AdminAccount:adminpassword"];
+            string? passwordJson = config["AdminAccount:adminpassword"];
 
             // Check if both email and password match
             if (emailJson == email && passwordJson == password)
@@ -49,8 +49,8 @@ public class UserRepository  : IUserRepository
         return null;
     }
 
-    public async Task<User?> GetUserByEmail(string email)
+   /* public async Task<User?> GetUserByEmail(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
-    }
+    }*/
 }

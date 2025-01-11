@@ -13,19 +13,23 @@ public partial class Flower
 
     public Guid? StoreId { get; set; }
 
+    public string? Image { get; set; }
+
     public int? Quantity { get; set; }
+
+    public Guid? CategoryId { get; set; }
 
     public string? Decription { get; set; }
 
-    public bool? Feature { get; set; }
-
-    public Guid? CategoryId { get; set; }
+    public int? Sold { get; set; }
 
     public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
 
     public bool? Status { get; set; }
+
+    public virtual Category? Category { get; set; }
 
     public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();
 

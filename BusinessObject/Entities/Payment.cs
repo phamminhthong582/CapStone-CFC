@@ -7,15 +7,15 @@ public partial class Payment
 {
     public Guid PaymentId { get; set; }
 
-    public Guid? UserId { get; set; }
-
     public Guid? OrderId { get; set; }
 
     public string? Method { get; set; }
 
     public Guid? StoreId { get; set; }
 
-    public string? TotalPrice { get; set; }
+    public Guid? CustomerId { get; set; }
+
+    public double? TotalPrice { get; set; }
 
     public DateTime? CreateAt { get; set; }
 
@@ -23,7 +23,9 @@ public partial class Payment
 
     public bool? Status { get; set; }
 
+    public virtual Customer? Customer { get; set; }
+
     public virtual Order? Order { get; set; }
 
-    public virtual User? User { get; set; }
+    public virtual Store? Store { get; set; }
 }

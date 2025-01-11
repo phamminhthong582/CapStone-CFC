@@ -13,11 +13,7 @@ public partial class OrderDetail
 
     public int? Quantity { get; set; }
 
-    public Guid? ProductCustomId { get; set; }
-
     public Guid? OrderId { get; set; }
-
-    public Guid? StoreId { get; set; }
 
     public DateTime? CreateAt { get; set; }
 
@@ -26,6 +22,4 @@ public partial class OrderDetail
     public bool? Status { get; set; }
 
     public virtual Order? Order { get; set; }
-
-    public virtual ProductCustom? ProductCustom { get; set; }
 }

@@ -13,11 +13,9 @@ public partial class ProductCustom
 
     public int? Quantity { get; set; }
 
-    public Guid? UserId { get; set; }
+    public Guid? CustomerId { get; set; }
 
     public double? TotalPrice { get; set; }
-
-    public bool? Featured { get; set; }
 
     public string? Description { get; set; }
 
@@ -29,10 +27,7 @@ public partial class ProductCustom
 
     public virtual FlowerBasket? FlowerBasket { get; set; }
 
-    /*    public virtual FlowerCustom? FlowerCustom { get; set; }
-    */
     public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();
 
-
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

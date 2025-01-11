@@ -9,17 +9,11 @@ public partial class Comment
 
     public Guid? ProductId { get; set; }
 
-    public Guid? UserId { get; set; }
+    public Guid? CustomerId { get; set; }
 
     public int? Rating { get; set; }
 
-    public string? Comment1 { get; set; }
-
-    public DateTime? CreateAt { get; set; }
+    public string? Feedback { get; set; }
 
     public bool? Status { get; set; }
-
-    public virtual Product? Product { get; set; }
-
-    public virtual User? User { get; set; }
 }
