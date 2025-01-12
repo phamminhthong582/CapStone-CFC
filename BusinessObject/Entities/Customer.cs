@@ -46,4 +46,5 @@ public partial class Customer
     public virtual Store? Store { get; set; }
 
     public virtual ICollection<Wallet> Wallets { get; set; } = new List<Wallet>();
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }

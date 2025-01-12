@@ -40,4 +40,15 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.UpdateNameCategory(categoryId, request);
         return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
     }
+
+    [HttpDelete("delete-category")]
+    public async Task<ActionResult<Result<Category>>> DeleteCategory(Guid id)
+    {
+        var result = await _categoryService.DeleteCategory(id);
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+        }
+        return Ok(result);
+    }
 }

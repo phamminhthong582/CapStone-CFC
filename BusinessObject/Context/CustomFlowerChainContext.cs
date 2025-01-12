@@ -79,6 +79,9 @@ public partial class CustomFlowerChainContext : DbContext
 
             entity.Property(e => e.CommentId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Feedback).HasMaxLength(255);
+            entity.HasOne(d =>d.Customer).WithMany(d=>d.Comments).HasForeignKey(d=>d.CustomerId);
+            entity.HasOne(d => d.Product).WithMany(d => d.Comments).HasForeignKey(d => d.ProductId);
+
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -247,6 +250,9 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Order).WithMany(p => p.OrderDetails)
                 .HasForeignKey(d => d.OrderId)
                 .HasConstraintName("FK_OrderDetail_Order");
+            entity.HasOne(d => d.Product).WithMany(d => d.OrderDetails)
+                 .HasForeignKey(d => d.ProductId)
+                 .HasConstraintName("FK_OrderDetail_Product");
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -280,6 +286,11 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.ProductName).HasMaxLength(255);
             entity.Property(e => e.Size).HasMaxLength(50);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Products)
+                .HasForeignKey(d => d.CategoryId)
+                .HasConstraintName("FK_Product_Category");
+            entity.HasOne(d => d.Store).WithMany(p => p.Products).HasForeignKey(d => d.StoreId).HasConstraintName("FK_Product_Store");
         });
 
         modelBuilder.Entity<ProductCustom>(entity =>
@@ -303,15 +314,16 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.ProductImage1).HasColumnName("ProductImage");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.HasOne(d => d.Product).WithMany(d => d.ProductImages).HasForeignKey(d => d.ProductId).HasConstraintName("FK_ProductImage_Product");
         });
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.PromtionId);
+            entity.HasKey(e => e.PromotionId);
 
             entity.ToTable("Promotion");
 
-            entity.Property(e => e.PromtionId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.PromotionId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.EndDate).HasColumnType("datetime");
             entity.Property(e => e.PromotionCode).HasMaxLength(255);

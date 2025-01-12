@@ -23,7 +23,7 @@ public class TokenService : ITokenService
     {
         _configuration = configuration;
     }
-   /* public string GenerateToken(User user)
+    public string GenerateToken(Employee employee)
     {
         var secretKey = _configuration["Jwt:Key"];
         var jwtTokenHandler = new JwtSecurityTokenHandler();
@@ -31,14 +31,14 @@ public class TokenService : ITokenService
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.FullName!),
-            new("Id", user.UserId.ToString()),
-             new(ClaimTypes.Role, user.RoleName),
-            new("FullName", user.FullName!)
+            new(ClaimTypes.NameIdentifier, employee.FullName!),
+            new("Id", employee.EmployeeId.ToString()),
+             new(ClaimTypes.Role, employee.RoleId.ToString()),
+            new("FullName", employee.FullName!)
         };
 
-        if (!string.IsNullOrEmpty(user.Avatar))
-            claims.Add(new Claim("Avatar", user.Avatar));
+        if (!string.IsNullOrEmpty(employee.Avatar))
+            claims.Add(new Claim("Avatar", employee.Avatar));
         else
             claims.Add(new Claim("Avatar", ""));
 
@@ -52,5 +52,5 @@ public class TokenService : ITokenService
 
         var token = jwtTokenHandler.CreateToken(tokenDescription);
         return jwtTokenHandler.WriteToken(token);
-    }*/
+    }
 }

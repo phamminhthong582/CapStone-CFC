@@ -9,6 +9,6 @@ public interface ICategoryService
     Task<List<CategoryResponse>> GetAllCategory();
     Task<Result<Category>> CreateCategory(CreateCategoryRequest request);
     Task<Result<CategoryResponse>> UpdateNameCategory(Guid id,UpdateCategoryRequest request);
-    
-    
+    Task<Result<Category>> DeleteCategory(Guid id);
+
 }
