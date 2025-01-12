@@ -73,6 +73,28 @@ public class CategoryService : ICategoryService
         };
     }
 
+    public async Task<Result<Category>> DeleteCategory(Guid id)
+    {
+        var category = await _categoryRepository.GetCategoryById(id);
+    
+        if (category == null)
+        {
+            return new Result<Category>
+            {
+                ResultStatus = ResultStatus.NotFound.ToString(),
+                Messages = new []{"Category not found."}
+            };
+        }
+
+        await _categoryRepository.DeleteCategory(id);
+
+        return new Result<Category>
+        {
+            ResultStatus = ResultStatus.Success.ToString(),
+            Messages = new []{"Category deleted successfully."}
+        };
+    }
+
     public async Task<Result<CategoryResponse>> UpdateStatusCategory(Guid id)
     {
         throw new NotImplementedException();
