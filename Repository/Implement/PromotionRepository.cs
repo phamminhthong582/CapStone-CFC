@@ -22,7 +22,7 @@ public class PromotionRepository : IPromotionRepository
 
     public async Task<Promotion> GetPromotionById(Guid id)
     {
-        var promo = await _context.Promotions.FirstOrDefaultAsync(x => x.PromtionId == id);
+        var promo = await _context.Promotions.FirstOrDefaultAsync(x => x.PromotionId == id);
         return promo;
     }
 
@@ -42,7 +42,7 @@ public class PromotionRepository : IPromotionRepository
 
     public async Task<Promotion> DeletePromotion(Guid id)
     {
-        var promo = await _context.Promotions.FirstOrDefaultAsync(x => x.PromtionId == id);
+        var promo = await _context.Promotions.FirstOrDefaultAsync(x => x.PromotionId == id);
         if (promo == null)
         {
             return null;

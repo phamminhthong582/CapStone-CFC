@@ -28,7 +28,9 @@ public static class DependencyInjection
         // Promotion
         services.AddScoped<IPromotionService, PromotionService>(); 
         services.AddScoped<IPromotionRepository, PromotionRepository>();
-        
+        // Role
+        services.AddScoped<IRoleService, RoleService>();
+
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
     }

@@ -5,7 +5,7 @@ namespace BusinessObject.Entities;
 
 public partial class Promotion
 {
-    public Guid PromtionId { get; set; }
+    public Guid PromotionId { get; set; }
 
     public string? PromotionName { get; set; }
 

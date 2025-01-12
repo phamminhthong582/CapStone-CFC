@@ -4,7 +4,6 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,11 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    [Migration("20250111063841_FlowerCustom")]
-    partial class FlowerCustom
+    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,6 +70,10 @@ namespace BusinessObject.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("CommentId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Comment", (string)null);
                 });
@@ -527,6 +528,8 @@ namespace BusinessObject.Migrations
 
                     b.HasIndex("OrderId");
 
+                    b.HasIndex("ProductId");
+
                     b.ToTable("OrderDetail", (string)null);
                 });
 
@@ -623,6 +626,10 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("ProductId");
 
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("StoreId");
+
                     b.ToTable("Product", (string)null);
                 });
 
@@ -692,12 +699,14 @@ namespace BusinessObject.Migrations
 
                     b.HasKey("ProductImageId");
 
+                    b.HasIndex("ProductId");
+
                     b.ToTable("ProductImage", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Promotion", b =>
                 {
-                    b.Property<Guid>("PromtionId")
+                    b.Property<Guid>("PromotionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("(newid())");
@@ -731,7 +740,7 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
-                    b.HasKey("PromtionId");
+                    b.HasKey("PromotionId");
 
                     b.ToTable("Promotion", (string)null);
                 });
@@ -912,6 +921,21 @@ namespace BusinessObject.Migrations
                     b.ToTable("WithdrawMoney", (string)null);
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Comment", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Customer", "Customer")
+                        .WithMany("Comments")
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("BusinessObject.Entities.Product", "Product")
+                        .WithMany("Comments")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Customer", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Store", "Store")
@@ -1055,7 +1079,14 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("OrderId")
                         .HasConstraintName("FK_OrderDetail_Order");
 
+                    b.HasOne("BusinessObject.Entities.Product", "Product")
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("ProductId")
+                        .HasConstraintName("FK_OrderDetail_Product");
+
                     b.Navigation("Order");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Payment", b =>
@@ -1082,6 +1113,23 @@ namespace BusinessObject.Migrations
                     b.Navigation("Store");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Product", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId")
+                        .HasConstraintName("FK_Product_Category");
+
+                    b.HasOne("BusinessObject.Entities.Store", "Store")
+                        .WithMany("Products")
+                        .HasForeignKey("StoreId")
+                        .HasConstraintName("FK_Product_Store");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Store");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.ProductCustom", b =>
                 {
                     b.HasOne("BusinessObject.Entities.FlowerBasket", "FlowerBasket")
@@ -1090,6 +1138,16 @@ namespace BusinessObject.Migrations
                         .HasConstraintName("FK_ProductCustom_FlowerBasket");
 
                     b.Navigation("FlowerBasket");
+                });
+
+            modelBuilder.Entity("BusinessObject.Entities.ProductImage", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Product", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .HasConstraintName("FK_ProductImage_Product");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Refund", b =>
@@ -1132,10 +1190,14 @@ namespace BusinessObject.Migrations
             modelBuilder.Entity("BusinessObject.Entities.Category", b =>
                 {
                     b.Navigation("Flowers");
+
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Customer", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("Feedbacks");
 
                     b.Navigation("Orders");
@@ -1175,6 +1237,15 @@ namespace BusinessObject.Migrations
                     b.Navigation("Refunds");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Product", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("OrderDetails");
+
+                    b.Navigation("ProductImages");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.ProductCustom", b =>
                 {
                     b.Navigation("FlowerCustoms");
@@ -1208,6 +1279,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("Flowers");
 
                     b.Navigation("Payments");
+
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Wallet", b =>

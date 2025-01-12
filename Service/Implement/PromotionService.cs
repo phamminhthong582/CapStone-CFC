@@ -100,7 +100,7 @@ public class PromotionService : IPromotionService
         {
             Data = new PromotionResponse
             {
-                PromtionId = promotion.PromtionId,
+                PromtionId = promotion.PromotionId,
                 Quantity = promotion.Quantity,
                 PromotionDiscount = promotion.PromotionDiscount
             },

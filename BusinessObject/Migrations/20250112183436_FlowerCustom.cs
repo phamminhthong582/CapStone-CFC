@@ -27,66 +27,10 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comment",
-                columns: table => new
-                {
-                    CommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Rating = table.Column<int>(type: "int", nullable: true),
-                    Feedback = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    Status = table.Column<bool>(type: "bit", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Comment", x => x.CommentId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Product",
-                columns: table => new
-                {
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
-                    ProductName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    StoreId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Quantity = table.Column<int>(type: "int", nullable: true),
-                    Price = table.Column<double>(type: "float", nullable: true),
-                    CreateAt = table.Column<DateTime>(type: "datetime", nullable: true),
-                    UpdateAt = table.Column<DateTime>(type: "datetime", nullable: true),
-                    Size = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Discount = table.Column<double>(type: "float", nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Featured = table.Column<bool>(type: "bit", nullable: true),
-                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Sold = table.Column<int>(type: "int", nullable: true),
-                    Status = table.Column<bool>(type: "bit", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Product", x => x.ProductId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductImage",
-                columns: table => new
-                {
-                    ProductImageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ProductImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreateAt = table.Column<DateTime>(type: "datetime", nullable: true),
-                    UpdateAt = table.Column<DateTime>(type: "datetime", nullable: true),
-                    Status = table.Column<bool>(type: "bit", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductImage", x => x.ProductImageId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Promotion",
                 columns: table => new
                 {
-                    PromtionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    PromotionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
                     PromotionName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Quantity = table.Column<int>(type: "int", nullable: true),
                     PromotionDiscount = table.Column<double>(type: "float", nullable: true),
@@ -99,7 +43,7 @@ namespace BusinessObject.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Promotion", x => x.PromtionId);
+                    table.PrimaryKey("PK_Promotion", x => x.PromotionId);
                 });
 
             migrationBuilder.CreateTable(
@@ -265,6 +209,40 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Product",
+                columns: table => new
+                {
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    ProductName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    StoreId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Quantity = table.Column<int>(type: "int", nullable: true),
+                    Price = table.Column<double>(type: "float", nullable: true),
+                    CreateAt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    UpdateAt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Size = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Discount = table.Column<double>(type: "float", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Featured = table.Column<bool>(type: "bit", nullable: true),
+                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Sold = table.Column<int>(type: "int", nullable: true),
+                    Status = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Product", x => x.ProductId);
+                    table.ForeignKey(
+                        name: "FK_Product_Category",
+                        column: x => x.CategoryId,
+                        principalTable: "Category",
+                        principalColumn: "CategoryId");
+                    table.ForeignKey(
+                        name: "FK_Product_Store",
+                        column: x => x.StoreId,
+                        principalTable: "Store",
+                        principalColumn: "StoreId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Wallet",
                 columns: table => new
                 {
@@ -308,6 +286,53 @@ namespace BusinessObject.Migrations
                         column: x => x.FlowerBasketId,
                         principalTable: "FlowerBasket",
                         principalColumn: "FlowerBasketId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comment",
+                columns: table => new
+                {
+                    CommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    Rating = table.Column<int>(type: "int", nullable: true),
+                    Feedback = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Status = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comment", x => x.CommentId);
+                    table.ForeignKey(
+                        name: "FK_Comment_Customer_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customer",
+                        principalColumn: "CustomerId");
+                    table.ForeignKey(
+                        name: "FK_Comment_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductImage",
+                columns: table => new
+                {
+                    ProductImageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ProductImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreateAt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    UpdateAt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    Status = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductImage", x => x.ProductImageId);
+                    table.ForeignKey(
+                        name: "FK_ProductImage_Product",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId");
                 });
 
             migrationBuilder.CreateTable(
@@ -381,7 +406,7 @@ namespace BusinessObject.Migrations
                         name: "FK_Order_Promotion",
                         column: x => x.PromotionID,
                         principalTable: "Promotion",
-                        principalColumn: "PromtionId");
+                        principalColumn: "PromotionId");
                 });
 
             migrationBuilder.CreateTable(
@@ -463,6 +488,11 @@ namespace BusinessObject.Migrations
                         column: x => x.OrderID,
                         principalTable: "Order",
                         principalColumn: "OrderId");
+                    table.ForeignKey(
+                        name: "FK_OrderDetail_Product",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId");
                 });
 
             migrationBuilder.CreateTable(
@@ -552,6 +582,16 @@ namespace BusinessObject.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comment_CustomerId",
+                table: "Comment",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comment_ProductId",
+                table: "Comment",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Customer_StoreId",
                 table: "Customer",
                 column: "StoreId");
@@ -637,6 +677,11 @@ namespace BusinessObject.Migrations
                 column: "OrderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderDetail_ProductId",
+                table: "OrderDetail",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payment_CustomerId",
                 table: "Payment",
                 column: "CustomerId");
@@ -652,9 +697,24 @@ namespace BusinessObject.Migrations
                 column: "StoreId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Product_CategoryId",
+                table: "Product",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_StoreId",
+                table: "Product",
+                column: "StoreId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductCustom_FlowerBasketId",
                 table: "ProductCustom",
                 column: "FlowerBasketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImage_ProductId",
+                table: "ProductImage",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Refund_OrderId",
@@ -699,9 +759,6 @@ namespace BusinessObject.Migrations
                 name: "Payment");
 
             migrationBuilder.DropTable(
-                name: "Product");
-
-            migrationBuilder.DropTable(
                 name: "ProductImage");
 
             migrationBuilder.DropTable(
@@ -709,6 +766,9 @@ namespace BusinessObject.Migrations
 
             migrationBuilder.DropTable(
                 name: "Flower");
+
+            migrationBuilder.DropTable(
+                name: "Product");
 
             migrationBuilder.DropTable(
                 name: "Refund");

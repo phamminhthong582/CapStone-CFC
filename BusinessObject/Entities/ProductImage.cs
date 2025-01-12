@@ -16,4 +16,6 @@ public partial class ProductImage
     public DateTime? UpdateAt { get; set; }
 
     public bool? Status { get; set; }
+
+    public virtual Product? Product { get; set; }
 }

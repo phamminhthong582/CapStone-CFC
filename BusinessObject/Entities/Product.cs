@@ -32,4 +32,12 @@ public partial class Product
     public int? Sold { get; set; }
 
     public bool? Status { get; set; }
+
+    public virtual Category? Category { get; set; }
+    public virtual Store? Store { get; set; }
+    public virtual ICollection<ProductImage> ProductImages { get; set; }  = new List<ProductImage>();  
+    public virtual ICollection<OrderDetail> OrderDetails { get; set; }  = new List<OrderDetail>();
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+
 }

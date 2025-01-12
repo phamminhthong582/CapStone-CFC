@@ -16,4 +16,7 @@ public partial class Category
     public bool? Status { get; set; }
 
     public virtual ICollection<Flower> Flowers { get; set; } = new List<Flower>();
+
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+
 }
