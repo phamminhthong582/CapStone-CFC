@@ -25,6 +25,9 @@ public static class DependencyInjection
         // Category
         services.AddScoped<ICategoryService, CategoryService>(); 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        // Promotion
+        services.AddScoped<IPromotionService, PromotionService>(); 
+        services.AddScoped<IPromotionRepository, PromotionRepository>();
         
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;

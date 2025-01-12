@@ -1,8 +1,7 @@
 ﻿namespace BusinessObject.DTO.Promotion;
 
-public class PromotionResponse
+public class CreatePromotionRequest
 {
-    public Guid PromtionId { get; set; }
     public string? PromotionName { get; set; }
 
     public int? Quantity { get; set; }
