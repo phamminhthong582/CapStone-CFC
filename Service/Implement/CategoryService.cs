@@ -95,6 +95,25 @@ public class CategoryService : ICategoryService
         };
     }
 
+    public async Task<Result<CategoryResponse>> GetCategoryById(Guid id)
+    {
+        var response = new Result<CategoryResponse>();
+        var category = await _categoryRepository.GetCategoryById(id);
+        if (category == null)
+        {
+            response.Messages = ["Category not found!"];
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        else
+        {
+            response.Data = _mapper.Map<CategoryResponse>(category);
+            response.Messages = ["Successfully!"];
+            response.ResultStatus = ResultStatus.Success.ToString();
+            return response;
+        }
+    }
+
     public async Task<Result<CategoryResponse>> UpdateStatusCategory(Guid id)
     {
         throw new NotImplementedException();

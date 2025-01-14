@@ -48,4 +48,10 @@ public class EmployeeRepository : IEmployeeRepository
     {
         return await _context.Employees.FirstOrDefaultAsync(x => x.Email == email);
     }
+
+    public async Task<Employee?> GetEmployeesById(Guid id)
+    {
+        var employ = await _context.Employees.FirstOrDefaultAsync(x => x.EmployeeId == id);
+        return employ;
+    }
 }

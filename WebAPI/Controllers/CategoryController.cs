@@ -23,6 +23,16 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.GetAllCategory();
         return Ok(result);
     }
+    [HttpGet("{Id}")]
+    public async Task<IActionResult> GetCategoryById(Guid id)
+    {
+        var result = await _categoryService.GetCategoryById(id);
+
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+
+        return Ok(result);
+    }
     [HttpPost("create-category")]
     public async Task<ActionResult<Result<Category>>> CreateCategory( [FromBody] CreateCategoryRequest request)
     {
