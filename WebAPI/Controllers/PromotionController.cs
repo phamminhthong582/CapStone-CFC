@@ -23,6 +23,17 @@ public class PromotionController : Controller
         var result = await _promotionService.GetAllPromotion();
         return Ok(result);
     }
+
+    [HttpGet("Id")]
+    public async Task<IActionResult> GetPromotionById(Guid id)
+    {
+        var result = await _promotionService.GetPromotionById(id);
+
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+
+        return Ok(result);
+    }
     [HttpPost("create-promotion")]
     public async Task<ActionResult<Result<Promotion>>> CreatePromotion( [FromBody] CreatePromotionRequest request)
     {

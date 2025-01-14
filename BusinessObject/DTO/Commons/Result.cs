@@ -5,7 +5,7 @@ public class Result<T>
     public T? Data { get; set; }
     public string? ResultStatus { get; set; }
 
-    public string? UserStatus { get; set; }
+    public string? EmployeeStatus { get; set; }
     public string[]? Messages { get; set; }
 }
 
@@ -13,8 +13,9 @@ public enum RoleName
 {
     Admin,
     StoreManager,
-    Staff,
+    Florist,
     Customer,
+    Courier
 }
 public enum ResultStatus
 {
@@ -24,7 +25,7 @@ public enum ResultStatus
     Error,
 
 }
-public enum UserStatus
+public enum EmployeeStatus
 {
     Active,
     Inactive,

@@ -100,7 +100,7 @@ public class PromotionService : IPromotionService
         {
             Data = new PromotionResponse
             {
-                PromtionId = promotion.PromotionId,
+                PromotionId = promotion.PromotionId,
                 Quantity = promotion.Quantity,
                 PromotionDiscount = promotion.PromotionDiscount
             },
@@ -129,5 +129,24 @@ public class PromotionService : IPromotionService
             ResultStatus = ResultStatus.Success.ToString(),
             Messages = new []{"Promotion deleted successfully."}
         };
+    }
+
+    public async Task<Result<PromotionResponse>> GetPromotionById(Guid id)
+    {
+        var response = new Result<PromotionResponse>();
+        var promotion = await _promotionRepository.GetPromotionById(id);
+        if (promotion == null)
+        {
+            response.Messages = ["Promotion not found!"];
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        else
+        {
+            response.Data = _mapper.Map<PromotionResponse>(promotion);
+            response.Messages = ["Successfully!"];
+            response.ResultStatus = ResultStatus.Success.ToString();
+            return response;
+        }
     }
 }

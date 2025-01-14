@@ -28,63 +28,83 @@ public class AuthService : IAuthService
         _mapper = mapper;
         _configuration = configuration;
     }
-   public async Task<Result<LoginResponse>> Login(string email, string password)
+  public async Task<Result<LoginResponse>> Login(string email, string password)
 {
-    var user = await _employeeRepository.GetEmployeeByEmail(email);
-    var admin =  _employeeRepository.GetAdminAccount(email, password);
-    if (user is null && admin is null)
+    var employee = await _employeeRepository.GetEmployeeByEmail(email);
+    var admin = _employeeRepository.GetAdminAccount(email, password);
+
+    if (employee is null && admin is null)
     {
         return new Result<LoginResponse>
         {
             ResultStatus = ResultStatus.NotFound.ToString(),
-            Messages =  ["Account is not found"]  
+            Messages = ["Account is not found"]
         };
     }
     else if (admin != null)
     {
         var userAdmin = new Employee
         {
-            FullName = admin, 
+            FullName = admin,
         };
         var accessTokenAdmin = _tokenService.GenerateToken(userAdmin);
         var dataAdmin = new LoginResponse
         {
             AccessToken = accessTokenAdmin,
-            Email = admin, 
-            RoleName = RoleName.Admin.ToString() 
+            Email = admin,
+            RoleName = RoleName.Admin.ToString()
         };
 
         return new Result<LoginResponse>
         {
             Data = dataAdmin,
-            Messages =  ["Login successfully. Welcome Admin" ],
+            Messages = ["Login successfully. Welcome Admin"],
             ResultStatus = ResultStatus.Success.ToString()
         };
     }
-    else if (user != null)
+    else if (employee != null)
     {
-        var role = user.Role?.RoleName ?? "User";
-        var accessTokenUser = _tokenService.GenerateToken(user);
+        if (employee.Role == null || string.IsNullOrEmpty(employee.Role.RoleName))
+        {
+            return new Result<LoginResponse>
+            {
+                ResultStatus = ResultStatus.Error.ToString(),
+                Messages = ["Employee role is not defined."]
+            };
+        }
+        var roleName = employee.Role.RoleName; 
+        var accessToken = _tokenService.GenerateToken(employee);
+        string welcomeMessage = roleName switch
+        {
+            nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
+            nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
+            nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
+            nameof(RoleName.Customer) => "Login successfully. Welcome Customer",
+            _ => "Login successfully. Welcome"
+        };
+
         var dataUser = new LoginResponse
         {
-            AccessToken = accessTokenUser,
-            Email = user.Email,
-            RoleName = role
+            AccessToken = accessToken,
+            Email = employee.Email,
+            RoleName = roleName
         };
 
         return new Result<LoginResponse>
         {
             Data = dataUser,
-            Messages = [ "Login successfully. Welcome User"],
+            Messages = [welcomeMessage],
             ResultStatus = ResultStatus.Success.ToString()
         };
     }
+
     return new Result<LoginResponse>
     {
         ResultStatus = ResultStatus.NotFound.ToString(),
-        Messages =["Login failed"]
+        Messages = ["Login failed"]
     };
 }
+
    
     /*public async Task<Result<UserResponse>> CreateStoreManagerAccount(CreateStoreManagerRequest request)
     {

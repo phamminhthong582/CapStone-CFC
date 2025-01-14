@@ -46,12 +46,46 @@ public class EmployeeRepository : IEmployeeRepository
 
     public async Task<Employee?> GetEmployeeByEmail(string email)
     {
-        return await _context.Employees.FirstOrDefaultAsync(x => x.Email == email);
+        return await _context.Employees
+            .Include(e => e.Role) 
+            .FirstOrDefaultAsync(e => e.Email == email);
     }
 
     public async Task<Employee?> GetEmployeesById(Guid id)
     {
         var employ = await _context.Employees.FirstOrDefaultAsync(x => x.EmployeeId == id);
+        return employ;
+    }
+
+    public async Task<Employee?> UpdateEmployee(Employee? employee)
+    {
+        _context.Employees.Update(employee);
+        await _context.SaveChangesAsync();
+        return employee;
+    }
+
+    public async Task<Employee?> Register(Employee? employee)
+    {
+        var result = await _context.Employees.AddAsync(employee);
+        await _context.SaveChangesAsync();
+        return result.Entity;
+    }
+
+    public async Task<Employee?> DeleteEmployee(Guid id)
+    {
+        var employee = await _context.Employees.FirstOrDefaultAsync(x => x.EmployeeId == id);
+        if (employee == null)
+        {
+            return null;
+        }
+        _context.Employees.Remove(employee);
+        await _context.SaveChangesAsync();
+        return employee;
+    }
+
+    public async Task<Employee?> FindEmployeeByPhone(string phone)
+    {
+        var employ = await _context.Employees.FirstOrDefaultAsync(x => x.Phone == phone);
         return employ;
     }
 }

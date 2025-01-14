@@ -1,4 +1,5 @@
 using BusinessObject.Context;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
 
 using Microsoft.OpenApi.Models;
@@ -44,7 +45,18 @@ builder.Services.AddSwaggerGen(sw =>
         }
     });
 });
-    
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+});
+
+
 
 var app = builder.Build();
 

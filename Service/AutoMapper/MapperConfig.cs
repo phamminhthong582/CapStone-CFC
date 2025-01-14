@@ -8,8 +8,10 @@ public partial class MapperConfig : Profile
     {
         AddCategoryMapperConfig();
         AddPromotionMapperConfig();
+        AddEmployeeMapperConfig();
     }
 
     partial void AddCategoryMapperConfig();
     partial void AddPromotionMapperConfig();
+    partial void AddEmployeeMapperConfig();
 }

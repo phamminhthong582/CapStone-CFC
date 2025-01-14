@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         //Employee
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
         //Store
         services.AddScoped<IStoreService, StoreService>();
         // Category
@@ -28,6 +29,7 @@ public static class DependencyInjection
         // Promotion
         services.AddScoped<IPromotionService, PromotionService>(); 
         services.AddScoped<IPromotionRepository, PromotionRepository>();
+       
         // Role
         services.AddScoped<IRoleService, RoleService>();
 

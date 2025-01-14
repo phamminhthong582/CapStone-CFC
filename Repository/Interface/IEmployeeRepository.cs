@@ -8,4 +8,8 @@ public interface IEmployeeRepository
     Task<List<Employee?>> GetAllEmployees();
     Task<Employee?> GetEmployeeByEmail(string email);
     Task<Employee?> GetEmployeesById(Guid id);
+    Task<Employee?> UpdateEmployee(Employee? employee);
+    Task<Employee?> Register(Employee? employee);
+    Task<Employee?> DeleteEmployee(Guid id);
+    Task<Employee?> FindEmployeeByPhone(string phone);
 }

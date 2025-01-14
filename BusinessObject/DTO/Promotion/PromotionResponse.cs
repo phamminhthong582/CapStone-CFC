@@ -2,7 +2,7 @@
 
 public class PromotionResponse
 {
-    public Guid PromtionId { get; set; }
+    public Guid PromotionId { get; set; }
     public string? PromotionName { get; set; }
 
     public int? Quantity { get; set; }
