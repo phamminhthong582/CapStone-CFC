@@ -5,8 +5,10 @@ using System.Security.Cryptography;
 using AutoMapper;
 using BusinessObject.DTO.Auth;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.Employee;
 using BusinessObject.DTO.Response;
 using BusinessObject.Entities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Repository.Interface;
 using Service.Interface;
@@ -105,8 +107,47 @@ public class AuthService : IAuthService
     };
 }
 
-   
-    /*public async Task<Result<UserResponse>> CreateStoreManagerAccount(CreateStoreManagerRequest request)
+public async Task<Result<EmployeeResponse>> Register(RegisterRequest request)
+{
+    var response = new Result<EmployeeResponse>();
+    var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
+    if (isMailUsed != null)
+    {
+        response.Messages = new[] { "This email is already used" };
+        response.ResultStatus = ResultStatus.Duplicated.ToString();
+        return response;
+    }
+    var isPhoneUsed = await _employeeRepository.FindEmployeeByPhone(request.Phone);
+    if (isPhoneUsed != null)
+    {
+        response.Messages = new[] { "This phone number is already used" };
+        response.ResultStatus = ResultStatus.Duplicated.ToString();
+        return response;
+    }
+    CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+    var employee = new Employee
+    {
+        Email = request.Email,
+        Password = Convert.ToBase64String(passwordHash), // Lưu mật khẩu hash
+        FullName = request.FullName,
+        Phone = request.Phone,
+        Status = true,
+        CreateAt = DateTime.UtcNow,
+    };
+
+    // Đăng ký vào repository
+    var registeredEmployee = await _employeeRepository.Register(employee);
+
+    // Cập nhật response trả về
+    response.ResultStatus = ResultStatus.Success.ToString();
+    response.Messages = new[] { "Register successfully as a Customer!" };
+    response.Data = _mapper.Map<EmployeeResponse>(registeredEmployee);
+
+    return response;
+}
+
+
+/*public async Task<Result<UserResponse>> CreateStoreManagerAccount(CreateStoreManagerRequest request)
     {
         var isused = await _userRepository.GetUserByEmail(request.Email);
         var response = new Result<UserResponse>();

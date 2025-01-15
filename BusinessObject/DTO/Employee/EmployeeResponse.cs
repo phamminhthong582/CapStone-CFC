@@ -17,6 +17,7 @@ public class EmployeeResponse
     public DateTime? Birthday { get; set; }
     
     public Guid? RoleId { get; set; }
+    
 
     public Guid? StoreId { get; set; }
     

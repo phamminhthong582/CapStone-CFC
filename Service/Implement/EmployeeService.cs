@@ -11,6 +11,7 @@ public class EmployeeService : IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IMapper _mapper;
+    
     public EmployeeService(IEmployeeRepository employeeRepository , IMapper mapper)
     {
         _employeeRepository = employeeRepository;
@@ -93,5 +94,56 @@ public class EmployeeService : IEmployeeService
             ResultStatus = ResultStatus.Success.ToString(),
             Messages = new []{"Employee deleted successfully."}
         };
+    }
+
+    public async Task<Result<EmployeeResponse>> GetFloristWithStoreId(Guid storeId)
+    {
+        var response = new Result<EmployeeResponse>();
+        var employee = await _employeeRepository.GetFloristWithStoreId(storeId, RoleName.Florist.ToString());
+        if (employee == null)
+        {
+            response.Messages = new[] { "Florist is not found!" };
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        if (employee.Role == null || employee.Role.RoleName != RoleName.Florist.ToString())
+        {
+            response.Messages = new[] { "Employee does not have the Florist role!" };
+            response.ResultStatus = ResultStatus.Invalid.ToString();
+            return response;
+        }
+
+        response.RoleName = RoleName.Florist.ToString();
+        response.Data = _mapper.Map<EmployeeResponse>(employee);
+        response.Messages = new[] { "Successfully!" };
+        response.ResultStatus = ResultStatus.Success.ToString();
+
+        return response;
+    }
+
+
+    public async Task<Result<EmployeeResponse>> GetCourierWithStoreId(Guid storeid)
+    {
+        var response = new Result<EmployeeResponse>();
+        var employee = await _employeeRepository.GetFloristWithStoreId(storeid, RoleName.Courier.ToString());
+        if (employee == null)
+        {
+            response.Messages = new[] { "Courier is not found!" };
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        if (employee.Role == null || employee.Role.RoleName != RoleName.Courier.ToString())
+        {
+            response.Messages = new[] { "Employee does not have the Courier role!" };
+            response.ResultStatus = ResultStatus.Invalid.ToString();
+            return response;
+        }
+
+        response.RoleName = RoleName.Courier.ToString();
+        response.Data = _mapper.Map<EmployeeResponse>(employee);
+        response.Messages = new[] { "Successfully!" };
+        response.ResultStatus = ResultStatus.Success.ToString();
+
+        return response;
     }
 }

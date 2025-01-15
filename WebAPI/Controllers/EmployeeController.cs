@@ -23,6 +23,26 @@ public class EmployeeController : ControllerBase
       var result = await _employeeService.GetAllEmployee();
       return Ok(result);
    }
+   [HttpGet("storeId-florist")]
+   public async Task<IActionResult> GetFloristWithStoreId(Guid storeid)
+   {
+      var result = await _employeeService.GetFloristWithStoreId(storeid);
+
+      if (result.ResultStatus != ResultStatus.Success.ToString())
+         return StatusCode((int)HttpStatusCode.InternalServerError, result);
+
+      return Ok(result);
+   }
+   [HttpGet("storeId-courier")]
+   public async Task<IActionResult> GetCourierWithStoreId(Guid storeid)
+   {
+      var result = await _employeeService.GetCourierWithStoreId(storeid);
+
+      if (result.ResultStatus != ResultStatus.Success.ToString())
+         return StatusCode((int)HttpStatusCode.InternalServerError, result);
+
+      return Ok(result);
+   }
    [HttpGet("Id")]
    public async Task<IActionResult> GetEmployeeById(Guid id)
    {

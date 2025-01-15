@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using BusinessObject.DTO.Auth;
 using BusinessObject.DTO.Commons;
-
+using BusinessObject.DTO.Employee;
 using BusinessObject.DTO.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +30,18 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+    [HttpPost("register")]
+    public async Task<ActionResult<Result<EmployeeResponse>>> Register(RegisterRequest registerRequest)
+    {
+        var result = await _authService.Register(registerRequest);
+
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+        }
+
+        return result;
     }
    /* [Authorize(Roles = "Admin")]
     [HttpPost("create-storemanager-account")]

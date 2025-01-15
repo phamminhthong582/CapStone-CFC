@@ -4,6 +4,7 @@ public class Result<T>
 {
     public T? Data { get; set; }
     public string? ResultStatus { get; set; }
+    public string? RoleName { get; set; }
 
     public string? EmployeeStatus { get; set; }
     public string[]? Messages { get; set; }
@@ -23,6 +24,7 @@ public enum ResultStatus
     NotFound,
     Duplicated,
     Error,
+    Invalid,
 
 }
 public enum EmployeeStatus

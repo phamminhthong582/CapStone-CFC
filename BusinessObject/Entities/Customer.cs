@@ -31,7 +31,7 @@ public partial class Customer
 
     public DateTime? UpdateAt { get; set; }
 
-    public bool? Status { get; set; }
+    public string Status { get; set; }
 
     public string? Avatar { get; set; }
 

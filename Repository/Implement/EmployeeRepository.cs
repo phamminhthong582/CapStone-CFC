@@ -1,6 +1,8 @@
 ﻿using BusinessObject.Context;
+using BusinessObject.DTO.Commons;
 using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Configuration;
 using Repository.Interface;
 
@@ -87,5 +89,43 @@ public class EmployeeRepository : IEmployeeRepository
     {
         var employ = await _context.Employees.FirstOrDefaultAsync(x => x.Phone == phone);
         return employ;
+    }
+
+    public async Task<Employee?> FindEmployeeByEmail(string email)
+    {
+        var employ = await _context.Employees.FirstOrDefaultAsync(x => x.Email == email);
+        return employ;
+    }
+
+    public async Task<Employee?> GetFloristWithStoreId(Guid storeId, string roleName)
+    {
+        var role = await _context.Roles
+            .FirstOrDefaultAsync(r => r.RoleName == roleName);
+        if (role == null)
+        {
+            
+            return null;
+        }
+        var employee = await _context.Employees
+            .Include(e => e.Role) 
+            .FirstOrDefaultAsync(e => e.StoreId == storeId && e.RoleId == role.RoleId);
+
+        return employee;
+    }
+
+
+    public async Task<Employee?> GetCourierWithStoreId(Guid storeId , string rolename)
+    {
+        var role = await _context.Roles
+            .FirstOrDefaultAsync(r => r.RoleName == rolename);
+        if (role == null)
+        {
+            
+            return null;
+        }
+        var employee = await _context.Employees
+            .Include(e => e.Role) 
+            .FirstOrDefaultAsync(e => e.StoreId == storeId && e.RoleId == role.RoleId);
+        return employee;
     }
 }
