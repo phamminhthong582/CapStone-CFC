@@ -30,12 +30,28 @@ namespace Repository.Implement
             await _dbSet.AddAsync(entity);
         }
 
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            if (entities == null || !entities.Any())
+            {
+                throw new ArgumentException("The entities collection is null or empty.");
+            }
 
+            await _dbSet.AddRangeAsync(entities);
+        }
         public void Delete(T entity)
         {
             _dbSet.Remove(entity);
         }
+        public void DeleteRange(IEnumerable<T> entities)
+        {
+            if (entities == null || !entities.Any())
+            {
+                throw new ArgumentException("The entities collection is null or empty.");
+            }
 
+            _dbSet.RemoveRange(entities);
+        }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
@@ -53,6 +69,7 @@ namespace Repository.Implement
         {
             _dbSet.Update(entity);
         }
+
 
     }
 }

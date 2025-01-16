@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         //Employee
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
         //Store
         services.AddScoped<IStoreService, StoreService>();
         // Category
@@ -28,8 +29,12 @@ public static class DependencyInjection
         // Promotion
         services.AddScoped<IPromotionService, PromotionService>(); 
         services.AddScoped<IPromotionRepository, PromotionRepository>();
+       
         // Role
         services.AddScoped<IRoleService, RoleService>();
+
+        //Product
+        services.AddScoped<IProductService, ProductService>();
 
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
