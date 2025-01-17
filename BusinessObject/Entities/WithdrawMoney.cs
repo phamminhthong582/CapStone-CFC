@@ -25,5 +25,5 @@ public partial class WithdrawMoney
 
     public DateTime? Status { get; set; }
 
-    public virtual Refund? Wallet { get; set; }
+    public virtual Wallet? Wallet { get; set; }
 }

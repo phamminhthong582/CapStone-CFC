@@ -20,4 +20,6 @@ public partial class Wallet
     public virtual Customer? Customer { get; set; }
 
     public virtual ICollection<Refund> Refunds { get; set; } = new List<Refund>();
+    public virtual ICollection<WithdrawMoney> WithdrawMoneys { get; set; } = new List<WithdrawMoney>();
+
 }
