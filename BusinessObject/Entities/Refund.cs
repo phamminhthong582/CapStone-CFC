@@ -23,5 +23,4 @@ public partial class Refund
 
     public virtual Wallet? Waller { get; set; }
 
-    public virtual ICollection<WithdrawMoney> WithdrawMoneys { get; set; } = new List<WithdrawMoney>();
 }

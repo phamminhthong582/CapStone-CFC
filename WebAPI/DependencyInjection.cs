@@ -34,6 +34,9 @@ public static class DependencyInjection
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRoleService, RoleService>();
 
+        //Product
+        services.AddScoped<IProductService, ProductService>();
+
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
     }
