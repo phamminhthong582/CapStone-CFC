@@ -32,16 +32,35 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
     [HttpPost("register")]
-    public async Task<ActionResult<Result<EmployeeResponse>>> Register(RegisterRequest registerRequest)
+    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromBody] RegisterRequest registerRequest, [FromQuery] string? roleName = null)
     {
-        var result = await _authService.Register(registerRequest);
-
-        if (result.ResultStatus != ResultStatus.Success.ToString())
+        try
         {
-            return StatusCode((int)HttpStatusCode.InternalServerError, result);
-        }
+            // Gọi service để xử lý logic đăng ký
+            var result = await _authService.Register(registerRequest, roleName);
 
-        return result;
+            // Kiểm tra kết quả trả về
+            if (result.ResultStatus == ResultStatus.Duplicated.ToString())
+            {
+                return Conflict(result); // HTTP 409 Conflict
+            }
+            if (result.ResultStatus == ResultStatus.Failed.ToString())
+            {
+                return BadRequest(result); // HTTP 400 Bad Request
+            }
+
+            // Thành công
+            return Ok(result); // HTTP 200 OK
+        }
+        catch (Exception ex)
+        {
+            // Xử lý lỗi hệ thống không mong muốn
+            return StatusCode((int)HttpStatusCode.InternalServerError, new
+            {
+                Message = "An unexpected error occurred. Please try again later.",
+                Error = ex.Message
+            });
+        }
     }
    /* [Authorize(Roles = "Admin")]
     [HttpPost("create-storemanager-account")]
