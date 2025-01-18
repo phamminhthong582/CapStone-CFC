@@ -25,6 +25,7 @@ public enum ResultStatus
     Duplicated,
     Error,
     Invalid,
+    Failed,
 
 }
 public enum EmployeeStatus

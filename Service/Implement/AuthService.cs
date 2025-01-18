@@ -21,14 +21,16 @@ public class AuthService : IAuthService
     private readonly ITokenService _tokenService;
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
+    private readonly IRoleRepository _roleRepository;
 
     public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper,
-        IConfiguration configuration)
+        IConfiguration configuration , IRoleRepository roleRepository)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
         _mapper = mapper;
         _configuration = configuration;
+        _roleRepository = roleRepository;
     }
   public async Task<Result<LoginResponse>> Login(string email, string password)
 {
@@ -107,7 +109,7 @@ public class AuthService : IAuthService
     };
 }
 
-public async Task<Result<EmployeeResponse>> Register(RegisterRequest request)
+public async Task<Result<EmployeeResponse>> Register(RegisterRequest request, string? roleName = null)
 {
     var response = new Result<EmployeeResponse>();
     var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
@@ -124,27 +126,33 @@ public async Task<Result<EmployeeResponse>> Register(RegisterRequest request)
         response.ResultStatus = ResultStatus.Duplicated.ToString();
         return response;
     }
+    var roleToAssign = roleName ?? RoleName.Customer.ToString(); 
+    var roleId = await _roleRepository.GetRoleIdByName(roleToAssign);
+    if (roleId == null)
+    {
+        response.Messages = new[] { $"Role '{roleToAssign}' not found. Please contact admin." };
+        response.ResultStatus = ResultStatus.Failed.ToString();
+        return response;
+    }
     CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
     var employee = new Employee
     {
         Email = request.Email,
-        Password = Convert.ToBase64String(passwordHash), // Lưu mật khẩu hash
+        Password = Convert.ToBase64String(passwordHash), 
         FullName = request.FullName,
         Phone = request.Phone,
         Status = true,
         CreateAt = DateTime.UtcNow,
+        RoleId = roleId 
     };
-
-    // Đăng ký vào repository
     var registeredEmployee = await _employeeRepository.Register(employee);
-
-    // Cập nhật response trả về
+    response.RoleName = roleToAssign; 
     response.ResultStatus = ResultStatus.Success.ToString();
-    response.Messages = new[] { "Register successfully as a Customer!" };
+    response.Messages = new[] { $"Register successfully as a {roleToAssign}!" };
     response.Data = _mapper.Map<EmployeeResponse>(registeredEmployee);
-
     return response;
 }
+
 
 
 /*public async Task<Result<UserResponse>> CreateStoreManagerAccount(CreateStoreManagerRequest request)
