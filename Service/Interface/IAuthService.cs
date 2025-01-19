@@ -8,7 +8,7 @@ namespace Service.Interface;
 public interface IAuthService
 {
     Task<Result<LoginResponse>> Login(string email, string password);
-     Task<Result<EmployeeResponse>> Register(RegisterRequest request );
+     Task<Result<EmployeeResponse>> RegisterFlorist(RegisterRequest request );
        Task<Result<EmployeeResponse>> CreateCourierAccount(CreateCourierRequest request);
     
 }

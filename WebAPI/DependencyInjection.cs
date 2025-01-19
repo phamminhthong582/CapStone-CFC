@@ -29,6 +29,9 @@ public static class DependencyInjection
         // Promotion
         services.AddScoped<IPromotionService, PromotionService>(); 
         services.AddScoped<IPromotionRepository, PromotionRepository>();
+        // Customer
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<ICustomerService, CustomerService>();
        
         // Role
         services.AddScoped<IRoleRepository, RoleRepository>();

@@ -5,5 +5,5 @@ namespace Service.Interface;
 
 public interface ITokenService
 {
-   public string GenerateToken(Employee employee);
+   public string GenerateToken(object user);
 }
