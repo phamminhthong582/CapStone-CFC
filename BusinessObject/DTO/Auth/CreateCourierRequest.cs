@@ -1,12 +1,12 @@
-﻿namespace BusinessObject.DTO.Employee;
+﻿namespace BusinessObject.DTO.Auth;
 
-public class EmployeeResponse
+public class CreateCourierRequest
 {
-    public Guid EmployeeId { get; set; }
-    
     public string? FullName { get; set; }
 
     public string? Address { get; set; }
+
+    public string Password { get; set; }
 
     public string? Email { get; set; }
 
@@ -15,7 +15,7 @@ public class EmployeeResponse
     public bool? Gender { get; set; }
 
     public DateTime? Birthday { get; set; }
-    
+
     public string? IdentificationNumber { get; set; }
 
     public string? IdentificationFontOfPhoto { get; set; }
@@ -27,15 +27,7 @@ public class EmployeeResponse
     public string? ColorMoto {  get; set; }
     
     public string? MotoType { get; set; }   
-
-    
-    public Guid? RoleId { get; set; }
-    
-
-    public Guid? StoreId { get; set; }
     
     public bool? Status { get; set; }
 
-    public string? Avatar { get; set; }
-    
 }

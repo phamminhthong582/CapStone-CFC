@@ -11,11 +11,13 @@ public class EmployeeService : IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IMapper _mapper;
+    private readonly IRoleRepository _roleRepository;
     
-    public EmployeeService(IEmployeeRepository employeeRepository , IMapper mapper)
+    public EmployeeService(IEmployeeRepository employeeRepository , IMapper mapper , IRoleRepository roleRepository)
     {
         _employeeRepository = employeeRepository;
         _mapper = mapper;
+        _roleRepository = roleRepository;
     }
     public async Task<List<EmployeeResponse>> GetAllEmployee()
     {
