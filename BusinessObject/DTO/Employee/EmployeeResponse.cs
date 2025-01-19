@@ -16,6 +16,19 @@ public class EmployeeResponse
 
     public DateTime? Birthday { get; set; }
     
+    public string? IdentificationNumber { get; set; }
+
+    public string? IdentificationFontOfPhoto { get; set; }
+
+    public string? IdentificationBackOfPhoto { get; set; }
+    
+    public string? NumberMoto { get; set; }
+    
+    public string? ColorMoto {  get; set; }
+    
+    public string? MotoType { get; set; }   
+
+    
     public Guid? RoleId { get; set; }
     
 

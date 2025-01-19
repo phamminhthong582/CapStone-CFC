@@ -23,14 +23,10 @@ public class EmployeeRepository : IEmployeeRepository
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", true, true)
             .Build();
-
-        // Check if the configuration key exists
         if (config.GetSection("AdminAccount").Exists())
         {
             string? emailJson = config["AdminAccount:adminemail"];
             string? passwordJson = config["AdminAccount:adminpassword"];
-
-            // Check if both email and password match
             if (emailJson == email && passwordJson == password)
             {
                 return emailJson;

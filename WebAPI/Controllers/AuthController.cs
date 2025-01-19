@@ -31,36 +31,46 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
-    [HttpPost("register")]
-    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromBody] RegisterRequest registerRequest, [FromQuery] string? roleName = null)
+    [HttpPost("register-staffaccount")]
+    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromBody] RegisterRequest registerRequest)
     {
         try
         {
-            // Gọi service để xử lý logic đăng ký
-            var result = await _authService.Register(registerRequest, roleName);
+            var result = await _authService.Register(registerRequest);
 
-            // Kiểm tra kết quả trả về
+            
             if (result.ResultStatus == ResultStatus.Duplicated.ToString())
             {
-                return Conflict(result); // HTTP 409 Conflict
+                return Conflict(result); 
             }
             if (result.ResultStatus == ResultStatus.Failed.ToString())
             {
-                return BadRequest(result); // HTTP 400 Bad Request
+                return BadRequest(result);
             }
-
-            // Thành công
-            return Ok(result); // HTTP 200 OK
+            return Ok(result); 
         }
         catch (Exception ex)
         {
-            // Xử lý lỗi hệ thống không mong muốn
+           
             return StatusCode((int)HttpStatusCode.InternalServerError, new
             {
                 Message = "An unexpected error occurred. Please try again later.",
                 Error = ex.Message
             });
         }
+    }
+    [HttpPost("create-courier-account")]
+    public async Task<ActionResult<Result<EmployeeResponse>>> CreateCourierAccount(
+        [FromBody] CreateCourierRequest registerRequest)
+    {
+        var result = await _authService.CreateCourierAccount(registerRequest);
+
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+        }
+
+        return result;
     }
    /* [Authorize(Roles = "Admin")]
     [HttpPost("create-storemanager-account")]

@@ -24,7 +24,7 @@ public class AuthService : IAuthService
     private readonly IRoleRepository _roleRepository;
 
     public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper,
-        IConfiguration configuration , IRoleRepository roleRepository)
+        IConfiguration configuration, IRoleRepository roleRepository)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
@@ -32,105 +32,146 @@ public class AuthService : IAuthService
         _configuration = configuration;
         _roleRepository = roleRepository;
     }
-  public async Task<Result<LoginResponse>> Login(string email, string password)
-{
-    var employee = await _employeeRepository.GetEmployeeByEmail(email);
-    var admin = _employeeRepository.GetAdminAccount(email, password);
 
-    if (employee is null && admin is null)
+    public async Task<Result<LoginResponse>> Login(string email, string password)
     {
-        return new Result<LoginResponse>
-        {
-            ResultStatus = ResultStatus.NotFound.ToString(),
-            Messages = ["Account is not found"]
-        };
-    }
-    else if (admin != null)
-    {
-        var userAdmin = new Employee
-        {
-            FullName = admin,
-        };
-        var accessTokenAdmin = _tokenService.GenerateToken(userAdmin);
-        var dataAdmin = new LoginResponse
-        {
-            AccessToken = accessTokenAdmin,
-            Email = admin,
-            RoleName = RoleName.Admin.ToString()
-        };
+        var employee = await _employeeRepository.GetEmployeeByEmail(email);
+        var admin = _employeeRepository.GetAdminAccount(email, password);
 
-        return new Result<LoginResponse>
-        {
-            Data = dataAdmin,
-            Messages = ["Login successfully. Welcome Admin"],
-            ResultStatus = ResultStatus.Success.ToString()
-        };
-    }
-    else if (employee != null)
-    {
-        if (employee.Role == null || string.IsNullOrEmpty(employee.Role.RoleName))
+        if (employee is null && admin is null)
         {
             return new Result<LoginResponse>
             {
-                ResultStatus = ResultStatus.Error.ToString(),
-                Messages = ["Employee role is not defined."]
+                ResultStatus = ResultStatus.NotFound.ToString(),
+                Messages = ["Account is not found"]
             };
         }
-        var roleName = employee.Role.RoleName; 
-        var accessToken = _tokenService.GenerateToken(employee);
-        string welcomeMessage = roleName switch
+        else if (admin != null)
         {
-            nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
-            nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
-            nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
-            nameof(RoleName.Customer) => "Login successfully. Welcome Customer",
-            _ => "Login successfully. Welcome"
-        };
+            var userAdmin = new Employee
+            {
+                FullName = admin,
+            };
+            var accessTokenAdmin = _tokenService.GenerateToken(userAdmin);
+            var dataAdmin = new LoginResponse
+            {
+                AccessToken = accessTokenAdmin,
+                Email = admin,
+                RoleName = RoleName.Admin.ToString()
+            };
 
-        var dataUser = new LoginResponse
+            return new Result<LoginResponse>
+            {
+                Data = dataAdmin,
+                Messages = ["Login successfully. Welcome Admin"],
+                ResultStatus = ResultStatus.Success.ToString()
+            };
+        }
+        else if (employee != null)
         {
-            AccessToken = accessToken,
-            Email = employee.Email,
-            RoleName = roleName
-        };
+            if (employee.Role == null || string.IsNullOrEmpty(employee.Role.RoleName))
+            {
+                return new Result<LoginResponse>
+                {
+                    ResultStatus = ResultStatus.Error.ToString(),
+                    Messages = ["Employee role is not defined."]
+                };
+            }
+
+            var roleName = employee.Role.RoleName;
+            var accessToken = _tokenService.GenerateToken(employee);
+            string welcomeMessage = roleName switch
+            {
+                nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
+                nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
+                nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
+                nameof(RoleName.Customer) => "Login successfully. Welcome Customer",
+                _ => "Login successfully. Welcome"
+            };
+
+            var dataUser = new LoginResponse
+            {
+                AccessToken = accessToken,
+                Email = employee.Email,
+                RoleName = roleName
+            };
+
+            return new Result<LoginResponse>
+            {
+                Data = dataUser,
+                Messages = [welcomeMessage],
+                ResultStatus = ResultStatus.Success.ToString()
+            };
+        }
 
         return new Result<LoginResponse>
         {
-            Data = dataUser,
-            Messages = [welcomeMessage],
-            ResultStatus = ResultStatus.Success.ToString()
+            ResultStatus = ResultStatus.NotFound.ToString(),
+            Messages = ["Login failed"]
         };
     }
 
-    return new Result<LoginResponse>
+    public async Task<Result<EmployeeResponse>> Register(RegisterRequest request)
     {
-        ResultStatus = ResultStatus.NotFound.ToString(),
-        Messages = ["Login failed"]
-    };
-}
+        var response = new Result<EmployeeResponse>();
+        var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
+        if (isMailUsed != null)
+        {
+            response.Messages = new[] { "This email is already used" };
+            response.ResultStatus = ResultStatus.Duplicated.ToString();
+            return response;
+        }
 
-public async Task<Result<EmployeeResponse>> Register(RegisterRequest request, string? roleName = null)
+        var isPhoneUsed = await _employeeRepository.FindEmployeeByPhone(request.Phone);
+        if (isPhoneUsed != null)
+        {
+            response.Messages = new[] { "This phone number is already used" };
+            response.ResultStatus = ResultStatus.Duplicated.ToString();
+            return response;
+        }
+
+        var roleToAssign = RoleName.Florist.ToString();
+        var roleId = await _roleRepository.GetRoleIdByName(roleToAssign);
+        if (roleId == null)
+        {
+            response.Messages = new[] { $"Role '{roleToAssign}' not found. Please contact admin." };
+            response.ResultStatus = ResultStatus.Failed.ToString();
+            return response;
+        }
+
+        CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        var employee = new Employee
+        {
+            Email = request.Email,
+            Password = Convert.ToBase64String(passwordHash),
+            FullName = request.FullName,
+            Phone = request.Phone,
+            Status = true,
+            CreateAt = DateTime.UtcNow,
+            RoleId = roleId
+        };
+        var registeredEmployee = await _employeeRepository.Register(employee);
+        response.RoleName = roleToAssign;
+        response.ResultStatus = ResultStatus.Success.ToString();
+        response.Messages = new[] { $"Register successfully as a {roleToAssign}!" };
+        response.Data = _mapper.Map<EmployeeResponse>(registeredEmployee);
+        return response;
+    }
+
+   public async Task<Result<EmployeeResponse>> CreateCourierAccount(CreateCourierRequest request)
 {
     var response = new Result<EmployeeResponse>();
-    var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
-    if (isMailUsed != null)
+    var isEmailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
+    if (isEmailUsed != null)
     {
         response.Messages = new[] { "This email is already used" };
         response.ResultStatus = ResultStatus.Duplicated.ToString();
         return response;
     }
-    var isPhoneUsed = await _employeeRepository.FindEmployeeByPhone(request.Phone);
-    if (isPhoneUsed != null)
-    {
-        response.Messages = new[] { "This phone number is already used" };
-        response.ResultStatus = ResultStatus.Duplicated.ToString();
-        return response;
-    }
-    var roleToAssign = roleName ?? RoleName.Customer.ToString(); 
-    var roleId = await _roleRepository.GetRoleIdByName(roleToAssign);
+    var roleId = await _roleRepository.GetRoleIdByName(RoleName.Courier.ToString());
     if (roleId == null)
     {
-        response.Messages = new[] { $"Role '{roleToAssign}' not found. Please contact admin." };
+        response.Messages = new[] { "Role 'Courier' not found. Please contact admin." };
         response.ResultStatus = ResultStatus.Failed.ToString();
         return response;
     }
@@ -138,62 +179,66 @@ public async Task<Result<EmployeeResponse>> Register(RegisterRequest request, st
     var employee = new Employee
     {
         Email = request.Email,
-        Password = Convert.ToBase64String(passwordHash), 
+        Password = Convert.ToBase64String(passwordHash),
         FullName = request.FullName,
         Phone = request.Phone,
-        Status = true,
-        CreateAt = DateTime.UtcNow,
-        RoleId = roleId 
+        RoleId = roleId.Value, 
+        MotoType = request.MotoType,
+        NumberMoto = request.NumberMoto,
+        ColorMoto = request.ColorMoto,
+        IdentificationBackOfPhoto = request.IdentificationBackOfPhoto,
+        IdentificationNumber = request.IdentificationNumber,
+        IdentificationFontOfPhoto = request.IdentificationFontOfPhoto, 
+        Status = true, 
+        CreateAt = DateTime.UtcNow
     };
     var registeredEmployee = await _employeeRepository.Register(employee);
-    response.RoleName = roleToAssign; 
     response.ResultStatus = ResultStatus.Success.ToString();
-    response.Messages = new[] { $"Register successfully as a {roleToAssign}!" };
+    response.Messages = new[] { "Create Courier successfully" };
     response.Data = _mapper.Map<EmployeeResponse>(registeredEmployee);
     return response;
 }
 
 
+// public async Task<Result<EmployeeResponse>> CreateStoreManagerAccount(CreateCourierRequest request)
+//     {
+//         var isused = await _employeeRepository.FindEmployeeByEmail(request.Email);
+//         var response = new Result<EmployeeResponse>();
+//         if (isused != null)
+//         {
+//             response.Messages = new[] { "This mail is already used" };
+//             response.ResultStatus = ResultStatus.Duplicated.ToString();
+//             return response;
+//         }
+//         else
+//         {
+//             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+//             Employee? employee = new Employee();
+//             employee.Email = request.Email;
+//             *//*account.AccountId = new Guid();
+//               employee.Password = Convert.ToBase64String(passwordHash);
+//             employee.Password = Convert.ToBase64String(passwordSalt);
+//             employee.FullName = request.FullName;
+//             employee.Phone = request.Phone;
+//             employee.Role = RoleName.StoreManager.ToString();
+//             employee.Status = UserStatus.Active == UserStatus.Active;
+//             employee.CreateAt = DateTime.UtcNow;
+//
+//             var usernew = await _userRepository.Register(user);
+//             response.ResultStatus = ResultStatus.Success.ToString();
+//             response.Messages = ["Create StoreManager successfully"];
+//             response.Data = _mapper.Map<UserResponse>(user);
+//             return response;
+//
+//         }
+//     }
 
-/*public async Task<Result<UserResponse>> CreateStoreManagerAccount(CreateStoreManagerRequest request)
-    {
-        var isused = await _userRepository.GetUserByEmail(request.Email);
-        var response = new Result<UserResponse>();
-        if (isused != null)
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            response.Messages = new[] { "This mail is already used" };
-            response.ResultStatus = ResultStatus.Duplicated.ToString();
-            return response;
-        }
-        else
-        {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            User? user = new User();
-            user.Email = request.Email;
-            *//*account.AccountId = new Guid();*//*
-            user.Password = Convert.ToBase64String(passwordHash);
-            user.Password = Convert.ToBase64String(passwordSalt);
-            user.FullName = request.FullName;
-            user.Phone = request.Phone;
-            user.RoleName = RoleName.StoreManager.ToString();
-            user.Status = UserStatus.Active == UserStatus.Active;
-            user.CreateAt = DateTime.UtcNow;
-
-            var usernew = await _userRepository.Register(user);
-            response.ResultStatus = ResultStatus.Success.ToString();
-            response.Messages = ["Create StoreManager successfully"];
-            response.Data = _mapper.Map<UserResponse>(user);
-            return response;
-
-        }
-    }*/
-
-    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-    {
-        using (var hmac = new HMACSHA512())
-        {
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
         }
     }
-}
