@@ -41,6 +41,14 @@ public class PromotionService : IPromotionService
                 Messages = new []{"Start date and end date are required"}
             };
         }
+        if (request.StartDate.Value.Date < DateTime.UtcNow.Date)
+        {
+            return new Result<Promotion>
+            {
+                ResultStatus = ResultStatus.NotFound.ToString(),
+                Messages = new []{"Start date must be today or later"}
+            };
+        }
         if (request.StartDate >= request.EndDate)
         {
             return new Result<Promotion>

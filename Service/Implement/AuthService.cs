@@ -192,6 +192,7 @@ public class AuthService : IAuthService
         Status = true, 
         CreateAt = DateTime.UtcNow
     };
+    
     var registeredEmployee = await _employeeRepository.Register(employee);
     response.ResultStatus = ResultStatus.Success.ToString();
     response.Messages = new[] { "Create Courier successfully" };
