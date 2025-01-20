@@ -24,7 +24,6 @@ public class CustomerService : ICustomerService
     public async Task<Result<CustomerResponse>> RegisterCustomer(CreateCustomerRequest request)
     {
         var isMailUsed = await _customerRepository.FindCustomerByEmail(request.Email);
-        var isPhoneUsed = await _customerRepository.FindCustomerByPhone(request.Phone);
         var response = new Result<CustomerResponse>();
 
         if (isMailUsed != null)
@@ -33,21 +32,11 @@ public class CustomerService : ICustomerService
             response.ResultStatus = ResultStatus.Duplicated.ToString();
             return response;
         }
-
-        if (isPhoneUsed != null)
-        {
-            response.Messages = new[] { "This phone number is already used" };
-            response.ResultStatus = ResultStatus.Duplicated.ToString();
-            return response;
-        }
-
         CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
         Customer customer = new Customer
         {
             Email = request.Email,
             Password = Convert.ToBase64String(passwordHash),
-            FullName = request.FullName,
-            Phone = request.Phone,
             Status = CustomerStatus.NotVerified.ToString(),
         };
 
