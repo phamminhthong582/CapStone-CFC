@@ -78,44 +78,65 @@ public class PromotionService : IPromotionService
         };
     }
 
-    public async Task<Result<PromotionResponse>> UpdatePromotion(Guid id,UpdatePromotionRequest request)
+    public async Task<Result<PromotionResponse>> UpdatePromotion(Guid id, UpdatePromotionRequest request)
+{
+    var promotion = await _promotionRepository.GetPromotionById(id);
+    if (promotion == null)
     {
-        var promotion = await _promotionRepository.GetPromotionById(id);
-        if (promotion == null)
-        {
-            return new Result<PromotionResponse>
-            {
-                ResultStatus = ResultStatus.NotFound.ToString(),
-                Messages = new []{"Promotion not found"} 
-            };
-        }
-        if (request.Quantity.HasValue)
-        {
-            promotion.Quantity = request.Quantity.Value;
-        }
-
-        if (request.PromotionDiscount.HasValue)
-        {
-            promotion.PromotionDiscount = request.PromotionDiscount.Value;
-        }
-        if (promotion.EndDate <= DateTime.UtcNow)
-        {
-            promotion.Status = false;
-        }
-        await _promotionRepository.UpdatePromotion(promotion);
-
         return new Result<PromotionResponse>
         {
-            Data = new PromotionResponse
-            {
-                PromotionId = promotion.PromotionId,
-                Quantity = promotion.Quantity,
-                PromotionDiscount = promotion.PromotionDiscount
-            },
-            ResultStatus = ResultStatus.Success.ToString(),
-            Messages = new[] { "Update successfully" }
+            ResultStatus = ResultStatus.NotFound.ToString(),
+            Messages = new [] {"Promotion not found"} 
         };
     }
+    if (!string.IsNullOrEmpty(request.PromotionName))
+    {
+        promotion.PromotionName = request.PromotionName;
+    }
+    if (!string.IsNullOrEmpty(request.PromotionCode))
+    {
+        promotion.PromotionCode = request.PromotionCode;
+    }
+    if (request.StartDate.HasValue && request.StartDate.Value.Date >= DateTime.UtcNow.Date)
+    {
+        promotion.StartDate = request.StartDate.Value;
+    }
+    if (request.EndDate.HasValue && request.EndDate.Value > promotion.StartDate)
+    {
+        promotion.EndDate = request.EndDate.Value;
+    }
+    if (request.Quantity.HasValue)
+    {
+        promotion.Quantity = request.Quantity.Value;
+    }
+    if (request.PromotionDiscount.HasValue)
+    {
+        promotion.PromotionDiscount = request.PromotionDiscount.Value;
+    }
+    promotion.Status = promotion.EndDate > DateTime.UtcNow;
+    promotion.UpdateAt = DateTime.UtcNow;
+
+    await _promotionRepository.UpdatePromotion(promotion);
+
+    return new Result<PromotionResponse>
+    {
+        Data = new PromotionResponse
+        {
+            PromotionId = promotion.PromotionId,
+            PromotionName = promotion.PromotionName,
+            PromotionCode = promotion.PromotionCode,
+            StartDate = promotion.StartDate,
+            EndDate = promotion.EndDate,
+            Quantity = promotion.Quantity,
+            PromotionDiscount = promotion.PromotionDiscount,
+            Status = promotion.Status,
+            CreateAt = promotion.CreateAt,
+            UpdateAt = promotion.UpdateAt
+        },
+        ResultStatus = ResultStatus.Success.ToString(),
+        Messages = new[] { "Update successfully" }
+    };
+}
 
     public async Task<Result<Promotion>> DeletePromotion(Guid id)
     {

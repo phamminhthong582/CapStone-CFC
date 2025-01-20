@@ -34,6 +34,13 @@ public enum EmployeeStatus
     Inactive,
     NotVerified
 }
+
+public enum CustomerStatus
+{
+    Active,
+    Inactive,
+    NotVerified,
+}
 public enum CategoryStatus
 {
     Available,

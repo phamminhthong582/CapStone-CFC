@@ -22,19 +22,41 @@ public class AuthService : IAuthService
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
     private readonly IRoleRepository _roleRepository;
+    private readonly ICustomerRepository _customerRepository;
 
     public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper,
-        IConfiguration configuration, IRoleRepository roleRepository)
+        IConfiguration configuration, IRoleRepository roleRepository , ICustomerRepository customerRepository)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
         _mapper = mapper;
         _configuration = configuration;
         _roleRepository = roleRepository;
+        _customerRepository = customerRepository;
     }
 
     public async Task<Result<LoginResponse>> Login(string email, string password)
     {
+        var customer = await _customerRepository.FindCustomerByEmail(email);
+        if (customer != null)
+        {
+            // Tạo token cho Customer
+            var accessToken = _tokenService.GenerateToken(customer);
+            var dataCustomer = new LoginResponse
+            {
+                AccessToken = accessToken,
+                Email = customer.Email,
+                RoleName = RoleName.Customer.ToString()
+            };
+
+            return new Result<LoginResponse>
+            {
+                RoleName = RoleName.Customer.ToString(),
+                Data = dataCustomer,
+                Messages = new[] { "Login successfully. Welcome Customer" },
+                ResultStatus = ResultStatus.Success.ToString()
+            };
+        }
         var employee = await _employeeRepository.GetEmployeeByEmail(email);
         var admin = _employeeRepository.GetAdminAccount(email, password);
 
@@ -111,7 +133,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<Result<EmployeeResponse>> Register(RegisterRequest request)
+    public async Task<Result<EmployeeResponse>> RegisterFlorist(RegisterRequest request)
     {
         var response = new Result<EmployeeResponse>();
         var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
@@ -145,6 +167,12 @@ public class AuthService : IAuthService
             Email = request.Email,
             Password = Convert.ToBase64String(passwordHash),
             FullName = request.FullName,
+            Address = request.Address,
+            Gender = request.Gender,
+            Birthday = request.Birthday,
+            IdentificationNumber = request.IdentificationNumber,
+            IdentificationFontOfPhoto = request.IdentificationFontOfPhoto,
+            IdentificationBackOfPhoto = request.IdentificationBackOfPhoto,
             Phone = request.Phone,
             Status = true,
             CreateAt = DateTime.UtcNow,

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using BusinessObject.DTO.Auth;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.Customer;
 using BusinessObject.DTO.Employee;
 using BusinessObject.DTO.Response;
 using Microsoft.AspNetCore.Authorization;
@@ -14,10 +15,12 @@ namespace WebAPI.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly ICustomerService _customerService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService , ICustomerService customerService)
     {
         _authService = authService;
+        _customerService = customerService;
     }
 
     [HttpPost("login")]
@@ -31,12 +34,12 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
-    [HttpPost("register-staffaccount")]
+    [HttpPost("register-staff-account")]
     public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromBody] RegisterRequest registerRequest)
     {
         try
         {
-            var result = await _authService.Register(registerRequest);
+            var result = await _authService.RegisterFlorist(registerRequest);
 
             
             if (result.ResultStatus == ResultStatus.Duplicated.ToString())
@@ -59,11 +62,24 @@ public class AuthController : ControllerBase
             });
         }
     }
-    [HttpPost("create-courier-account")]
+    [HttpPost("register-courier-account")]
     public async Task<ActionResult<Result<EmployeeResponse>>> CreateCourierAccount(
         [FromBody] CreateCourierRequest registerRequest)
     {
         var result = await _authService.CreateCourierAccount(registerRequest);
+
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+        }
+
+        return result;
+    }
+    [HttpPost("register-customer-account")]
+    public async Task<ActionResult<Result<CustomerResponse>>> CreateCustomerAccount(
+        [FromBody] CreateCustomerRequest registerRequest)
+    {
+        var result = await _customerService.RegisterCustomer(registerRequest);
 
         if (result.ResultStatus != ResultStatus.Success.ToString())
         {
