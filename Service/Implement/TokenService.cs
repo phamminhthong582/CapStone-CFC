@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using BusinessObject.DTO.Commons;
 using BusinessObject.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -23,31 +24,60 @@ public class TokenService : ITokenService
     {
         _configuration = configuration;
     }
-    public string GenerateToken(Employee employee)
+    public string GenerateToken(object user)
     {
         var secretKey = _configuration["Jwt:Key"];
         var jwtTokenHandler = new JwtSecurityTokenHandler();
-        var secretKryByte = Encoding.UTF8.GetBytes(secretKey);
+        var secretKeyByte = Encoding.UTF8.GetBytes(secretKey);
 
-        var claims = new List<Claim>
+        var claims = new List<Claim>();
+
+        if (user is Employee employee)
         {
-            new(ClaimTypes.NameIdentifier, employee.FullName!),
-            new("Id", employee.EmployeeId.ToString()),
-             new(ClaimTypes.Role, employee.RoleId.ToString()),
-            new("FullName", employee.FullName!)
-        };
+            claims.AddRange(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, employee.FullName!),
+                new Claim("Id", employee.EmployeeId.ToString()),
+                new Claim(ClaimTypes.Role, employee.RoleId.ToString()),
+                new Claim("FullName", employee.FullName!)
+            });
 
-        if (!string.IsNullOrEmpty(employee.Avatar))
-            claims.Add(new Claim("Avatar", employee.Avatar));
-        else
-            claims.Add(new Claim("Avatar", ""));
+            if (!string.IsNullOrEmpty(employee.Avatar))
+            {
+                claims.Add(new Claim("Avatar", employee.Avatar));
+            }
+            else
+            {
+                claims.Add(new Claim("Avatar", ""));
+            }
+        }
+        else if (user is Customer customer)
+        {
+            claims.AddRange(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, customer.FullName!),
+                new Claim("Id", customer.CustomerId.ToString()),
+                new Claim(ClaimTypes.Role, RoleName.Customer.ToString()),
+                new Claim("FullName", customer.FullName!)
+            });
+
+            if (!string.IsNullOrEmpty(customer.Avatar))
+            {
+                claims.Add(new Claim("Avatar", customer.Avatar));
+            }
+            else
+            {
+                claims.Add(new Claim("Avatar", ""));
+            }
+        }
 
         var tokenDescription = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(secretKryByte), SecurityAlgorithms.HmacSha256)
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(secretKeyByte),
+                SecurityAlgorithms.HmacSha256)
         };
 
         var token = jwtTokenHandler.CreateToken(tokenDescription);

@@ -78,9 +78,9 @@ public class EmployeeService : IEmployeeService
 
     public async Task<Result<Employee>> DeleteEmployee(Guid id)
     {
-        var category = await _employeeRepository.GetEmployeesById(id);
+        var employee = await _employeeRepository.GetEmployeesById(id);
     
-        if (category == null)
+        if (employee == null)
         {
             return new Result<Employee>
             {
