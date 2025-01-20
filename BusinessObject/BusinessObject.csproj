@@ -24,11 +24,6 @@
 
     <ItemGroup>
       <Folder Include="DTO\Customer\" />
-      <Folder Include="Migrations\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Migrations\20250117040127_UpdateEmloyee.Designer.cs" />
     </ItemGroup>
 
 </Project>

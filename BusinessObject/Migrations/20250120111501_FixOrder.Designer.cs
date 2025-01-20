@@ -4,6 +4,7 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObject.Migrations
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250120111501_FixOrder")]
+    partial class FixOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -449,19 +452,16 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DeliveryAddress")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("DeliveryAddress");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeliveryCity")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("DeliveryCity");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("DeliveryDateTime")
                         .HasColumnType("datetime");
 
                     b.Property<string>("DeliveryDistrict")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("DeliveryDistrict");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");

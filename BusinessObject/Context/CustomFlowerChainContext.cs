@@ -57,11 +57,13 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<Wallet> Wallets { get; set; }
 
     public virtual DbSet<WithdrawMoney> WithdrawMoneys { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+      => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+   /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer(
-            "Server=(local);Database= CustomFlowerChain;UID=sa;PWD=12345;TrustServerCertificate=True");
+            "Server=;Database= CustomFlowerChain;UID=sa;PWD=123456;TrustServerCertificate=True"*/
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -93,7 +95,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.Birthday).HasColumnType("datetime");
             entity.Property(e => e.City).HasMaxLength(255);
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.Distrist).HasMaxLength(255);
+            entity.Property(e => e.District).HasMaxLength(255);
             entity.Property(e => e.FullName)
                 .HasMaxLength(255)
                 .HasColumnName("Full Name");
@@ -111,6 +113,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.ToTable("Delivery");
 
             entity.Property(e => e.DeliveryId).HasDefaultValueSql("(newid())");
+
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
@@ -218,6 +221,11 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.DeliveryDateTime).HasColumnType("datetime");
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.PromotionId).HasColumnName("PromotionID");
+            entity.Property(e => e.DeliveryCity).HasColumnName("DeliveryCity");
+            entity.Property(e => e.DeliveryDistrict).HasColumnName("DeliveryDistrict");
+            entity.Property(e => e.DeliveryAddress).HasColumnName("DeliveryAddress");
+
+
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.Transfer).HasColumnName("transfer");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
