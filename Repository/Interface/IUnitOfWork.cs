@@ -8,6 +8,7 @@ namespace Repository.Interface
 {
     public interface IUnitOfWork : IDisposable
     {
+        IRepository<T> GetRepo<T>() where T : class;
         IRepository<T> Repository<T>() where T : class;
         Task<int> CompleteAsync();
     }

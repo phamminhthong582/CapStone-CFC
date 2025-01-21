@@ -8,7 +8,7 @@ namespace BusinessObject.DTO.OrderDetails
 {
     public class OrderDetailsRequest
     {
-        public Guid? ProductId { get; set; }
+        public Guid ProductId { get; set; }
         public int? Quantity { get; set; }
 
     }

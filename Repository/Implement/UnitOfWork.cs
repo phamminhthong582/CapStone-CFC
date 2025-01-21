@@ -18,9 +18,17 @@ namespace Repository.Implement
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
+        public IRepository<T> GetRepo<T>() where T : class
+        {
+            if (_repositories.ContainsKey(typeof(T)))
+            {
+                return (IRepository<T>)_repositories[typeof(T)];
+            }
 
-
-
+            var repositoryInstance = new Repository<T>(_context);
+            _repositories.Add(typeof(T), repositoryInstance);
+            return repositoryInstance;
+        }
         public IRepository<T> Repository<T>() where T : class
         {
             if (!_repositories.ContainsKey(typeof(T)))

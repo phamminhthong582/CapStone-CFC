@@ -20,6 +20,12 @@ namespace BusinessObject.DTO.Order
         public Guid? StaffId { get; set; }
 
         public Guid? PromotionId { get; set; }
+        public string? PromotionName { get; set; }
+
+        public double? PromotionDiscount { get; set; }
+
+        public string? DeliveryDistrict { get; set; }
+        public string? DeliveryCity { get; set; }
 
         public string? DeliveryAddress { get; set; }
 

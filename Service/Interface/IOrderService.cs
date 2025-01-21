@@ -9,10 +9,11 @@ namespace Service.Interface
 {
     public interface IOrderService
     {
-        Task<OrderResponse> GetOrderByStoreId(Guid OrderId);
-        Task<OrderResponse> GetOrderByCustomerId(Guid CustomerID);
+        Task<OrderResponse> GetOrderById(Guid OrderId);
+        Task<IEnumerable<OrderResponse>> GetOrderByCustomerId(Guid CustomerID);
+        Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID);
         Task CreateOrder(OrderRequest orderRequest, Guid customerId);
-        Task UpdateOrder(OrderResponse orderResponse);  
+        Task UpdateOrder(OrderRequest orderRequest, Guid orderId);  
         Task DeleteOrder(Guid OrderID); 
     }
 }
