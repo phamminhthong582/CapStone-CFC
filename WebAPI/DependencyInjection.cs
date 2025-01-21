@@ -32,6 +32,9 @@ public static class DependencyInjection
         // Customer
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<ICustomerService, CustomerService>();
+        // Comment
+        services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<ICommentService, CommentService>();
        
         // Role
         services.AddScoped<IRoleRepository, RoleRepository>();
@@ -40,6 +43,8 @@ public static class DependencyInjection
         //Product
         services.AddScoped<IProductService, ProductService>();
 
+        //Order
+        services.AddScoped<IOrderService, OrderService>();  
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
     }

@@ -8,9 +8,11 @@ namespace Repository.Interface
 {
     public interface IRepository<T> where T : class
     {
+        IQueryable<T> Entities { get; }
 
         Task<IEnumerable<T>> GetAllAsync();
         Task<T> GetByIdAsync(Guid id);
+        Task<T> GetByIdAsync(Guid? id);
 
         Task AddAsync(T entity);
         Task AddRangeAsync(IEnumerable<T> entities);

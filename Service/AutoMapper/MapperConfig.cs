@@ -10,10 +10,12 @@ public partial class MapperConfig : Profile
         AddPromotionMapperConfig();
         AddEmployeeMapperConfig();
         AddCustomerMapperConfig();
+        AddCommentMapperConfig();
     }
 
     partial void AddCategoryMapperConfig();
     partial void AddPromotionMapperConfig();
     partial void AddEmployeeMapperConfig();
     partial void AddCustomerMapperConfig();
+    partial void AddCommentMapperConfig();
 }

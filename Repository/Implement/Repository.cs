@@ -17,6 +17,7 @@ namespace Repository.Implement
         public Repository(CustomFlowerChainContext context, DbSet<T> dbSet) : this(context)
         {
             _dbSet = dbSet;
+
         }
 
         public Repository(CustomFlowerChainContext context)
@@ -24,6 +25,7 @@ namespace Repository.Implement
             _context = context;
             _dbSet = _context.Set<T>();
         }
+        public IQueryable<T> Entities => _context.Set<T>();
 
         public async Task AddAsync(T entity)
         {
@@ -58,6 +60,13 @@ namespace Repository.Implement
         }
 
         public async Task<T> GetByIdAsync(Guid id)
+        {
+            var entity = await _dbSet.FindAsync(id);
+            if (entity == null)
+                throw new KeyNotFoundException($"Entity with id {id} was not found.");
+            return entity;
+        }
+        public async Task<T> GetByIdAsync(Guid? id)
         {
             var entity = await _dbSet.FindAsync(id);
             if (entity == null)
