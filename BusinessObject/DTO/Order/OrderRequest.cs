@@ -17,6 +17,7 @@ namespace BusinessObject.DTO.Order
         public DateTime? DeliveryDateTime { get; set; }
         public string? Phone { get; set; }
         public bool? Transfer { get; set; }
+        public string? Status { get; set; }
         public List<OrderDetailsRequest>? OrderDetails { get; set; }  
     }
 }

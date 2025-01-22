@@ -71,12 +71,8 @@ public partial class CustomFlowerChainContext : DbContext
 
     private string? GetConnectionString()
     {
-        var config = new ConfigurationBuilder()
-            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory) // Chú ý sử dụng AppDomain.CurrentDomain
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .Build();
-
-        return config.GetConnectionString("DBDefault");
+        IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../WebAPI")).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+        return configuration["ConnectionStrings:DBDefault"];
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -127,8 +123,8 @@ public partial class CustomFlowerChainContext : DbContext
 
             entity.Property(e => e.DeliveryId).HasDefaultValueSql("(newid())");
 
-            entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.DeliveryTime).HasColumnType("datetime");
+            entity.Property(e => e.TimeDone).HasColumnType("datetime");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Deliveries)
                 .HasForeignKey(d => d.OrderId)

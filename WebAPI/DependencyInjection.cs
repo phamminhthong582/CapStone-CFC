@@ -45,6 +45,9 @@ public static class DependencyInjection
 
         //Order
         services.AddScoped<IOrderService, OrderService>();  
+
+        //Delivery
+        services.AddScoped<IDeliveryService, DeliveryService>();
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
     }

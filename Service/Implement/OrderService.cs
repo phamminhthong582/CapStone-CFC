@@ -4,6 +4,7 @@ using BusinessObject.Entities;
 using MailKit.Search;
 using Microsoft.EntityFrameworkCore;
 using MimeKit.Cryptography;
+using Org.BouncyCastle.Asn1.X509;
 using Repository.Interface;
 using Service.Interface;
 using System;
@@ -173,9 +174,107 @@ namespace Service.Implement
 
         }
 
-        public Task<OrderResponse> GetOrderById(Guid OrderId)
+        public async Task<OrderResponse> GetOrderById(Guid OrderId)
         {
-            throw new NotImplementedException();
+            var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == OrderId);
+            if (order == null)
+            {
+                throw new Exception($"Order with ID {OrderId} not found.");
+            }
+
+            var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
+            var productImage = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+            var orderResponse = new OrderResponse
+            {
+                OrderId = order.OrderId,
+                OrderPrice = order.OrderPrice,
+                CustomerId = order.CustomerId,
+                ProductCustomId = order.ProductCustomId,
+                StaffId = order.StaffId,
+                PromotionId = order.PromotionId,
+                PromotionName = order.Promotion?.PromotionName,
+                PromotionDiscount = order.Promotion?.PromotionDiscount,
+                DeliveryAddress = order.DeliveryAddress,
+                DeliveryDistrict = order.DeliveryDistrict,
+                DeliveryCity = order.DeliveryCity,
+                StoreId = order.StoreId,
+                Note = order.Note,
+                DeliveryDateTime = order.DeliveryDateTime,
+                Phone = order.Phone,
+                Transfer = order.Transfer,
+                Refund = order.Refund,
+                CreateAt = order.CreateAt,
+                UpdateAt = order.UpdateAt,
+                Status = order.Status,
+                OrderDetails = order.OrderDetails.Select(orderDetail => new OrderDetailsResponse
+                {
+                    OrderDetailId = orderDetail.OrderDetailId,
+                    ProductId = orderDetail.ProductId,
+                    ProductName = orderDetail.Product.ProductName,
+                    ProductImage = productImage.Where(pi => pi.ProductId == orderDetail.ProductId)
+                                                .Select(pi => pi.ProductImage1)
+                                                .FirstOrDefault(),
+                    Price = orderDetail.Product.Price,
+                    Discount = orderDetail.Product.Discount,
+                    ProductTotalPrice = orderDetail.ProductTotalPrice,
+                    Quantity = orderDetail.Quantity,
+                    OrderId = orderDetail.OrderId,
+                    CreateAt = orderDetail.CreateAt,
+                    UpdateAt = orderDetail.UpdateAt,
+                    Status = orderDetail.Status,
+                }).ToList()
+            };
+
+            return orderResponse;
+        }
+
+        public async Task<IEnumerable<OrderResponse>> GetOrderByStaffId(Guid StaffId)
+        {
+            var orders = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).Where(order => order.StaffId == StaffId).ToListAsync();
+            var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
+            var productImage = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+            var orderResponse = orders.Select(order => new OrderResponse
+            {
+                OrderId = order.OrderId,
+                OrderPrice = order.OrderPrice,
+                CustomerId = order.CustomerId,
+                ProductCustomId = order.ProductCustomId,
+                StaffId = order.StaffId,
+                PromotionId = order.PromotionId,
+                PromotionName = order.Promotion.PromotionName,
+                PromotionDiscount = order.Promotion.PromotionDiscount,
+                DeliveryAddress = order.DeliveryAddress,
+                DeliveryDistrict = order.DeliveryDistrict,
+                DeliveryCity = order.DeliveryCity,
+                StoreId = order.StaffId,
+                Note = order.Note,
+                DeliveryDateTime = order.DeliveryDateTime,
+                Phone = order.Phone,
+                Transfer = order.Transfer,
+                Refund = order.Refund,
+                CreateAt = order.CreateAt,
+                UpdateAt = order.UpdateAt,
+                Status = order.Status,
+                OrderDetails = order.OrderDetails.Where(orderDetail => orderDetail.OrderId == order.OrderId)
+                                                   .Select(orderDetail => new OrderDetailsResponse
+                                                   {
+                                                       OrderDetailId = orderDetail.OrderDetailId,
+                                                       ProductId = orderDetail.ProductId,
+                                                       ProductName = orderDetail.Product.ProductName,
+                                                       ProductImage = productImage.Where(pi => pi.ProductId == orderDetail.ProductId)
+                                                             .Select(pi => pi.ProductImage1)
+                                                            .FirstOrDefault(),
+                                                       Price = orderDetail.Product.Price,
+                                                       Discount = orderDetail.Product.Discount,
+                                                       ProductTotalPrice = orderDetail.ProductTotalPrice,
+                                                       Quantity = orderDetail.Product.Quantity,
+                                                       OrderId = orderDetail.OrderId,
+                                                       CreateAt = orderDetail.CreateAt,
+                                                       UpdateAt = orderDetail?.UpdateAt,
+                                                       Status = orderDetail?.Status,
+                                                   }).ToList()
+            });
+            return orderResponse;
         }
 
         public async Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID)
@@ -230,16 +329,38 @@ namespace Service.Implement
         public async Task UpdateOrder(OrderRequest orderRequest,Guid orderId)
         {
             var order = await _unitOfWork.Repository<Order>().GetByIdAsync(orderId);
-            order.DeliveryDistrict = orderRequest.DeliveryDistrict;
-            order.DeliveryCity = orderRequest.DeliveryCity;
-            order.DeliveryAddress = orderRequest.DeliveryAddress;
-            order.Note= orderRequest.Note;
-            order.DeliveryDateTime = orderRequest.DeliveryDateTime;
-            order.Phone= orderRequest.Phone;
-            order.Transfer = orderRequest.Transfer;
+            order.DeliveryDistrict = orderRequest.DeliveryDistrict ?? order.DeliveryDistrict;
+            order.DeliveryCity = orderRequest.DeliveryCity ?? order.DeliveryCity;
+            order.DeliveryAddress = orderRequest.DeliveryAddress ?? order.DeliveryAddress;
+            order.Note= orderRequest.Note ?? order.Note;
+            order.DeliveryDateTime = orderRequest.DeliveryDateTime ?? order.DeliveryDateTime;
+            order.Phone= orderRequest.Phone ?? order.Phone;
+            order.Transfer = orderRequest.Transfer ?? order.Transfer;
+            order.Status = orderRequest.Status ?? order.Status;
+            order.UpdateAt = DateTime.Now;
             _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
-                
         }
+
+        public async Task UpdateOrderByStoreId(Guid orderId, Guid StaffId)
+        {
+            var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == orderId);
+            order.StaffId = StaffId ;
+            order.UpdateAt = DateTime.Now;
+            _unitOfWork.Repository<Order>().Update(order);
+            await _unitOfWork.CompleteAsync();
+
+
+        }
+
+        public async Task UpdateStatusOrderByStaffId(Guid orderId, string Status)
+        {
+            var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == orderId);
+            order.Status = Status ?? order.Status;
+            order.UpdateAt = DateTime.Now;
+            _unitOfWork.Repository<Order>().Update(order);
+            await _unitOfWork.CompleteAsync();
+        }
+        
     }
 }

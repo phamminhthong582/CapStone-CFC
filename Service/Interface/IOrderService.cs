@@ -14,6 +14,11 @@ namespace Service.Interface
         Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID);
         Task CreateOrder(OrderRequest orderRequest, Guid customerId);
         Task UpdateOrder(OrderRequest orderRequest, Guid orderId);  
-        Task DeleteOrder(Guid OrderID); 
+        Task DeleteOrder(Guid OrderID);
+        Task UpdateOrderByStoreId(Guid orderId, Guid StaffId);
+        Task UpdateStatusOrderByStaffId(Guid orderId, string Status);
+        Task<IEnumerable<OrderResponse>> GetOrderByStaffId(Guid StaffId);
+        
+
     }
 }
