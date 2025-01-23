@@ -22,14 +22,19 @@ public class AuthService : IAuthService
     private readonly IMapper _mapper;
     private readonly IConfiguration _configuration;
     private readonly IRoleRepository _roleRepository;
+    private readonly string tempdata = "tempdatakey";
+    private readonly string newpass = "newpasskey";
+    private readonly IMemoryCache _cache;
     private readonly ICustomerRepository _customerRepository;
 
     public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper,
-        IConfiguration configuration, IRoleRepository roleRepository , ICustomerRepository customerRepository)
+        IConfiguration configuration, IRoleRepository roleRepository , ICustomerRepository customerRepository
+        , IMemoryCache memoryCache)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
         _mapper = mapper;
+        _cache = memoryCache;
         _configuration = configuration;
         _roleRepository = roleRepository;
         _customerRepository = customerRepository;
@@ -224,6 +229,30 @@ public class AuthService : IAuthService
     response.ResultStatus = ResultStatus.Success.ToString();
     response.Messages = new[] { "Create Courier successfully" };
     response.Data = _mapper.Map<EmployeeResponse>(registeredEmployee);
+    return response;
+}
+
+public async Task<Result<string>> VerifyEmail(Guid id, string token)
+{
+    var response = new Result<string>();
+    if (string.IsNullOrEmpty(token))
+    {
+        response.Messages = ["Token is null"];
+        response.ResultStatus = ResultStatus.Error.ToString();
+        return response;
+    }
+
+    if (token.Equals(_cache.Get<string>(tempdata)))
+    {
+        var user = await _customerRepository.FindOne(c => c.CustomerId == id);
+        user.Status = CustomerStatus.Active.ToString();
+        await _customerRepository.UpdateCustomer(user);
+        response.Messages = ["Verify successfully at" + DateTime.UtcNow.ToString()];
+        response.ResultStatus = ResultStatus.Success.ToString();
+        return response;
+    }
+    response.Messages = ["Token is not correct or expired"];
+    response.ResultStatus = ResultStatus.Error.ToString();
     return response;
 }
 

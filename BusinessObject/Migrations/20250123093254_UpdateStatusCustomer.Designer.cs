@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250123093254_UpdateStatusCustomer")]
+    partial class UpdateStatusCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,37 +24,6 @@ namespace BusinessObject.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BusinessObject.Entities.Cart", b =>
-                {
-                    b.Property<Guid>("CartId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("(newid())");
-
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ProductId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double?>("ProductTotalPrice")
-                        .HasColumnType("float");
-
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("StoreId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("CartId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Cart", (string)null);
-                });
 
             modelBuilder.Entity("BusinessObject.Entities.Category", b =>
                 {
@@ -984,23 +956,6 @@ namespace BusinessObject.Migrations
                     b.ToTable("WithdrawMoney", (string)null);
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.Cart", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Customer", "Customer")
-                        .WithMany("Carts")
-                        .HasForeignKey("CustomerId")
-                        .HasConstraintName("FK_Cart_Customer");
-
-                    b.HasOne("BusinessObject.Entities.Product", "Product")
-                        .WithMany("Carts")
-                        .HasForeignKey("ProductId")
-                        .HasConstraintName("FK_Cart_Product");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Comment", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Customer", "Customer")
@@ -1276,8 +1231,6 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Customer", b =>
                 {
-                    b.Navigation("Carts");
-
                     b.Navigation("Comments");
 
                     b.Navigation("Feedbacks");
@@ -1321,8 +1274,6 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Product", b =>
                 {
-                    b.Navigation("Carts");
-
                     b.Navigation("Comments");
 
                     b.Navigation("OrderDetails");

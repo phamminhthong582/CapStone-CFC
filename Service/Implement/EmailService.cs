@@ -58,14 +58,14 @@ public class EmailService : IEmailService
         string confirmationLink = _configuration.GetSection("MailSettings:EmailConfirmation").Value;
         string formattedLink = string.Format(appDomain + confirmationLink, user.CustomerId , token);
 
-        var template = GetEmailTemplate("VerifyAccountMail");
-        template = template.Replace($"[link]", formattedLink);
+         var template = GetEmailTemplate("VerifyAccountEmail");
+         template = template.Replace($"[link]", formattedLink);
 
         SendEmailRequest content = new SendEmailRequest
         {
             To = email,
             Subject = "[CUSTOMEFLOWERCHAIN] Verify Account",
-            Body = template,
+            Body =  template,
         };
         await SendEmail(content);
         // response.Messages = [""];

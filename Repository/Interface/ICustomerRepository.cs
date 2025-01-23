@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using System.Linq.Expressions;
+using BusinessObject.Entities;
 
 namespace Repository.Interface;
 
@@ -12,4 +13,5 @@ public interface ICustomerRepository
     string CreateRandomToken();
     Task<Customer?> FindCustomerByPhone(string phone);
     Task<Customer?> FindCustomerByEmail(string email);
+    Task<Customer?> FindOne(Expression<Func<Customer, bool>> predicate);
 }
