@@ -40,7 +40,6 @@ public class AuthService : IAuthService
         var customer = await _customerRepository.FindCustomerByEmail(email);
         if (customer != null)
         {
-            // Tạo token cho Customer
             var accessToken = _tokenService.GenerateToken(customer);
             var dataCustomer = new LoginResponse
             {

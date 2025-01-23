@@ -1,4 +1,5 @@
-﻿using Repository.Implement;
+﻿using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Repository.Implement;
 using Repository.Interface;
 using Service.AutoMapper;
 using Service.Implement;
@@ -39,6 +40,8 @@ public static class DependencyInjection
         // Role
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRoleService, RoleService>();
+        // Email
+        services.AddScoped<IEmailService, EmailService>();
 
         //Product
         services.AddScoped<IProductService, ProductService>();
