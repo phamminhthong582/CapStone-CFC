@@ -56,6 +56,7 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<Store> Stores { get; set; }
 
     public virtual DbSet<Wallet> Wallets { get; set; }
+    public virtual DbSet<Cart> Carts { get; set; }  
 
     public virtual DbSet<WithdrawMoney> WithdrawMoneys { get; set; }
    /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -116,7 +117,14 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.StoreId)
                 .HasConstraintName("FK_Customer_Store");
         });
+        modelBuilder.Entity<Cart>(entity =>
+        {
+            entity.ToTable("Cart");
+            entity.Property(e => e.CartId).HasDefaultValueSql("(newid())");
+            entity.HasOne(e => e.Customer).WithMany(p=>p.Carts).HasForeignKey(d => d.CustomerId).HasConstraintName("FK_Cart_Customer");
 
+            entity.HasOne(e => e.Product).WithMany(p => p.Carts).HasForeignKey(d => d.ProductId).HasConstraintName("FK_Cart_Product");
+        });
         modelBuilder.Entity<Delivery>(entity =>
         {
             entity.ToTable("Delivery");

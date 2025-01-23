@@ -12,7 +12,11 @@ namespace BusinessObject.Entities
         public Guid? CustomerId { get; set; }
         public Guid? ProductId {  get; set; }
         public int? Quantity { get; set; }
+        public Guid? StoreId { get; set; }
         public double? ProductTotalPrice { get; set; }
+        public virtual Product? Product { get; set; }
+        public virtual Customer? Customer { get; set; }
+
 
     }
 }
