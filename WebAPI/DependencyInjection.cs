@@ -36,6 +36,9 @@ public static class DependencyInjection
         // Comment
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<ICommentService, CommentService>();
+        // Feedback
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+        services.AddScoped<IFeedbackService, FeedbackService>();
        
         // Role
         services.AddScoped<IRoleRepository, RoleRepository>();
