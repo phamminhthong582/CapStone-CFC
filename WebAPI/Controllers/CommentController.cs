@@ -24,7 +24,7 @@ public class CommentController : Controller
       return Ok(result);
    }
    [HttpPost("create-comment")]
-   public async Task<ActionResult<Result<Comment>>> CreateCategory( [FromBody] CreateCommentRequest request)
+   public async Task<ActionResult<Result<Comment>>> CreateComment( [FromBody] CreateCommentRequest request)
    {
       var result = await _commentService.CreateComment(request);
       if (result.ResultStatus != ResultStatus.Success.ToString())

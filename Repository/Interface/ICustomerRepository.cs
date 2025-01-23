@@ -9,6 +9,7 @@ public interface ICustomerRepository
     Task<Customer?> RegisterCustomer(Customer customer);
     Task<Customer?> UpdateCustomer(Customer customer);
     Task<Customer?> DeleteMember(Guid id);
+    string CreateRandomToken();
     Task<Customer?> FindCustomerByPhone(string phone);
     Task<Customer?> FindCustomerByEmail(string email);
 }

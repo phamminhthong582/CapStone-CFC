@@ -46,3 +46,8 @@ public enum CategoryStatus
     Available,
     Unavailable
 }
+
+public enum OrderStatus
+{
+    Completed
+}

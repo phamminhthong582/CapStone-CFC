@@ -11,6 +11,7 @@ public partial class MapperConfig : Profile
         AddEmployeeMapperConfig();
         AddCustomerMapperConfig();
         AddCommentMapperConfig();
+        AddFeedbackMapperConfig();
     }
 
     partial void AddCategoryMapperConfig();
@@ -18,4 +19,5 @@ public partial class MapperConfig : Profile
     partial void AddEmployeeMapperConfig();
     partial void AddCustomerMapperConfig();
     partial void AddCommentMapperConfig();
+    partial void AddFeedbackMapperConfig();
 }
