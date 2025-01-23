@@ -3,6 +3,8 @@ using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Customer;
 using BusinessObject.Entities;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Repository.Interface;
 using Service.Interface;
 
@@ -13,12 +15,20 @@ public class CustomerService : ICustomerService
     private readonly ICustomerRepository _customerRepository;
     private readonly IMapper _mapper;
     private readonly IRoleRepository _roleRepository;
+    private readonly IConfiguration _configuration;
+    private readonly IMemoryCache _cache;
+    private readonly string tempdata = "tempdatakey";
+    private readonly IEmailService _emailService;
 
-    public CustomerService(ICustomerRepository customerRepository, IMapper mapper, IRoleRepository roleRepository)
+    public CustomerService(ICustomerRepository customerRepository, IMapper mapper, IRoleRepository roleRepository , IEmailService emailService, IMemoryCache memoryCache
+    , IConfiguration configuration)
     {
         _customerRepository = customerRepository;
         _mapper = mapper;
+        _cache = memoryCache;
         _roleRepository = roleRepository;
+        _emailService = emailService;
+        _configuration = configuration;
 
     }
     public async Task<Result<CustomerResponse>> RegisterCustomer(CreateCustomerRequest request)
@@ -39,7 +49,18 @@ public class CustomerService : ICustomerService
             Password = Convert.ToBase64String(passwordHash),
             Status = CustomerStatus.NotVerified.ToString(),
         };
-
+        var token = _customerRepository.CreateRandomToken();
+        var cacheEntryOption = new MemoryCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(10))
+            .SetPriority(CacheItemPriority.Normal);
+        _cache.Set(tempdata, token, cacheEntryOption);
+        var mail = await _emailService.SendMailRegister(customer.Email, token);
+        if (mail.ResultStatus != ResultStatus.Success.ToString())
+        {
+            response.Messages = new[] { "Failed to send confirmation email." };
+            response.ResultStatus = ResultStatus.Failed.ToString();
+            return response;
+        }
         var user = await _customerRepository.RegisterCustomer(customer);
         response.RoleName = RoleName.Customer.ToString();
         response.ResultStatus = ResultStatus.Success.ToString();

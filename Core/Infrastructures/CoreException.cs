@@ -101,7 +101,8 @@ namespace Core.Infrastructures
     public class CategoryNotFound(string message) : Exception(message)
     {
     }
-    public class MissingFeatureException(string message) : Exception(message)
+    public class OrderNotAvailableToFeedback(string message) : Exception(message){}
+    public class OrderNotFoundException : Exception
     {
     }
 }

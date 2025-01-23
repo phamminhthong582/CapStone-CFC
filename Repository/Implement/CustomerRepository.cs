@@ -51,6 +51,15 @@ public class CustomerRepository : ICustomerRepository
         return customer;
     }
 
+    public string CreateRandomToken()
+    {
+        Random random = new Random();
+
+        // Tạo một số ngẫu nhiên gồm 6 chữ số
+        int randomNumber = random.Next(100000, 999999);
+        return randomNumber.ToString();
+    }
+
     public async Task<Customer?> FindCustomerByPhone(string phone)
     {
         var cus = await _context.Customers.FirstOrDefaultAsync(x => x.Phone == phone);

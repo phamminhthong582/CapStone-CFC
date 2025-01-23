@@ -38,6 +38,8 @@ public partial class Product
     public virtual ICollection<ProductImage> ProductImages { get; set; }  = new List<ProductImage>();  
     public virtual ICollection<OrderDetail> OrderDetails { get; set; }  = new List<OrderDetail>();
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+
 
 
 }
