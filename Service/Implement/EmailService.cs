@@ -28,9 +28,6 @@ public class EmailService : IEmailService
         email.To.Add(MailboxAddress.Parse(request.To));
         email.Subject = request.Subject;
         email.Body = new TextPart(TextFormat.Html) { Text = request.Body };
-
-
-        // dùng SmtpClient của MailKit
         using var smtp = new SmtpClient();
             
         await smtp.ConnectAsync(_configuration.GetSection("MailSettings:Host").Value, 587,
@@ -42,7 +39,6 @@ public class EmailService : IEmailService
     }
     public string GetEmailTemplate(string templateName)
     {
-        // string pathLocal = Path.Combine("C:\\FPT_University_FULL\\CAPSTONE_API\\Services\\MailTemplate\\", $"{templateName}.html");*/
         string path = Path.Combine(_configuration.GetSection("EmailTemplateDirectory").Value!,
             $"{templateName}.html");
         var template = File.ReadAllText(path, Encoding.UTF8);
@@ -68,7 +64,6 @@ public class EmailService : IEmailService
             Body =  template,
         };
         await SendEmail(content);
-        // response.Messages = [""];
         response.ResultStatus = ResultStatus.Success.ToString();
         return response;
     }

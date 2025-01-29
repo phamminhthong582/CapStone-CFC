@@ -21,12 +21,6 @@ public class EmployeeResponse
     public string? IdentificationFontOfPhoto { get; set; }
 
     public string? IdentificationBackOfPhoto { get; set; }
-    
-    public string? NumberMoto { get; set; }
-    
-    public string? ColorMoto {  get; set; }
-    
-    public string? MotoType { get; set; }   
 
     
     public Guid? RoleId { get; set; }
