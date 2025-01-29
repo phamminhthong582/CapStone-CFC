@@ -13,39 +13,54 @@ public class FlowerRepository : IFlowerRepository
     {
         _context = context;
     }
-    public async Task<List<Flower>> GetAllFlower()
+    public async Task<List<Flower?>> GetAllFlower()
     {
         var list = await _context.Flowers.ToListAsync();
         return list;
     }
 
-    public async Task<Flower> GetFlowerById(Guid id)
+    public async Task<Flower?> GetFlowerById(Guid id)
     {
-        throw new NotImplementedException();
+        var flower = await _context.Flowers.FirstOrDefaultAsync(x => x.FlowerId == id);
+        return flower;
     }
 
-    public async Task<Flower> AddFlower(Flower flower)
+    public async Task<Flower?> AddFlower(Flower flower)
     {
-        throw new NotImplementedException();
+        await _context.Flowers.AddAsync(flower);
+        await _context.SaveChangesAsync();
+        return flower;
     }
 
-    public async Task<Flower> UpdateFlower(Flower flower)
+    public async Task<Flower?> UpdateFlower(Flower flower)
     {
-        throw new NotImplementedException();
+        _context.Flowers.Update(flower);
+        await _context.SaveChangesAsync();
+        return flower;
     }
 
-    public async Task<Flower> DeleteFlower(Guid id)
+    public async Task<Flower?> DeleteFlower(Guid id)
     {
-        throw new NotImplementedException();
+        var flower = await _context.Flowers.FirstOrDefaultAsync(x => x.FlowerId == id);
+        if (flower == null)
+        {
+            return null;
+        }
+        _context.Flowers.Remove(flower);
+        await _context.SaveChangesAsync();
+        return flower;
     }
 
-    public async Task<Flower> FindFlowerByName(string name)
+    public async Task<Flower?> FindFlowerByName(string name)
     {
-        throw new NotImplementedException();
+        var flower = await _context.Flowers.FirstOrDefaultAsync(x => x. FlowerName== name);
+        return flower;
     }
 
-    public async Task<Flower> FilterFlowerByPrice(double price)
+    public async Task<List<Flower>> FilterFlowersByPrice(double minPrice, double? maxPrice)
     {
-        throw new NotImplementedException();
+        return await _context.Flowers
+            .Where(flower => flower.Price >= minPrice && (maxPrice == null || flower.Price <= maxPrice))
+            .ToListAsync();
     }
 }

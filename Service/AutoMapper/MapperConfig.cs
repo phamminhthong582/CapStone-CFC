@@ -13,6 +13,7 @@ public partial class MapperConfig : Profile
         AddCommentMapperConfig();
         AddFeedbackMapperConfig();
         AddFlowerMapperConfig();
+        
     }
 
     partial void AddCategoryMapperConfig();

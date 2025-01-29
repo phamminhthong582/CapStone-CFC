@@ -11,6 +11,7 @@ public partial class MapperConfig : Profile
     {
         CreateMap<Flower, FlowerResponse>().ReverseMap();
         CreateMap<Flower, CreateFlowerRequest>().ReverseMap();
-        
+        CreateMap<Flower, UpdateFlowerRequest>().ReverseMap();
+
     }
 }
