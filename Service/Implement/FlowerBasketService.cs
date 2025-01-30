@@ -35,7 +35,10 @@ public class FlowerBasketService : IFlowerBasketService
             FlowerBasketName = request.FlowerBasketName,
             StoreId = request.StoreId ?? Guid.Empty,
             Decription = request.Description,
-            Feature = request.Feature
+            Feature = request.Feature,
+            Price = request.Price,
+            Quantity = request.Quantity
+            
         };
 
         await _flowerBasketRepository.CreateFlowerBasket(newFlowerBasket);
@@ -57,11 +60,9 @@ public class FlowerBasketService : IFlowerBasketService
             return new Result<FlowerBasketResponse>
             {
                 ResultStatus = ResultStatus.Error.ToString(),
-                Messages = new[] { "Flower basket not found." }
+                Messages = new[] { "FlowerBasket not found." }
             };
         }
-
-        // Cập nhật thông tin nếu có giá trị mới
         if (!string.IsNullOrWhiteSpace(request.FlowerBasketName))
             flowerBasket.FlowerBasketName = request.FlowerBasketName;
 
@@ -98,11 +99,11 @@ public class FlowerBasketService : IFlowerBasketService
         {
             Data = response,
             ResultStatus = ResultStatus.Success.ToString(),
-            Messages = new[] { "Flower basket updated successfully" }
+            Messages = new[] { "Flowerbasket updated successfully" }
         };
     }
 
-    public async Task<Result<FlowerBasket>> DeleteFlower(Guid id)
+    public async Task<Result<FlowerBasket>> DeleteFlowerBasket(Guid id)
     {
         var flowerBasket = await _flowerBasketRepository.GetFlowerBasketById(id);
     
@@ -111,7 +112,7 @@ public class FlowerBasketService : IFlowerBasketService
             return new Result<FlowerBasket>
             {
                 ResultStatus = ResultStatus.NotFound.ToString(),
-                Messages = new []{"Flower not found."}
+                Messages = new []{"FlowerBasket not found."}
             };
         }
 
@@ -120,17 +121,17 @@ public class FlowerBasketService : IFlowerBasketService
         return new Result<FlowerBasket>
         {
             ResultStatus = ResultStatus.Success.ToString(),
-            Messages = new []{"Flower deleted successfully."}
+            Messages = new []{"FlowerBasket deleted successfully."}
         };
     }
 
-    public async Task<Result<FlowerBasketResponse>> GetFlowerById(Guid id)
+    public async Task<Result<FlowerBasketResponse>> GetFlowerBasketById(Guid id)
     {
         var response = new Result<FlowerBasketResponse>();
         var flowerBasket = await _flowerBasketRepository.GetFlowerBasketById(id);
         if (flowerBasket == null)
         {
-            response.Messages = ["Flower not found!"];
+            response.Messages = ["FlowerBasket not found!"];
             response.ResultStatus = ResultStatus.NotFound.ToString();
             return response;
         }
