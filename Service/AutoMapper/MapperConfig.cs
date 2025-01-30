@@ -13,7 +13,8 @@ public partial class MapperConfig : Profile
         AddCommentMapperConfig();
         AddFeedbackMapperConfig();
         AddFlowerMapperConfig();
-        
+        AddFlowerBasketMapperConfig();
+
     }
 
     partial void AddCategoryMapperConfig();
@@ -23,4 +24,5 @@ public partial class MapperConfig : Profile
     partial void AddCommentMapperConfig();
     partial void AddFeedbackMapperConfig();
     partial void AddFlowerMapperConfig();
+    partial void AddFlowerBasketMapperConfig();
 }
