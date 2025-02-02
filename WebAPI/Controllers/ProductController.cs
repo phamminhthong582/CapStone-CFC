@@ -12,11 +12,14 @@ namespace WebAPI.Controllers
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
+        private readonly IConfiguration _configuration;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, IConfiguration configuration)
         {
             _productService = productService;
+            _configuration = configuration;
         }
+
         [HttpGet("GetAllProduct")]
 
         public async Task<IActionResult> GetProducts()
@@ -35,6 +38,15 @@ namespace WebAPI.Controllers
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
                 data: result));
+        }
+        [HttpGet("check")]
+        public async Task<string> Check()
+        {
+            var adminEmail = _configuration["AdminAccount:adminemail"];
+            var adminPassword = _configuration["AdminAccount:adminpassword"];
+
+            // For demonstration, let's just return a message with the email (not recommended to expose password in production)
+            return $"Admin email: {adminEmail}, Admin password: {adminPassword}";
         }
         [HttpGet("GetProductByStoreId")]
         public async Task<IActionResult> GetProductsByStoreId(Guid storeId)
