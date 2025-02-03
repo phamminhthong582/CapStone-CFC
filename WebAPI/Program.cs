@@ -12,11 +12,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfra(builder.Configuration);
 builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<CustomFlowerChainContext>();
-
+//var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddSwaggerGen();
 
 builder.Services.AddSwaggerGen(sw =>
 {
