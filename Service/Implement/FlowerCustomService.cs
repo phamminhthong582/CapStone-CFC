@@ -95,7 +95,7 @@ public class FlowerCustomService : IFlowerCustomService
             FlowerCustomId = existingFlowerCustom.FlowerCustomId,
             Quantity = existingFlowerCustom.Quantity ?? 0,
             Price = existingFlowerCustom.Price ?? 0.0, 
-            Status = existingFlowerCustom.Status ?? true, // Fix lỗi chuyển đổi nullable bool -> bool
+            Status = existingFlowerCustom.Status ?? true, 
             UpdateAt = existingFlowerCustom.UpdateAt
         };
 
