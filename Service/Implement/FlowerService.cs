@@ -37,7 +37,7 @@ public class FlowerService : IFlowerService
             Image = request.Image,
             Quantity = request.Quantity ?? 0,
             CategoryId = request.CategoryId ?? Guid.Empty,
-            Decription = request.Description,
+            Description = request.Description,
             StoreId = request.StoreId ?? Guid.Empty,
             CreateAt = DateTime.UtcNow,
             UpdateAt = DateTime.UtcNow
@@ -65,7 +65,7 @@ public class FlowerService : IFlowerService
         if (request.Quantity.HasValue) flower.Quantity = request.Quantity.Value;
         if (request.CategoryId.HasValue) flower.CategoryId = request.CategoryId.Value;
         if (request.StoreId.HasValue) flower.StoreId = request.StoreId.Value;
-        if (!string.IsNullOrWhiteSpace(request.Description)) flower.Decription = request.Description;
+        if (!string.IsNullOrWhiteSpace(request.Description)) flower.Description = request.Description;
         flower.UpdateAt = DateTime.UtcNow;
         await _flowerRepository.UpdateFlower(flower);
         return new Result<FlowerResponse>
@@ -79,7 +79,7 @@ public class FlowerService : IFlowerService
                 Quantity = flower.Quantity,
                 CategoryId = flower.CategoryId,
                 StoreId = flower.StoreId,
-                Description = flower.Decription,
+                Description = flower.Description,
             },
             ResultStatus = ResultStatus.Success.ToString(),
             Messages = new[] { "Update successful" }
@@ -147,7 +147,7 @@ public class FlowerService : IFlowerService
             Quantity = flower.Quantity,
             CategoryId = flower.CategoryId,
             StoreId = flower.StoreId,
-            Description = flower.Decription,
+            Description = flower.Description,
         };
         return new Result<FlowerResponse>
         {
@@ -179,7 +179,7 @@ public class FlowerService : IFlowerService
             Quantity = flower.Quantity,
             CategoryId = flower.CategoryId,
             StoreId = flower.StoreId,
-            Description = flower.Decription,
+            Description = flower.Description,
         }).ToList();
 
         return new Result<List<FlowerResponse>>

@@ -160,8 +160,7 @@ namespace BusinessObject.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("StoreId")
                         .HasColumnType("uniqueidentifier");
