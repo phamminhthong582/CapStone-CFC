@@ -2,8 +2,8 @@
 
 public class UpdateFlowerCustomRequest
 {
-    public Guid FlowerCustomId { get; set; }  // ID của mẫu cần cập nhật
-    public int? Quantity { get; set; }  // Cập nhật số lượng (nếu cần)
-    public double? Price { get; set; }  // Cập nhật giá (nếu cần)
+    public Guid FlowerCustomId { get; set; }
+    public int? Quantity { get; set; }  
+    public double? Price { get; set; }  
     public bool? Status { get; set; }
 }

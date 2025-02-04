@@ -50,4 +50,14 @@ public class FlowerCustomRepository : IFlowerCustomRepository
         var flowerCustom = await _context.FlowerCustoms.FirstOrDefaultAsync(x => x.FlowerCustomId == id);
         return flowerCustom;
     }
+
+    public async Task<bool> ExistsFlower(Guid flowerId)
+    {
+        return await _context.Flowers.AnyAsync(f => f.FlowerId == flowerId);
+    }
+
+    public async Task<bool> ExistsProductCustom(Guid productCustomId)
+    {
+        return await _context.ProductCustoms.AnyAsync(p => p.ProductCustomId == productCustomId);
+    }
 }

@@ -9,4 +9,6 @@ public interface IFlowerCustomRepository
     Task<FlowerCustom> UpdateFlowerCustom(FlowerCustom flowerCustom);
     Task<FlowerCustom> DeleteFlowerCustom(Guid id);
     Task<FlowerCustom> GetFlowerCustomById(Guid id);
+    Task<bool> ExistsFlower(Guid flowerId);
+    Task<bool> ExistsProductCustom(Guid productCustomId);
 }
