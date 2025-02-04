@@ -88,6 +88,15 @@ public class AuthController : ControllerBase
 
         return result;
     }
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> VerifyEmail(Guid id, string token)
+    {
+        var result = await _authService.VerifyEmail(id, token);
+        if (result.ResultStatus == ResultStatus.Success.ToString())
+            return Redirect($"http://localhost:5243/swagger/index.html");
+
+        return Redirect($"https://giveawayproject.jettonetto.org/verify-email?verificationstatus=failed");
+    }
    /* [Authorize(Roles = "Admin")]
     [HttpPost("create-storemanager-account")]
     public async Task<ActionResult<UserResponse>> CreateStoreManagerAccount(

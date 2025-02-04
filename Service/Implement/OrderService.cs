@@ -61,7 +61,7 @@ namespace Service.Implement
                 Status = "Order thành công",
                 PromotionId = PromotionID
             };
-
+            
             // Add order to database
             await _unitOfWork.Repository<Order>().AddAsync(order);
             await _unitOfWork.CompleteAsync();
@@ -88,7 +88,7 @@ namespace Service.Implement
                         ProductTotalPrice = orderDetailsRequest.Quantity * product.Price - (orderDetailsRequest.Quantity * product.Price * product.Discount)/100
                     };
                 });
-
+                
                 // Await the tasks and gather the results into a list
                 var orderDetails = (await Task.WhenAll(tasks)).ToList();
 
@@ -101,9 +101,37 @@ namespace Service.Implement
                 var promotion = await _unitOfWork.Repository<Promotion>().GetByIdAsync(order.PromotionId);
 
                 order.OrderPrice = orderDetails.Sum(od => od.ProductTotalPrice) - (orderDetails.Sum(od => od.ProductTotalPrice) * promotion.PromotionDiscount)/100 ;
-
-                // Save the updated order with the total price
-                 _unitOfWork.Repository<Order>().Update(order);
+           
+                    // Save the updated order with the total price
+                _unitOfWork.Repository<Order>().Update(order);
+                if (order.Transfer == false)
+                {
+                    var payment = new Payment()
+                    {
+                        OrderId = order.OrderId,
+                        Method = "Tiền cọc",
+                        StoreId = order.StoreId,
+                        CustomerId = customerId,
+                        TotalPrice = order.OrderPrice * 30 / 100,
+                        CreateAt = DateTime.Now,
+                        Status = false,
+                    };
+                    await _unitOfWork.Repository<Payment>().AddAsync(payment);
+                }
+                else if(order.Transfer == true)
+                {
+                    var payment = new Payment()
+                    {
+                        OrderId = order.OrderId,
+                        Method = "Tiền tỏng",
+                        StoreId = order.StoreId,
+                        CustomerId = customerId,
+                        TotalPrice = order.OrderPrice,
+                        CreateAt = DateTime.Now,
+                        Status = false,
+                    };
+                    await _unitOfWork.Repository<Payment>().AddAsync(payment);
+                }
                 await _unitOfWork.CompleteAsync();
             }
         }

@@ -111,6 +111,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.Password).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.Status).HasColumnType("nvarchar").HasMaxLength(20);
 
             entity.HasOne(d => d.Store).WithMany(p => p.Customers)
                 .HasForeignKey(d => d.StoreId)
@@ -402,7 +403,6 @@ public partial class CustomFlowerChainContext : DbContext
 
             entity.Property(e => e.WalletId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.Status).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Wallets)
@@ -421,7 +421,6 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.Otp).HasMaxLength(255);
             entity.Property(e => e.Reason).HasMaxLength(255);
-            entity.Property(e => e.Status).HasColumnType("datetime");
 
             entity.HasOne(d => d.Wallet).WithMany(p => p.WithdrawMoneys)
                 .HasForeignKey(d => d.WalletId)

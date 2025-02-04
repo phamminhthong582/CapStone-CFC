@@ -1,4 +1,5 @@
-﻿using BusinessObject.Context;
+﻿using System.Linq.Expressions;
+using BusinessObject.Context;
 using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
@@ -70,5 +71,11 @@ public class CustomerRepository : ICustomerRepository
     {
         var cus = await _context.Customers.FirstOrDefaultAsync(x => x.Email == email);
         return cus;
+    }
+
+    public async Task<Customer?> FindOne(Expression<Func<Customer, bool>> predicate)
+    {
+        var result = await _context.Customers.FirstOrDefaultAsync(predicate);
+        return result;
     }
 }
