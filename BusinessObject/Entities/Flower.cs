@@ -19,7 +19,7 @@ public partial class Flower
 
     public Guid? CategoryId { get; set; }
 
-    public string? Description { get; set; }
+    public string? Decription { get; set; }
 
     public int? Sold { get; set; }
 

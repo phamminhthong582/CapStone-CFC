@@ -49,6 +49,7 @@ public class CustomerService : ICustomerService
             Password = Convert.ToBase64String(passwordHash),
             Status = CustomerStatus.NotVerified.ToString(),
         };
+        var user = await _customerRepository.RegisterCustomer(customer);
         var token = _customerRepository.CreateRandomToken();
         var cacheEntryOption = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromMinutes(10))
@@ -61,7 +62,6 @@ public class CustomerService : ICustomerService
             response.ResultStatus = ResultStatus.Failed.ToString();
             return response;
         }
-        var user = await _customerRepository.RegisterCustomer(customer);
         response.RoleName = RoleName.Customer.ToString();
         response.ResultStatus = ResultStatus.Success.ToString();
         response.Messages = new []{"Register successfully!"};

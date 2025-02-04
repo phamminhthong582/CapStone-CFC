@@ -26,51 +26,48 @@ public class TokenService : ITokenService
     }
     public string GenerateToken(object user)
     {
+        // Lấy key từ cấu hình
         var secretKey = _configuration["Jwt:Key"];
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new InvalidOperationException("Jwt:Key is not configured in appsettings.json");
+        }
+
         var jwtTokenHandler = new JwtSecurityTokenHandler();
         var secretKeyByte = Encoding.UTF8.GetBytes(secretKey);
 
         var claims = new List<Claim>();
 
+       
         if (user is Employee employee)
         {
             claims.AddRange(new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, employee.FullName!),
+                new Claim(ClaimTypes.NameIdentifier, employee.FullName ?? throw new ArgumentNullException(nameof(employee.FullName))),
                 new Claim("Id", employee.EmployeeId.ToString()),
                 new Claim(ClaimTypes.Role, employee.RoleId.ToString()),
-                new Claim("FullName", employee.FullName!)
+                new Claim("FullName", employee.FullName ?? ""),
+                new Claim("Avatar", employee.Avatar ?? "")
             });
-
-            if (!string.IsNullOrEmpty(employee.Avatar))
-            {
-                claims.Add(new Claim("Avatar", employee.Avatar));
-            }
-            else
-            {
-                claims.Add(new Claim("Avatar", ""));
-            }
         }
+        
         else if (user is Customer customer)
         {
             claims.AddRange(new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, customer.FullName!),
+                new Claim(ClaimTypes.NameIdentifier, customer.FullName ?? throw new ArgumentNullException(nameof(customer.FullName))),
                 new Claim("Id", customer.CustomerId.ToString()),
                 new Claim(ClaimTypes.Role, RoleName.Customer.ToString()),
-                new Claim("FullName", customer.FullName!)
+                new Claim("FullName", customer.FullName ?? ""),
+                new Claim("Avatar", customer.Avatar ?? "")
             });
-
-            if (!string.IsNullOrEmpty(customer.Avatar))
-            {
-                claims.Add(new Claim("Avatar", customer.Avatar));
-            }
-            else
-            {
-                claims.Add(new Claim("Avatar", ""));
-            }
+        }
+        else
+        {
+            throw new ArgumentException("Unsupported user type", nameof(user));
         }
 
+        
         var tokenDescription = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -80,6 +77,7 @@ public class TokenService : ITokenService
                 SecurityAlgorithms.HmacSha256)
         };
 
+        // Tạo token
         var token = jwtTokenHandler.CreateToken(tokenDescription);
         return jwtTokenHandler.WriteToken(token);
     }

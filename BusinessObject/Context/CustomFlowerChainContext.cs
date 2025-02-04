@@ -111,6 +111,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.Password).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.Status).HasColumnType("nvarchar").HasMaxLength(20);
 
             entity.HasOne(d => d.Store).WithMany(p => p.Customers)
                 .HasForeignKey(d => d.StoreId)

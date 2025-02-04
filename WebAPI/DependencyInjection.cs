@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+﻿using BusinessObject.Entities;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using Repository.Implement;
 using Repository.Interface;
 using Service.AutoMapper;
@@ -39,6 +40,15 @@ public static class DependencyInjection
         // Feedback
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IFeedbackService, FeedbackService>();
+        //Flower
+        services.AddScoped<IFlowerRepository, FlowerRepository>();
+        services.AddScoped<IFlowerService, FlowerService>();
+        // FlowerBasket
+        services.AddScoped<IFlowerBasketRepository, FlowerBasketRepository>();
+        services.AddScoped<IFlowerBasketService, FlowerBasketService>();
+        // ProductCustom
+        services.AddScoped<IProductCustomRepository, ProductCustomRepository>();
+        services.AddScoped<IProductCustomService, ProductCustomService>();
        
         // Role
         services.AddScoped<IRoleRepository, RoleRepository>();
