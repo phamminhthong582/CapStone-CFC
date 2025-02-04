@@ -25,6 +25,5 @@ public partial class WithdrawMoney
 
     public string? Status { get; set; }
   
-
     public virtual Wallet? Wallet { get; set; }
 }
