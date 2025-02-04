@@ -57,6 +57,10 @@ public static class DependencyInjection
 
         //Cart 
         services.AddScoped<ICartService, CartService>();
+
+        //Wallet
+        services.AddScoped<IWalletService, WalletService>();
+
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
         return services;
     }
