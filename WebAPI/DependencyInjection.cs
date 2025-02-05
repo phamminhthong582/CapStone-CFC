@@ -75,6 +75,10 @@ public static class DependencyInjection
 
         services.AddScoped<IWithdrawMoneyService, WithdrawMoneyService>();
 
+        //Refund 
+        services.AddScoped<IRefundService, RefundService>();
+
+
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
 
         return services;
