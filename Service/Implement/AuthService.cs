@@ -45,15 +45,6 @@ public class AuthService : IAuthService
         var customer = await _customerRepository.FindCustomerByEmail(email);
         if (customer != null && customer.Password == password)
         {
-            if (string.IsNullOrEmpty(customer.FullName))
-            {
-                return new Result<LoginResponse>
-                {
-                    ResultStatus = ResultStatus.Error.ToString(),
-                    Messages = new[] { "Customer FullName is required" }
-                };
-            }
-
             var accessToken = _tokenService.GenerateToken(customer);
             var dataCustomer = new LoginResponse
             {

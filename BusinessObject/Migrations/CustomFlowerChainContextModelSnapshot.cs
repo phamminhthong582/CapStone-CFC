@@ -357,7 +357,7 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime");
 
-                    b.Property<string>("Decription")
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FlowerName")
