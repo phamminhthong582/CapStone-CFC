@@ -78,6 +78,8 @@ namespace Service.Implement
                 ProductName = product.ProductName,
                 StoreId = product.StoreId,
                 Quantity = product.Quantity,
+                Price = product.Price,
+
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Size = product.Size,
@@ -105,7 +107,7 @@ namespace Service.Implement
 
         public async Task<IEnumerable<ProductResponse>> GetProducts()
         {
-            var products = await _unitOfWork.Repository<Product>().GetAllAsync();
+            var products = await _unitOfWork.Repository<Product>().Entities.Include(n => n.Category).ToListAsync();
             var allImages = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
 
             var productResponse = products.Select(product => new ProductResponse
@@ -113,6 +115,7 @@ namespace Service.Implement
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 StoreId = product.StoreId,
+                Price = product.Price,
                 Quantity = product.Quantity,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
@@ -149,6 +152,8 @@ namespace Service.Implement
                 ProductName = product.ProductName,
                 StoreId = product.StoreId,
                 Quantity = product.Quantity,
+                Price = product.Price,
+
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Size = product.Size,
@@ -182,7 +187,7 @@ namespace Service.Implement
             product.ProductName = updateProductRequest.ProductName ?? product.ProductName; 
             product.Quantity = updateProductRequest.Quantity?? product.Quantity;
             product.Description = updateProductRequest.Description ?? product.Description;
-            product.Price= updateProductRequest.Price?? product.Price   ;
+            product.Price= updateProductRequest.Price?? product.Price;
             product.Size = updateProductRequest.Size ?? product.Size;
             product.Discount = updateProductRequest.Discount ?? product.Discount;
             product.Featured = updateProductRequest.Featured ?? product.Featured;

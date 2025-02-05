@@ -114,7 +114,7 @@ namespace Service.Implement
                         CustomerId = customerId,
                         TotalPrice = order.OrderPrice * 30 / 100,
                         CreateAt = DateTime.Now,
-                        Status = false,
+                        Status = "chờ thanh toán tiền cọc",
                     };
                     await _unitOfWork.Repository<Payment>().AddAsync(payment);
                 }
@@ -128,7 +128,7 @@ namespace Service.Implement
                         CustomerId = customerId,
                         TotalPrice = order.OrderPrice,
                         CreateAt = DateTime.Now,
-                        Status = false,
+                        Status = "chờ thanh toán",
                     };
                     await _unitOfWork.Repository<Payment>().AddAsync(payment);
                 }

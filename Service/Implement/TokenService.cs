@@ -55,11 +55,11 @@ public class TokenService : ITokenService
         {
             claims.AddRange(new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, customer.FullName ?? throw new ArgumentNullException(nameof(customer.FullName))),
+                new Claim(ClaimTypes.NameIdentifier, !string.IsNullOrEmpty(customer.FullName) ? customer.FullName : customer.Email), // Nếu FullName bị null, dùng Email
                 new Claim("Id", customer.CustomerId.ToString()),
                 new Claim(ClaimTypes.Role, RoleName.Customer.ToString()),
-                new Claim("FullName", customer.FullName ?? ""),
-                new Claim("Avatar", customer.Avatar ?? "")
+                new Claim("FullName", !string.IsNullOrEmpty(customer.FullName) ? customer.FullName : customer.Email), // Dùng Email nếu FullName bị null
+                new Claim("Avatar", customer.Avatar ?? "") // Tránh null cho Avatar
             });
         }
         else

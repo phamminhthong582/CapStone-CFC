@@ -49,7 +49,9 @@ public static class DependencyInjection
         // ProductCustom
         services.AddScoped<IProductCustomRepository, ProductCustomRepository>();
         services.AddScoped<IProductCustomService, ProductCustomService>();
-       
+        // FlowerCustom
+        services.AddScoped<IFlowerCustomRepository, FlowerCustomRepository>();
+        services.AddScoped<IFlowerCustomService, FlowerCustomService>();
         // Role
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRoleService, RoleService>();
@@ -74,6 +76,10 @@ public static class DependencyInjection
         //IWithdrawMoney
 
         services.AddScoped<IWithdrawMoneyService, WithdrawMoneyService>();
+
+        //Refund 
+        services.AddScoped<IRefundService, RefundService>();
+
 
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
 

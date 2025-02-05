@@ -2,14 +2,19 @@
 
 #nullable disable
 
-namespace BusinessObject.Entities
+namespace BusinessObject.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateStatusCustomer : Migration
+    public partial class UpdateFlower : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.RenameColumn(
+                name: "Decription",
+                table: "Flower",
+                newName: "Description");
+
             migrationBuilder.AlterColumn<string>(
                 name: "Status",
                 table: "Customer",
@@ -23,6 +28,11 @@ namespace BusinessObject.Entities
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.RenameColumn(
+                name: "Description",
+                table: "Flower",
+                newName: "Decription");
+
             migrationBuilder.AlterColumn<string>(
                 name: "Status",
                 table: "Customer",
