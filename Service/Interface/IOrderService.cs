@@ -18,7 +18,8 @@ namespace Service.Interface
         Task UpdateOrderByStoreId(Guid orderId, Guid StaffId);
         Task UpdateStatusOrderByStaffId(Guid orderId, string Status);
         Task<IEnumerable<OrderResponse>> GetOrderByStaffId(Guid StaffId);
-        
+        Task ConvertCartToOrder(Guid CustomerID, OrderRequest orderRequest);
+
 
     }
 }

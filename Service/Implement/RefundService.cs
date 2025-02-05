@@ -84,6 +84,7 @@ namespace Service.Implement
                     _unitOfWork.Repository<Payment>().Update(payment);
                     wallet.TotalPrice += refundPrice;
                     _unitOfWork.Repository<Wallet>().Update(wallet);
+
                     await _unitOfWork.CompleteAsync();
                 }
             }

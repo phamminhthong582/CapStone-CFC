@@ -80,6 +80,9 @@ public static class DependencyInjection
         //Refund 
         services.AddScoped<IRefundService, RefundService>();
 
+        //VNpay
+        services.AddScoped<IVnPayService,VnPayService>();
+
 
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
 
