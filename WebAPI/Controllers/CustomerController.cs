@@ -34,10 +34,10 @@ public class CustomerController : Controller
       return Ok(result);
    }
    [HttpPut("{customerId}")]
-   public async Task<IActionResult> UpdateCustomer([FromRoute] Guid customerIdId,
+   public async Task<IActionResult> UpdateCustomer([FromRoute] Guid customerId,
       [FromBody] UpdateCustomerRequest request)
    {
-      var result = await _customerService.UpdateCustomer(customerIdId, request);
+      var result = await _customerService.UpdateCustomer(customerId, request);
 
       if (result.ResultStatus != ResultStatus.Success.ToString())
          return StatusCode((int)HttpStatusCode.InternalServerError, result);

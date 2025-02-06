@@ -18,6 +18,8 @@ public partial class Flower
     public int? Quantity { get; set; }
 
     public Guid? CategoryId { get; set; }
+    
+    public string? Color { get; set; }
 
     public string? Description { get; set; }
 
