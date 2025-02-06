@@ -9,6 +9,8 @@ public class UpdateFlowerRequest
     public string? Image { get; set; }
 
     public int? Quantity { get; set; }
+    
+    public string? Color { get; set; }
 
     public Guid? CategoryId { get; set; }
 

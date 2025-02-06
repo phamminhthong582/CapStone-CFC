@@ -13,6 +13,8 @@ namespace BusinessObject.DTO.Flower
         public string? FlowerName { get; set; }
 
         public double? Price { get; set; }
+        
+        public string? Color { get; set; }
 
         public Guid? StoreId { get; set; }
 
