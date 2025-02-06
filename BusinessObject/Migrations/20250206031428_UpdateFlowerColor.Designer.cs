@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250206031428_UpdateFlowerColor")]
+    partial class UpdateFlowerColor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -620,8 +623,8 @@ namespace BusinessObject.Migrations
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool?>("Status")
+                        .HasColumnType("bit");
 
                     b.Property<Guid?>("StoreId")
                         .HasColumnType("uniqueidentifier");
@@ -926,8 +929,8 @@ namespace BusinessObject.Migrations
                     b.Property<Guid?>("CustomerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("Status")
+                        .HasColumnType("datetime");
 
                     b.Property<double?>("TotalPrice")
                         .HasColumnType("float");
@@ -975,8 +978,8 @@ namespace BusinessObject.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("Status")
+                        .HasColumnType("datetime");
 
                     b.Property<Guid?>("WalletId")
                         .HasColumnType("uniqueidentifier");

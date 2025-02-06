@@ -83,6 +83,10 @@ public static class DependencyInjection
         //VNpay
         services.AddScoped<IVnPayService,VnPayService>();
 
+        //Payment
+        services.AddScoped<IPaymentService, PaymentService>();
+
+
 
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
 

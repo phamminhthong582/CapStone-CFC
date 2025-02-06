@@ -26,6 +26,7 @@ public enum ResultStatus
     Error,
     Invalid,
     Failed,
+    NotVerified,
 
 }
 public enum EmployeeStatus
