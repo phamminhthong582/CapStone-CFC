@@ -8,7 +8,7 @@ public class CustomerResponse
 
     public string? City { get; set; }
 
-    public string? Distrist { get; set; }
+    public string? District { get; set; }
 
     public string? Address { get; set; }
 

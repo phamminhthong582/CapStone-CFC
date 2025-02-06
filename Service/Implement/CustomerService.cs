@@ -105,7 +105,7 @@ public class CustomerService : ICustomerService
     }
     if (request.Phone == customer.Phone &&
         request.City == customer.City &&
-        request.Distrist == customer.District &&
+        request.District == customer.District &&
         request.Address == customer.Address &&
         request.Birthday == customer.Birthday &&
         request.Status == customer.Status &&
@@ -127,7 +127,7 @@ public class CustomerService : ICustomerService
         }
     }
     customer.City = request.City ?? customer.City;
-    customer.District = request.Distrist ?? customer.District;
+    customer.District = request.District ?? customer.District;
     customer.Address = request.Address ?? customer.Address;
     customer.Phone = request.Phone ?? customer.Phone;
     customer.Birthday = request.Birthday ?? customer.Birthday;
