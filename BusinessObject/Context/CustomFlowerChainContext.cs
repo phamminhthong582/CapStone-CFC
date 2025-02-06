@@ -185,6 +185,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.FlowerName).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.Color).HasMaxLength(100);
 
             entity.HasOne(d => d.Category).WithMany(p => p.Flowers)
                 .HasForeignKey(d => d.CategoryId)
