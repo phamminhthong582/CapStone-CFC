@@ -60,7 +60,7 @@ namespace Service.Implement
                 Transfer = orderRequest.Transfer,
                 CreateAt = DateTime.Now,
                 Refund = false,
-                Status = "Order created successfully",
+                Status = "Chờ thành toán",
                 PromotionId = orderRequest.PromotionId,
             };
 
@@ -90,7 +90,7 @@ namespace Service.Implement
 
             // Cập nhật tổng giá đơn hàng
             _unitOfWork.Repository<Order>().Update(order);
-            if (order.Transfer == false)
+           /* if (order.Transfer == false)
             {
                 var payment = new Payment()
                 {
@@ -117,7 +117,7 @@ namespace Service.Implement
                     Status = "chờ thanh toán",
                 };
                 await _unitOfWork.Repository<Payment>().AddAsync(payment);
-            }
+            }*/
             await _unitOfWork.CompleteAsync();
 
             // Xóa giỏ hàng sau khi đã chuyển thành đơn hàng
@@ -156,7 +156,7 @@ namespace Service.Implement
                 Transfer = Transfer,
                 CreateAt = DateTime.Now,
                 Refund = false,
-                Status = "Order thành công",
+                Status = "Chờ thành toán",
                 PromotionId = PromotionID
             };
             
@@ -202,7 +202,7 @@ namespace Service.Implement
            
                     // Save the updated order with the total price
                 _unitOfWork.Repository<Order>().Update(order);
-                if (order.Transfer == false)
+              /*  if (order.Transfer == false)
                 {
                     var payment = new Payment()
                     {
@@ -229,7 +229,7 @@ namespace Service.Implement
                         Status = "chờ thanh toán",
                     };
                     await _unitOfWork.Repository<Payment>().AddAsync(payment);
-                }
+                }*/
                 await _unitOfWork.CompleteAsync();
             }
         }

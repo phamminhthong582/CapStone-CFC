@@ -19,9 +19,9 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("proceed-vnpay-payment")]
-        public async Task<IActionResult> ProceedVnPayPayment([FromBody] string paymentId)
+        public async Task<IActionResult> ProceedVnPayPayment([FromBody] string orderId)
         {
-            if (string.IsNullOrEmpty(paymentId) || !Guid.TryParse(paymentId, out var parsedPaymentId))
+            if (string.IsNullOrEmpty(orderId) || !Guid.TryParse(orderId, out var parsedPaymentId))
             {
                 return BadRequest(new { message = "Invalid paymentId format. It must be a valid GUID." });
             }
@@ -46,7 +46,7 @@ namespace WebAPI.Controllers
                 Console.WriteLine($"Order Description: {response.OrderDescription}");
                 Console.WriteLine($"Response Code: {response.VnPayResponseCode}");
 
-                if (!Guid.TryParse(response.OrderDescription, out Guid paymentId))
+                if (!Guid.TryParse(response.OrderDescription, out Guid orderId))
                 {
                     Console.WriteLine("Invalid Payment ID");
                     return Redirect("http://localhost:3000/payment-failure");
@@ -54,12 +54,11 @@ namespace WebAPI.Controllers
 
                 if (response.VnPayResponseCode == "00")
                 {
-                    await _paymentService.UpdateStatusPayment(paymentId, "thành công");
+                    await _paymentService.CreatePayment(orderId);
                     return Redirect("http://localhost:3000/payment-success");
                 }
                 else
                 {
-                    await _paymentService.UpdateStatusPayment(paymentId, "thất bại");
                     return Redirect("http://localhost:3000/payment-failure");
                 }
             }

@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Entities;
 using BusinessObject.Helper;
+using MailKit.Search;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Repository.Interface;
@@ -22,21 +23,27 @@ namespace Service.Implement
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<string> CreatePaymentUrlAsync(Guid paymentId)
+        public async Task<string> CreatePaymentUrlAsync(Guid ordeId)
         {
-            var payment = await _unitOfWork.Repository<Payment>().GetByIdAsync(paymentId);
-            if (payment == null)
-                throw new Exception("Order not found");
-            if (payment.Status == "thành công")
-                throw new Exception("Order already paid");
+            /*            var payment = await _unitOfWork.Repository<Payment>().GetByIdAsync(paymentId);
+            */
+            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(ordeId);
+            if (order.Transfer == true)
+            {
+                return CreatePaymentUrl(ordeId, (decimal)order.OrderPrice);
+            }
+            else if (order.Transfer == false)
+            {
+                return CreatePaymentUrl(ordeId, (decimal)order.OrderPrice * 30 / 100);
 
-            return CreatePaymentUrl(paymentId, (decimal)payment.TotalPrice);
+            }
+            return null; 
         }
 
-        private string CreatePaymentUrl(Guid paymentId, decimal amount)
+        private string CreatePaymentUrl(Guid ordeId, decimal amount)
         {
             var vnpay = new VnPayLibrary();
-            var orderIdStr = paymentId.ToString("N"); // Sử dụng format không có dấu gạch
+            var orderIdStr = ordeId.ToString("N"); // Sử dụng format không có dấu gạch
             var amountStr = ((int)(amount * 100)).ToString();
 
             vnpay.AddRequestData("vnp_Version", _config["VnPay:Version"]);
@@ -54,7 +61,7 @@ namespace Service.Implement
 
             return vnpay.CreateRequestUrl(_config["VnPay:BaseUrl"], _config["VnPay:HashSecret"]);
         }
-
+     
         public VnPaymentResponseModel PaymentExecute(IQueryCollection collections)
         {
             var vnpay = new VnPayLibrary();

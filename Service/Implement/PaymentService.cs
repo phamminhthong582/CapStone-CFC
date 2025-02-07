@@ -19,6 +19,44 @@ namespace Service.Implement
             _unitOfWork = unitOfWork;
         }
 
+        public async Task CreatePayment(Guid OrderId)
+        {
+            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(OrderId);
+            if (order.Transfer == true && order.Status=="Chờ thành toán")
+            {
+                var payment = new Payment
+                {
+                    OrderId = order.OrderId,
+                    Method = "Tiền tổng",
+                    StoreId = order.StoreId,
+                    TotalPrice = order.OrderPrice,
+                    CreateAt = DateTime.Now,
+                    Status = "thanh toán thành cong",
+                };
+                order.Status = "đặt hàng thành công";
+                await _unitOfWork.Repository<Payment>().AddAsync(payment);
+                _unitOfWork.Repository<Order>().Update(order);
+                await _unitOfWork.CompleteAsync();
+                
+            }
+            if (order.Transfer == false && order.Status == "Chờ thành toán")
+            {
+                var payment = new Payment()
+                {
+                    OrderId = order.OrderId,
+                    Method = "Tiền cọc",
+                    StoreId = order.StoreId,
+                    TotalPrice = order.OrderPrice * 30 / 100,
+                    CreateAt = DateTime.Now,
+                    Status = "thanh toán thành cong",
+                };
+                order.Status = "đặt hàng thành công";
+                await _unitOfWork.Repository<Payment>().AddAsync(payment);
+                _unitOfWork.Repository<Order>().Update(order);
+                await _unitOfWork.CompleteAsync();
+            }
+        }
+
         public async Task<PaymentResponse> GetPyamentById(Guid paymentId)
         {
             // Tìm payment theo ID

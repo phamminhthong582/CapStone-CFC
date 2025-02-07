@@ -44,7 +44,7 @@ namespace Service.Implement
             {
                 TimeSpan timeUntilDelivery = order.DeliveryDateTime.Value - DateTime.Now; // Tính khoảng cách thời gian
 
-                if (timeUntilDelivery.TotalHours > 24)
+                if (timeUntilDelivery.TotalHours > 24 && order.Status == "đã thanh toán")
                 {
                     double? refundPrice = order.OrderPrice * 70 / 100;
                     var refund = new Refund
