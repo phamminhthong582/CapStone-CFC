@@ -11,5 +11,6 @@ namespace Service.Interface
     {
         Task<PaymentResponse> GetPyamentById(Guid paymentId);
         Task UpdateStatusPayment(Guid paymentId, string status);
+        Task CreatePayment(Guid  OrderId);
     }
 }
