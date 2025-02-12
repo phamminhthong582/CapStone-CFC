@@ -23,9 +23,8 @@ public class EmployeeResponse
     public string? IdentificationBackOfPhoto { get; set; }
 
     
-    public Guid? RoleId { get; set; }
+    public string RoleName  { get; set; }
     
-
     public Guid? StoreId { get; set; }
     
     public bool? Status { get; set; }

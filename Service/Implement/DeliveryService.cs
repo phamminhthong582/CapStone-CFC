@@ -140,6 +140,8 @@ namespace Service.Implement
             delivery.PickupLocation = deliveryRequest.PickupLocation;
             delivery.ShipperId = deliveryRequest.ShipperId;
             delivery.note = deliveryRequest.note;
+            _unitOfWork.Repository<Delivery>().Update(delivery);
+            await _unitOfWork.CompleteAsync();
         }
     }
 }
