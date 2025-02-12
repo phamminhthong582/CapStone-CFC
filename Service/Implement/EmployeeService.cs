@@ -2,8 +2,15 @@
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Employee;
 using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Bcpg;
 using Repository.Interface;
 using Service.Interface;
+using System.Net.Mail;
+using System.Net;
+using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Service.Implement;
 
@@ -12,38 +19,265 @@ public class EmployeeService : IEmployeeService
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IMapper _mapper;
     private readonly IRoleRepository _roleRepository;
-    
-    public EmployeeService(IEmployeeRepository employeeRepository , IMapper mapper , IRoleRepository roleRepository)
+    private readonly IUnitOfWork _unitOfWork;
+
+    public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper, IRoleRepository roleRepository, IUnitOfWork unitOfWork)
     {
         _employeeRepository = employeeRepository;
         _mapper = mapper;
         _roleRepository = roleRepository;
+        _unitOfWork = unitOfWork;
     }
+
     public async Task<List<EmployeeResponse>> GetAllEmployee()
     {
         var list = await _employeeRepository.GetAllEmployees();
         return _mapper.Map<List<EmployeeResponse>>(list);
     }
-
-    public async Task<Result<EmployeeResponse>> GetEmployeeById(Guid id)
+    
+    public async Task<EmployeeResponse> GetEmployeeById(Guid id)
     {
-        var response = new Result<EmployeeResponse>();
-        var user = await _employeeRepository.GetEmployeesById(id);
-        if (user == null)
+        if (id == Guid.Empty) // Kiểm tra StoreId hợp lệ
         {
-            response.Messages = ["Employee not found!"];
-            response.ResultStatus = ResultStatus.NotFound.ToString();
-            return response;
+            throw new Exception("Employee not found");
         }
-        else
+        var employee = await _unitOfWork.Repository<Employee>()
+                .Entities
+                .Include(n => n.Role)
+                .FirstOrDefaultAsync(m => m.EmployeeId == id);
+        var employeeResponse = new EmployeeResponse{
+            EmployeeId = employee.EmployeeId,
+            FullName = employee.FullName,
+            Address = employee.Address,
+            Email = employee.Email,
+            Phone = employee.Phone,
+            Gender = employee.Gender,
+            Birthday = employee.Birthday,
+            IdentificationNumber = employee.IdentificationNumber,
+            IdentificationFontOfPhoto = employee.IdentificationFontOfPhoto,
+            IdentificationBackOfPhoto = employee.IdentificationBackOfPhoto,
+            RoleName = employee.Role.RoleName,
+            StoreId = employee.StoreId,
+            Status = employee.Status,
+            Avatar = employee.Avatar,
+        };
+        return employeeResponse;
+    }
+    public async Task<IEnumerable<EmployeeResponse>> GetAllEmployeeByStoreId(Guid StoreId)
+    {
+        if (StoreId == Guid.Empty) // Kiểm tra StoreId hợp lệ
         {
-            response.Data = _mapper.Map<EmployeeResponse>(user);
-            response.Messages = ["Successfully!"];
-            response.ResultStatus = ResultStatus.Success.ToString();
-            return response;
+            throw new Exception("Store not found");
         }
+
+        var employees = await _unitOfWork.Repository<Employee>()
+            .Entities
+            .Include(n => n.Role)
+            .Where(m => m.StoreId == StoreId)
+            .ToListAsync();
+
+        var rolePriority = new List<string> { "StoreManager", "Florist", "Courier" };
+
+        var employeeResponse = employees
+            .Select(employee => new EmployeeResponse
+            {
+                EmployeeId = employee.EmployeeId,
+                FullName = employee.FullName,
+                Address = employee.Address,
+                Email = employee.Email,
+                Phone = employee.Phone,
+                Gender = employee.Gender,
+                Birthday = employee.Birthday,
+                IdentificationNumber = employee.IdentificationNumber,
+                IdentificationFontOfPhoto = employee.IdentificationFontOfPhoto,
+                IdentificationBackOfPhoto = employee.IdentificationBackOfPhoto,
+                RoleName = employee.Role.RoleName,
+                StoreId = employee.StoreId,
+                Status = employee.Status,
+                Avatar = employee.Avatar,
+            })
+            .OrderBy(e => rolePriority.IndexOf(e.RoleName)) // Sắp xếp theo thứ tự ưu tiên
+            .ToList();
+
+        return employeeResponse;
+    }
+    public async Task<IEnumerable<EmployeeResponse>> GetFloristWithStoreIdWithStatusFalse(Guid storeId)
+    {
+        if (storeId == Guid.Empty) // Kiểm tra StoreId hợp lệ
+        {
+            throw new Exception("Store not found");
+        }
+
+        var employees = await _unitOfWork.Repository<Employee>()
+            .Entities
+            .Include(n => n.Role)
+            .Where(m => m.StoreId == storeId) // Chỉ lọc theo StoreId trước
+            .ToListAsync(); // Lấy danh sách về trước
+
+        // Lọc tiếp theo RoleName và Status
+        var florists = employees
+            .Where(e => e.Role != null
+                     && e.Role.RoleName == RoleName.Florist.ToString()
+                     && !(e.Status ?? false)) // Chỉ lấy Status == false hoặc null
+            .ToList();
+
+        // Chuyển danh sách đã lọc sang EmployeeResponse
+        var employeeResponse = florists
+            .Select(employee => new EmployeeResponse
+            {
+                EmployeeId = employee.EmployeeId,
+                FullName = employee.FullName,
+                Address = employee.Address,
+                Email = employee.Email,
+                Phone = employee.Phone,
+                Gender = employee.Gender,
+                Birthday = employee.Birthday,
+                IdentificationNumber = employee.IdentificationNumber,
+                IdentificationFontOfPhoto = employee.IdentificationFontOfPhoto,
+                IdentificationBackOfPhoto = employee.IdentificationBackOfPhoto,
+                RoleName = employee.Role.RoleName,
+                StoreId = employee.StoreId,
+                Status = employee.Status,
+                Avatar = employee.Avatar,
+            })
+            .ToList();
+
+        return employeeResponse;
     }
 
+
+    public async Task<IEnumerable<EmployeeResponse>> GetCourierWithStoreIdWithStatusFalse(Guid storeid)
+    {
+        if (storeid == Guid.Empty) // Kiểm tra StoreId hợp lệ
+        {
+            throw new Exception("Store not found");
+        }
+
+        var employees = await _unitOfWork.Repository<Employee>()
+            .Entities
+            .Include(n => n.Role)
+            .Where(m => m.StoreId == storeid) // Chỉ lọc theo StoreId trước
+            .ToListAsync(); // Lấy danh sách về trước
+
+        // Lọc tiếp theo RoleName và Status
+        var florists = employees
+            .Where(e => e.Role != null
+                     && e.Role.RoleName == RoleName.Courier.ToString()
+                     && !(e.Status ?? false)) // Chỉ lấy Status == false hoặc null
+            .ToList();
+
+        // Chuyển danh sách đã lọc sang EmployeeResponse
+        var employeeResponse = florists
+            .Select(employee => new EmployeeResponse
+            {
+                EmployeeId = employee.EmployeeId,
+                FullName = employee.FullName,
+                Address = employee.Address,
+                Email = employee.Email,
+                Phone = employee.Phone,
+                Gender = employee.Gender,
+                Birthday = employee.Birthday,
+                IdentificationNumber = employee.IdentificationNumber,
+                IdentificationFontOfPhoto = employee.IdentificationFontOfPhoto,
+                IdentificationBackOfPhoto = employee.IdentificationBackOfPhoto,
+                RoleName = employee.Role.RoleName,
+                StoreId = employee.StoreId,
+                Status = employee.Status,
+                Avatar = employee.Avatar,
+            })
+            .ToList();
+
+        return employeeResponse;
+    }
+
+    public async Task<IEnumerable<EmployeeResponse>> GetFloristWithStoreIdWithStatusTrue(Guid storeId)
+    {
+        if (storeId == Guid.Empty) // Kiểm tra StoreId hợp lệ
+        {
+            throw new Exception("Store not found");
+        }
+
+        var employees = await _unitOfWork.Repository<Employee>()
+            .Entities
+            .Include(n => n.Role)
+            .Where(m => m.StoreId == storeId) // Chỉ lọc theo StoreId trước
+            .ToListAsync(); // Lấy danh sách về trước
+
+        // Lọc tiếp theo RoleName và Status
+        var florists = employees
+            .Where(e => e.Role != null
+                     && e.Role.RoleName == RoleName.Florist.ToString()
+                     && !(e.Status ?? true)) // Chỉ lấy Status == false hoặc null
+            .ToList();
+
+        // Chuyển danh sách đã lọc sang EmployeeResponse
+        var employeeResponse = florists
+            .Select(employee => new EmployeeResponse
+            {
+                EmployeeId = employee.EmployeeId,
+                FullName = employee.FullName,
+                Address = employee.Address,
+                Email = employee.Email,
+                Phone = employee.Phone,
+                Gender = employee.Gender,
+                Birthday = employee.Birthday,
+                IdentificationNumber = employee.IdentificationNumber,
+                IdentificationFontOfPhoto = employee.IdentificationFontOfPhoto,
+                IdentificationBackOfPhoto = employee.IdentificationBackOfPhoto,
+                RoleName = employee.Role.RoleName,
+                StoreId = employee.StoreId,
+                Status = employee.Status,
+                Avatar = employee.Avatar,
+            })
+            .ToList();
+
+        return employeeResponse;
+    }
+
+
+    public async Task<IEnumerable<EmployeeResponse>> GetCourierWithStoreIdWithStatusTrue(Guid storeid)
+    {
+        if (storeid == Guid.Empty) // Kiểm tra StoreId hợp lệ
+        {
+            throw new Exception("Store not found");
+        }
+
+        var employees = await _unitOfWork.Repository<Employee>()
+            .Entities
+            .Include(n => n.Role)
+            .Where(m => m.StoreId == storeid) // Chỉ lọc theo StoreId trước
+            .ToListAsync(); // Lấy danh sách về trước
+
+        // Lọc tiếp theo RoleName và Status
+        var florists = employees
+            .Where(e => e.Role != null
+                     && e.Role.RoleName == RoleName.Courier.ToString()
+                     && !(e.Status ?? true)) // Chỉ lấy Status == false hoặc null
+            .ToList();
+
+        // Chuyển danh sách đã lọc sang EmployeeResponse
+        var employeeResponse = florists
+            .Select(employee => new EmployeeResponse
+            {
+                EmployeeId = employee.EmployeeId,
+                FullName = employee.FullName,
+                Address = employee.Address,
+                Email = employee.Email,
+                Phone = employee.Phone,
+                Gender = employee.Gender,
+                Birthday = employee.Birthday,
+                IdentificationNumber = employee.IdentificationNumber,
+                IdentificationFontOfPhoto = employee.IdentificationFontOfPhoto,
+                IdentificationBackOfPhoto = employee.IdentificationBackOfPhoto,
+                RoleName = employee.Role.RoleName,
+                StoreId = employee.StoreId,
+                Status = employee.Status,
+                Avatar = employee.Avatar,
+            })
+            .ToList();
+
+        return employeeResponse;
+    }
     public async Task<Result<EmployeeResponse>> UpdateEmployee(Guid id, UpdateEmployeeRequest request)
     {
         var response = new Result<EmployeeResponse>();
@@ -97,55 +331,65 @@ public class EmployeeService : IEmployeeService
             Messages = new []{"Employee deleted successfully."}
         };
     }
-
-    public async Task<Result<EmployeeResponse>> GetFloristWithStoreId(Guid storeId)
+    public async Task ApproveEmployee(Guid employeeId)
     {
-        var response = new Result<EmployeeResponse>();
-        var employee = await _employeeRepository.GetFloristWithStoreId(storeId, RoleName.Florist.ToString());
+        var employee = await _unitOfWork.Repository<Employee>().GetByIdAsync(employeeId);
         if (employee == null)
         {
-            response.Messages = new[] { "Florist is not found!" };
-            response.ResultStatus = ResultStatus.NotFound.ToString();
-            return response;
+            throw new Exception("Employee not found");
         }
-        if (employee.Role == null || employee.Role.RoleName != RoleName.Florist.ToString())
+
+        if (employee.Status == false)
         {
-            response.Messages = new[] { "Employee does not have the Florist role!" };
-            response.ResultStatus = ResultStatus.Invalid.ToString();
-            return response;
+            employee.Status = true;
+            string newPassword = PasswordGenerator.GenerateRandomPassword(12);
+            employee.Password = newPassword;
+
+            _unitOfWork.Repository<Employee>().Update(employee);
+            await _unitOfWork.CompleteAsync();
+
+            // Gửi email chứa mật khẩu mới
+            await SendEmailAsync(employee.Email, "Your New Password",
+                $"Your account has been approved. Your new password is: <strong>{newPassword}</strong>");
         }
-
-        response.RoleName = RoleName.Florist.ToString();
-        response.Data = _mapper.Map<EmployeeResponse>(employee);
-        response.Messages = new[] { "Successfully!" };
-        response.ResultStatus = ResultStatus.Success.ToString();
-
-        return response;
     }
-
-
-    public async Task<Result<EmployeeResponse>> GetCourierWithStoreId(Guid storeid)
+ 
+    public async Task SendEmailAsync(string toEmail, string subject, string body)
     {
-        var response = new Result<EmployeeResponse>();
-        var employee = await _employeeRepository.GetFloristWithStoreId(storeid, RoleName.Courier.ToString());
-        if (employee == null)
-        {
-            response.Messages = new[] { "Courier is not found!" };
-            response.ResultStatus = ResultStatus.NotFound.ToString();
-            return response;
-        }
-        if (employee.Role == null || employee.Role.RoleName != RoleName.Courier.ToString())
-        {
-            response.Messages = new[] { "Employee does not have the Courier role!" };
-            response.ResultStatus = ResultStatus.Invalid.ToString();
-            return response;
-        }
+            using (var smtpClient = new SmtpClient("smtp.gmail.com"))
+             {
+             smtpClient.Port = 587;
+             smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "opbw bxye pymi osah");
+                smtpClient.EnableSsl = true;
 
-        response.RoleName = RoleName.Courier.ToString();
-        response.Data = _mapper.Map<EmployeeResponse>(employee);
-        response.Messages = new[] { "Successfully!" };
-        response.ResultStatus = ResultStatus.Success.ToString();
+             var mailMessage = new MailMessage
+             {
+            From = new MailAddress("your-email@gmail.com"),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+             };
 
-        return response;
+             mailMessage.To.Add(toEmail);
+              await smtpClient.SendMailAsync(mailMessage);
+            }
+    }
+    public class PasswordGenerator
+    {
+        public static string GenerateRandomPassword(int length = 10)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            var crypto = new RNGCryptoServiceProvider();
+            var data = new byte[length];
+
+            crypto.GetBytes(data);
+
+            var result = new StringBuilder(length);
+            foreach (var b in data)
+            {
+                result.Append(chars[b % chars.Length]);
+            }
+            return result.ToString();
+        }
     }
 }
