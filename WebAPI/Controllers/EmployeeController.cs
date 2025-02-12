@@ -117,4 +117,14 @@ public class EmployeeController : ControllerBase
       }
       return Ok(result);
    }
+    [HttpPost("CreateManagerStore")]
+    public async Task<IActionResult> CreateManagerStore(Guid storeid, CreateManagerStoreRequest createManagerStoreRequest)
+    {
+        await _employeeService.CreateManagerStore(storeid , createManagerStoreRequest);
+        return Ok(new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status200OK,
+                   code: ResponseCodeConstants.SUCCESS,
+                   data: "Thêm sản phẩm mới thành công"));
+    }
+
 }

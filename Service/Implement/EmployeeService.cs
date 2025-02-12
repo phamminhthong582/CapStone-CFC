@@ -11,6 +11,8 @@ using System.Net;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
+using Org.BouncyCastle.Utilities.IO;
+using Org.BouncyCastle.Utilities.Net;
 
 namespace Service.Implement;
 
@@ -391,5 +393,29 @@ public class EmployeeService : IEmployeeService
             }
             return result.ToString();
         }
+    }
+    public async Task CreateManagerStore(Guid storeid, CreateManagerStoreRequest createManagerStoreRequest)
+    {
+       
+        var store = await _unitOfWork.Repository<Store>().GetByIdAsync(storeid);
+        if (store == null)
+        {
+            throw new Exception("store not found");
+        }
+        var employee = new Employee
+        {
+            Password = createManagerStoreRequest.Password,
+            FullName = createManagerStoreRequest.FullName,
+            Address = createManagerStoreRequest.Address,
+            Email = createManagerStoreRequest.Email,
+            Gender = createManagerStoreRequest.Gender,
+            Phone = createManagerStoreRequest.Phone,
+            Birthday = createManagerStoreRequest.Birthday,
+            RoleId = createManagerStoreRequest.RoleId,
+            Status = createManagerStoreRequest.Status,
+            Avatar = createManagerStoreRequest.Avatar,
+        };
+        await _unitOfWork.Repository<Employee>().AddAsync(employee);
+        await _unitOfWork.CompleteAsync();  
     }
 }
