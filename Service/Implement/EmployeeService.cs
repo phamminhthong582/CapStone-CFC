@@ -22,13 +22,15 @@ public class EmployeeService : IEmployeeService
     private readonly IMapper _mapper;
     private readonly IRoleRepository _roleRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly CloudinaryService _cloudinaryService;
 
-    public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper, IRoleRepository roleRepository, IUnitOfWork unitOfWork)
+    public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper, IRoleRepository roleRepository, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
     {
         _employeeRepository = employeeRepository;
         _mapper = mapper;
         _roleRepository = roleRepository;
         _unitOfWork = unitOfWork;
+        _cloudinaryService = cloudinaryService;
     }
 
     public async Task<List<EmployeeResponse>> GetAllEmployee()
@@ -402,6 +404,11 @@ public class EmployeeService : IEmployeeService
         {
             throw new Exception("store not found");
         }
+        var folderName = $"Employee/{createManagerStoreRequest.Email}";
+
+        var avatarUrl = createManagerStoreRequest.Avatar != null
+           ? await _cloudinaryService.UploadImageAsync(createManagerStoreRequest.Avatar.OpenReadStream(), $"{folderName}/avatar")
+           : null;
         var employee = new Employee
         {
             Password = createManagerStoreRequest.Password,
@@ -413,7 +420,7 @@ public class EmployeeService : IEmployeeService
             Birthday = createManagerStoreRequest.Birthday,
             RoleId = createManagerStoreRequest.RoleId,
             Status = createManagerStoreRequest.Status,
-            Avatar = createManagerStoreRequest.Avatar,
+            Avatar = avatarUrl,
         };
         await _unitOfWork.Repository<Employee>().AddAsync(employee);
         await _unitOfWork.CompleteAsync();  

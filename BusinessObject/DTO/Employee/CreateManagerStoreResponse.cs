@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,7 +25,8 @@ namespace BusinessObject.DTO.Employee
         public DateTime? Birthday { get; set; }
         public Guid? RoleId { get; set; }
         public bool? Status { get; set; }
-        public string? Avatar { get; set; }
+        [FromForm]
+        public IFormFile? Avatar { get; set; }
 
     }
 }

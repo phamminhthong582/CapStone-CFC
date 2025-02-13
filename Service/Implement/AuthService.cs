@@ -29,15 +29,16 @@ public class AuthService : IAuthService
     private readonly IMemoryCache _cache;
     private readonly ICustomerRepository _customerRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly CloudinaryService _cloudinaryService;
 
-    public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IRoleRepository roleRepository, IMemoryCache cache, ICustomerRepository customerRepository, IUnitOfWork unitOfWork)
+    public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IRoleRepository roleRepository, IMemoryCache cache, ICustomerRepository customerRepository, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
         _mapper = mapper;
         _configuration = configuration;
         _roleRepository = roleRepository;
-        
+        _cloudinaryService = cloudinaryService;
         _cache = cache;
         _customerRepository = customerRepository;
         _unitOfWork = unitOfWork;
@@ -180,9 +181,24 @@ public class AuthService : IAuthService
             response.ResultStatus = ResultStatus.Failed.ToString();
             return response;
         }
+        var folderName = $"Employee/{request.Email}";
 
-/*        CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-*/        var employee = new Employee
+        var avatarUrl = request.Avatar != null
+            ? await _cloudinaryService.UploadImageAsync(request.Avatar.OpenReadStream(), $"{folderName}/avatar")
+            : null;
+
+        var idFrontUrl = request.IdentificationFontOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationFontOfPhoto.OpenReadStream(), $"{folderName}/id_front")
+            : null;
+
+        var idBackUrl = request.IdentificationBackOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationBackOfPhoto.OpenReadStream(), $"{folderName}/id_back")
+            : null;
+
+
+        /*        CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        */
+        var employee = new Employee
         {
             Email = request.Email,
             FullName = request.FullName,
@@ -190,8 +206,9 @@ public class AuthService : IAuthService
             Gender = request.Gender,
             Birthday = request.Birthday,
             IdentificationNumber = request.IdentificationNumber,
-            IdentificationFontOfPhoto = request.IdentificationFontOfPhoto,
-            IdentificationBackOfPhoto = request.IdentificationBackOfPhoto,
+            Avatar = avatarUrl, // Lưu URL ảnh vào database
+            IdentificationFontOfPhoto = idFrontUrl,
+            IdentificationBackOfPhoto = idBackUrl,
             Phone = request.Phone,
             Status = false,
             CreateAt = DateTime.UtcNow,
@@ -222,7 +239,20 @@ public class AuthService : IAuthService
         response.ResultStatus = ResultStatus.Failed.ToString();
         return response;
     }
-    var employee = new Employee
+        var folderName = $"Employee/{request.Email}";
+
+        var avatarUrl = request.Avatar != null
+            ? await _cloudinaryService.UploadImageAsync(request.Avatar.OpenReadStream(), $"{folderName}/avatar")
+            : null;
+
+        var idFrontUrl = request.IdentificationFontOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationFontOfPhoto.OpenReadStream(), $"{folderName}/id_front")
+            : null;
+
+        var idBackUrl = request.IdentificationBackOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationBackOfPhoto.OpenReadStream(), $"{folderName}/id_back")
+            : null;
+        var employee = new Employee
     {
         Email = request.Email,
         FullName = request.FullName,
@@ -230,11 +260,14 @@ public class AuthService : IAuthService
         RoleId = roleId.Value, 
         MotoType = request.MotoType,
         NumberMoto = request.NumberMoto,
+        Gender = request.Gender,    
+        Birthday = request.Birthday,    
         ColorMoto = request.ColorMoto,
-        IdentificationBackOfPhoto = request.IdentificationBackOfPhoto,
+        Avatar = avatarUrl, // Lưu URL ảnh vào database
+        IdentificationFontOfPhoto = idFrontUrl,
+        IdentificationBackOfPhoto = idBackUrl,
         IdentificationNumber = request.IdentificationNumber,
-        IdentificationFontOfPhoto = request.IdentificationFontOfPhoto, 
-        Status = true, 
+        Status = false, 
         CreateAt = DateTime.UtcNow
     };
     
