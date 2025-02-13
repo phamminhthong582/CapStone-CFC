@@ -35,8 +35,8 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
-    [HttpPost("register-staff-account")]
-    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromBody] RegisterRequest registerRequest)
+    [HttpPost("register-Florist-account")]
+    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromForm] RegisterRequest registerRequest)
     {
         try
         {
@@ -65,7 +65,7 @@ public class AuthController : ControllerBase
     }
     [HttpPost("register-courier-account")]
     public async Task<ActionResult<Result<EmployeeResponse>>> CreateCourierAccount(
-        [FromBody] CreateCourierRequest registerRequest)
+        [FromForm] CreateCourierRequest registerRequest)
     {
         var result = await _authService.CreateCourierAccount(registerRequest);
 
