@@ -15,10 +15,12 @@ namespace Service.Implement
     public class ProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public ProductService(IUnitOfWork unitOfWork)
+        public ProductService(IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
         {
-            this._unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task CreateProduct(ProductRequest productRequest)
@@ -39,11 +41,18 @@ namespace Service.Implement
             };
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.CompleteAsync();
+            var folderName = $"Product/{productRequest.ProductName}";
+           
             if (productRequest.Images != null && productRequest.Images.Any())
             {
+                var productUrl = productRequest.Images != null && productRequest.Images.Any()
+    ? await _cloudinaryService.UploadImageAsync(productRequest.Images.First().OpenReadStream(), $"{folderName}")
+    : null;
+    
                 var productImages = productRequest.Images.Select(imageRequest => new ProductImage
                 {
-                    ProductImage1 = imageRequest.ProductImage1,
+
+                    ProductImage1 = productUrl,
                     ProductId = product.ProductId,
                     CreateAt = DateTime.Now,
                     Status = true
