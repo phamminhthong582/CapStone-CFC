@@ -21,7 +21,7 @@ namespace Service.Implement
             this._unitOfWork = unitOfWork;
         }
 
-        public async Task CreateProduct(ProductRequest productRequest, Guid StoreId)
+        public async Task CreateProduct(ProductRequest productRequest)
         {
             var product = new Product
             {
@@ -29,7 +29,6 @@ namespace Service.Implement
                 Quantity = productRequest.Quantity,
                 Price = productRequest.Price,
                 Size = productRequest.Size,
-                StoreId = StoreId,
                 Discount = productRequest.Discount,
                 Description = productRequest.Description,
                 Featured = productRequest.Featured,
@@ -76,7 +75,6 @@ namespace Service.Implement
             var productResponse = new ProductResponse{
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
-                StoreId = product.StoreId,
                 Quantity = product.Quantity,
                 Price = product.Price,
 
@@ -114,7 +112,6 @@ namespace Service.Implement
             {
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
-                StoreId = product.StoreId,
                 Price = product.Price,
                 Quantity = product.Quantity,
                 CreateAt = DateTime.Now,
@@ -140,7 +137,7 @@ namespace Service.Implement
             return productResponse;
         }
 
-        public async Task<IEnumerable<ProductResponse>> GetProductsByStoreId(Guid StoreId)
+    /*    public async Task<IEnumerable<ProductResponse>> GetProductsByStoreId(Guid StoreId)
         {
             var products = (await _unitOfWork.Repository<Product>().GetAllAsync()).Where(product => product.StoreId == StoreId);
 
@@ -175,7 +172,7 @@ namespace Service.Implement
             });
 
             return productResponse;
-        }
+        }*/
 
         public async Task UpdateProduct(UpdateProductRequest updateProductRequest, Guid ProductId)
         {

@@ -56,7 +56,6 @@ namespace Service.Implement
                 Note = orderRequest.Note,
                 DeliveryDateTime = orderRequest.DeliveryDateTime,
                 Phone = orderRequest.Phone,
-                StoreId = customer.StoreId,
                 Transfer = orderRequest.Transfer,
                 CreateAt = DateTime.Now,
                 Refund = false,
@@ -136,7 +135,6 @@ namespace Service.Implement
             bool? Transfer = orderRequest.Transfer;
 
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
-            Guid? storeId = customer.StoreId;
 
             if (PromotionID == null)
             {
@@ -152,7 +150,6 @@ namespace Service.Implement
                 Note = Note,
                 DeliveryDateTime = DeliveryDateTime,
                 Phone = Phone,
-                StoreId = storeId,
                 Transfer = Transfer,
                 CreateAt = DateTime.Now,
                 Refund = false,

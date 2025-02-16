@@ -48,7 +48,7 @@ namespace WebAPI.Controllers
             // For demonstration, let's just return a message with the email (not recommended to expose password in production)
             return $"Admin email: {adminEmail}, Admin password: {adminPassword}";
         }
-        [HttpGet("GetProductByStoreId")]
+     /*   [HttpGet("GetProductByStoreId")]
         public async Task<IActionResult> GetProductsByStoreId(Guid storeId)
         {
             var result = await _productService.GetProductsByStoreId(storeId);
@@ -56,12 +56,12 @@ namespace WebAPI.Controllers
                statusCode: StatusCodes.Status200OK,
                code: ResponseCodeConstants.SUCCESS,
                data: result));
-        }
+        }*/
 
         [HttpPost("CreateProduct")]
-        public async Task<IActionResult> CreateProduct(ProductRequest productRequest,Guid storeId)
+        public async Task<IActionResult> CreateProduct(ProductRequest productRequest)
         {
-            await _productService.CreateProduct(productRequest, storeId);
+            await _productService.CreateProduct(productRequest);
             return Ok(new BaseResponseModel<string>(
                        statusCode: StatusCodes.Status200OK,
                        code: ResponseCodeConstants.SUCCESS,

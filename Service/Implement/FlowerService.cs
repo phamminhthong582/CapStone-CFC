@@ -38,7 +38,6 @@ public class FlowerService : IFlowerService
             Quantity = request.Quantity ?? 0,
             CategoryId = request.CategoryId ?? Guid.Empty,
             Description = request.Description,
-            StoreId = request.StoreId ?? Guid.Empty,
             CreateAt = DateTime.UtcNow,
             UpdateAt = DateTime.UtcNow
         };
@@ -64,7 +63,6 @@ public class FlowerService : IFlowerService
         if (!string.IsNullOrWhiteSpace(request.Image)) flower.Image = request.Image;
         if (request.Quantity.HasValue) flower.Quantity = request.Quantity.Value;
         if (request.CategoryId.HasValue) flower.CategoryId = request.CategoryId.Value;
-        if (request.StoreId.HasValue) flower.StoreId = request.StoreId.Value;
         if (!string.IsNullOrWhiteSpace(request.Description)) flower.Description = request.Description;
         flower.UpdateAt = DateTime.UtcNow;
         await _flowerRepository.UpdateFlower(flower);
@@ -78,7 +76,6 @@ public class FlowerService : IFlowerService
                 Image = flower.Image,
                 Quantity = flower.Quantity,
                 CategoryId = flower.CategoryId,
-                StoreId = flower.StoreId,
                 Description = flower.Description,
             },
             ResultStatus = ResultStatus.Success.ToString(),
@@ -146,7 +143,6 @@ public class FlowerService : IFlowerService
             Image = flower.Image,
             Quantity = flower.Quantity,
             CategoryId = flower.CategoryId,
-            StoreId = flower.StoreId,
             Description = flower.Description,
         };
         return new Result<FlowerResponse>
@@ -178,7 +174,6 @@ public class FlowerService : IFlowerService
             Image = flower.Image,
             Quantity = flower.Quantity,
             CategoryId = flower.CategoryId,
-            StoreId = flower.StoreId,
             Description = flower.Description,
         }).ToList();
 
