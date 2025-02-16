@@ -113,9 +113,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasColumnType("nvarchar").HasMaxLength(20);
 
-            entity.HasOne(d => d.Store).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.StoreId)
-                .HasConstraintName("FK_Customer_Store");
+         
         });
         modelBuilder.Entity<Cart>(entity =>
         {
@@ -191,9 +189,7 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK_Flower_Category");
 
-            entity.HasOne(d => d.Store).WithMany(p => p.Flowers)
-                .HasForeignKey(d => d.StoreId)
-                .HasConstraintName("FK_Flower_Store");
+            
         });
 
         modelBuilder.Entity<FlowerBasket>(entity =>
@@ -205,9 +201,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.FlowerBasketName).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Store).WithMany(p => p.FlowerBaskets)
-                .HasForeignKey(d => d.StoreId)
-                .HasConstraintName("FK_FlowerBasket_Store");
+            
         });
 
         modelBuilder.Entity<FlowerCustom>(entity =>
@@ -316,7 +310,6 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK_Product_Category");
-            entity.HasOne(d => d.Store).WithMany(p => p.Products).HasForeignKey(d => d.StoreId).HasConstraintName("FK_Product_Store");
         });
 
         modelBuilder.Entity<ProductCustom>(entity =>

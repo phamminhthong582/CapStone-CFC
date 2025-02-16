@@ -4,7 +4,6 @@ public class UpdateFlowerRequest
 {
     public double? Price { get; set; }
 
-    public Guid? StoreId { get; set; }
 
     public string? Image { get; set; }
 

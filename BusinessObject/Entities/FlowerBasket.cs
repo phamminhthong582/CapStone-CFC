@@ -11,8 +11,6 @@ public partial class FlowerBasket
 
     public double? Price { get; set; }
 
-    public Guid? StoreId { get; set; }
-
     public string? Image { get; set; }
 
     public int? Quantity { get; set; }
@@ -31,5 +29,4 @@ public partial class FlowerBasket
 
     public virtual ICollection<ProductCustom> ProductCustoms { get; set; } = new List<ProductCustom>();
 
-    public virtual Store? Store { get; set; }
 }

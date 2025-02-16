@@ -33,7 +33,6 @@ public class FlowerBasketService : IFlowerBasketService
         var newFlowerBasket = new FlowerBasket
         {
             FlowerBasketName = request.FlowerBasketName,
-            StoreId = request.StoreId ?? Guid.Empty,
             Decription = request.Description,
             Feature = request.Feature,
             Price = request.Price,
@@ -66,8 +65,7 @@ public class FlowerBasketService : IFlowerBasketService
         if (!string.IsNullOrWhiteSpace(request.FlowerBasketName))
             flowerBasket.FlowerBasketName = request.FlowerBasketName;
 
-        if (request.StoreId.HasValue)
-            flowerBasket.StoreId = request.StoreId.Value;
+      
 
         if (!string.IsNullOrWhiteSpace(request.Description))
             flowerBasket.Decription = request.Description;
@@ -87,7 +85,6 @@ public class FlowerBasketService : IFlowerBasketService
             FlowerBasketId = flowerBasket.FlowerBasketId,
             FlowerBasketName = flowerBasket.FlowerBasketName,
             Price = flowerBasket.Price ?? 0.0,  
-            StoreId = flowerBasket.StoreId ?? Guid.Empty, 
             Description = flowerBasket.Decription,
             Feature = flowerBasket.Feature ?? false, 
             Status = flowerBasket.Status ?? false,   

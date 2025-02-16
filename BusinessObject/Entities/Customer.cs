@@ -25,7 +25,6 @@ public partial class Customer
 
     public DateTime? Birthday { get; set; }
 
-    public Guid? StoreId { get; set; }
 
     public DateTime? CreateAt { get; set; }
 
@@ -42,8 +41,6 @@ public partial class Customer
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-
-    public virtual Store? Store { get; set; }
 
     public virtual ICollection<Wallet> Wallets { get; set; } = new List<Wallet>();
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
