@@ -59,7 +59,7 @@ namespace WebAPI.Controllers
         }*/
 
         [HttpPost("CreateProduct")]
-        public async Task<IActionResult> CreateProduct(ProductRequest productRequest)
+        public async Task<IActionResult> CreateProduct([FromForm]ProductRequest productRequest)
         {
             await _productService.CreateProduct(productRequest);
             return Ok(new BaseResponseModel<string>(

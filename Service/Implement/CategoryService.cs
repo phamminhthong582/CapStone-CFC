@@ -35,8 +35,8 @@ public class CategoryService : ICategoryService
         {
             CategoryName = request.Name,
             Status = true, 
-            CreateAt = request.CreateAt ?? DateTime.UtcNow,
-            UpdateAt = request.UpdateAt ?? DateTime.UtcNow
+            CreateAt =  DateTime.UtcNow,
+            UpdateAt =DateTime.UtcNow
         };
         await _categoryRepository.AddCategory(newCategory);
         return new Result<Category>
@@ -59,6 +59,7 @@ public class CategoryService : ICategoryService
             throw new ArgumentException("Cannot replace by white space", nameof(request.CategoryName));
         }
         category.CategoryName = request.CategoryName;
+
         await _categoryRepository.UpdateCategory(category);
         return new Result<CategoryResponse>
         {
