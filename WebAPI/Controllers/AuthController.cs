@@ -36,11 +36,11 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
     [HttpPost("register-Florist-account")]
-    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromForm] RegisterRequest registerRequest)
+    public async Task<ActionResult<Result<EmployeeResponse>>> Register(Guid storeId,[FromForm] RegisterRequest registerRequest)
     {
         try
         {
-            var result = await _authService.RegisterFlorist(registerRequest);
+            var result = await _authService.RegisterFlorist(storeId,registerRequest);
 
             
             if (result.ResultStatus == ResultStatus.Duplicated.ToString())
@@ -65,9 +65,9 @@ public class AuthController : ControllerBase
     }
     [HttpPost("register-courier-account")]
     public async Task<ActionResult<Result<EmployeeResponse>>> CreateCourierAccount(
-        [FromForm] CreateCourierRequest registerRequest)
+        Guid storeId,[FromForm] CreateCourierRequest registerRequest)
     {
-        var result = await _authService.CreateCourierAccount(registerRequest);
+        var result = await _authService.CreateCourierAccount(storeId,registerRequest);
 
         if (result.ResultStatus != ResultStatus.Success.ToString())
         {

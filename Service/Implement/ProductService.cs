@@ -35,6 +35,7 @@ namespace Service.Implement
                 Description = productRequest.Description,
                 Featured = productRequest.Featured,
                 CategoryId = productRequest.CategoryId,
+                Sold = 0,
                 Status = true,
                 CreateAt = DateTime.Now,
 
