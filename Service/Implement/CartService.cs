@@ -58,7 +58,6 @@ namespace Service.Implement
                     CustomerId = customerID,
                     ProductId = ProductID,
                     Quantity = Quantity,
-                    StoreId = product.StoreId,
                     ProductTotalPrice = (product.Price - (product.Price * product.Discount) / 100) * Quantity,
                 };
 

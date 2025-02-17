@@ -57,6 +57,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         // Email
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<SendMailWithrawMoneyService>();
 
         //Product
         services.AddScoped<IProductService, ProductService>();
@@ -69,7 +70,28 @@ public static class DependencyInjection
 
         //Cart 
         services.AddScoped<ICartService, CartService>();
+
+        //Wallet
+        services.AddScoped<IWalletService, WalletService>();
+        //IWithdrawMoney
+
+        services.AddScoped<IWithdrawMoneyService, WithdrawMoneyService>();
+
+        //Refund 
+        services.AddScoped<IRefundService, RefundService>();
+
+        //VNpay
+        services.AddScoped<IVnPayService,VnPayService>();
+
+        //Payment
+        services.AddScoped<IPaymentService, PaymentService>();
+
+        //Cloudinary
+        services.AddSingleton<CloudinaryService>();
+
+
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
+
         return services;
     }
 }

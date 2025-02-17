@@ -4,6 +4,7 @@ using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Customer;
 using BusinessObject.DTO.Employee;
 using BusinessObject.DTO.Response;
+using Core.Infrastructures;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
@@ -34,8 +35,8 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
-    [HttpPost("register-staff-account")]
-    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromBody] RegisterRequest registerRequest)
+    [HttpPost("register-Florist-account")]
+    public async Task<ActionResult<Result<EmployeeResponse>>> Register([FromForm] RegisterRequest registerRequest)
     {
         try
         {
@@ -64,7 +65,7 @@ public class AuthController : ControllerBase
     }
     [HttpPost("register-courier-account")]
     public async Task<ActionResult<Result<EmployeeResponse>>> CreateCourierAccount(
-        [FromBody] CreateCourierRequest registerRequest)
+        [FromForm] CreateCourierRequest registerRequest)
     {
         var result = await _authService.CreateCourierAccount(registerRequest);
 
@@ -97,19 +98,54 @@ public class AuthController : ControllerBase
 
         return Redirect($"https://giveawayproject.jettonetto.org/verify-email?verificationstatus=failed");
     }
-   /* [Authorize(Roles = "Admin")]
-    [HttpPost("create-storemanager-account")]
-    public async Task<ActionResult<UserResponse>> CreateStoreManagerAccount(
-      [FromBody] CreateStoreManagerRequest registerRequest)
+    /* [Authorize(Roles = "Admin")]
+     [HttpPost("create-storemanager-account")]
+     public async Task<ActionResult<UserResponse>> CreateStoreManagerAccount(
+       [FromBody] CreateStoreManagerRequest registerRequest)
+     {
+         var result = await _authService.CreateStoreManagerAccount(registerRequest);
+
+         if (result.ResultStatus != ResultStatus.Success.ToString())
+         {
+             return StatusCode((int)HttpStatusCode.InternalServerError, result);
+         }
+
+         return Ok(result);
+     }*/
+    [HttpPost("forgot-password-by-customer")]
+    public async Task<IActionResult> ForgotPassword(string email)
     {
-        var result = await _authService.CreateStoreManagerAccount(registerRequest);
-
-        if (result.ResultStatus != ResultStatus.Success.ToString())
-        {
-            return StatusCode((int)HttpStatusCode.InternalServerError, result);
-        }
-
-        return Ok(result);
-    }*/
-
+         await  _authService.ForgotPasswordForCustomer(email);
+        return Ok(new BaseResponseModel<string>(
+                        statusCode: StatusCodes.Status200OK,
+                        code: ResponseCodeConstants.SUCCESS,
+                        data: "Thêm sản phẩm mới thành công"));
+    }
+    [HttpPost("forgot-password-by-employee")]
+    public async Task<IActionResult> ForgotPasswordByEmployee(string email)
+    {
+        await _authService.ForgotPasswordForEmployee(email);
+        return Ok(new BaseResponseModel<string>(
+                        statusCode: StatusCodes.Status200OK,
+                        code: ResponseCodeConstants.SUCCESS,
+                        data: "Thêm sản phẩm mới thành công"));
+    }
+    [HttpPost("set-password-by-customer")]
+    public async Task<IActionResult> SetPasswordForCustomer(string email, string NewPassword, string token)
+    {
+        await _authService.SetPasswordForCustomer(email, NewPassword, token);
+        return Ok(new BaseResponseModel<string>(
+                        statusCode: StatusCodes.Status200OK,
+                        code: ResponseCodeConstants.SUCCESS,
+                        data: "Thêm sản phẩm mới thành công"));
+    }
+    [HttpPost("set-password-by-employee")]
+    public async Task<IActionResult> SetPasswordForEmployee(string email, string NewPassword, string token)
+    {
+        await _authService.SetPasswordForEmployee(email, NewPassword, token);
+        return Ok(new BaseResponseModel<string>(
+                        statusCode: StatusCodes.Status200OK,
+                        code: ResponseCodeConstants.SUCCESS,
+                        data: "Thêm sản phẩm mới thành công"));
+    }
 }

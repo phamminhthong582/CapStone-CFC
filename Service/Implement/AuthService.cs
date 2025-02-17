@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.Net.Mail;
+using System.Net;
+using System.Security.Claims;
 
 using System.Security.Cryptography;
 
@@ -26,21 +28,23 @@ public class AuthService : IAuthService
     private readonly string newpass = "newpasskey";
     private readonly IMemoryCache _cache;
     private readonly ICustomerRepository _customerRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly CloudinaryService _cloudinaryService;
 
-    public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper,
-        IConfiguration configuration, IRoleRepository roleRepository , ICustomerRepository customerRepository
-        , IMemoryCache memoryCache)
+    public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IRoleRepository roleRepository, IMemoryCache cache, ICustomerRepository customerRepository, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
         _mapper = mapper;
-        _cache = memoryCache;
         _configuration = configuration;
         _roleRepository = roleRepository;
+        _cloudinaryService = cloudinaryService;
+        _cache = cache;
         _customerRepository = customerRepository;
+        _unitOfWork = unitOfWork;
     }
 
-   public async Task<Result<LoginResponse>> Login(string email, string password)
+    public async Task<Result<LoginResponse>> Login(string email, string password)
 {
     var customer = await _customerRepository.FindCustomerByEmail(email);
     if (customer != null)
@@ -177,21 +181,36 @@ public class AuthService : IAuthService
             response.ResultStatus = ResultStatus.Failed.ToString();
             return response;
         }
+        var folderName = $"Employee/{request.Email}";
 
-        CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        var avatarUrl = request.Avatar != null
+            ? await _cloudinaryService.UploadImageAsync(request.Avatar.OpenReadStream(), $"{folderName}/avatar")
+            : null;
+
+        var idFrontUrl = request.IdentificationFontOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationFontOfPhoto.OpenReadStream(), $"{folderName}/id_front")
+            : null;
+
+        var idBackUrl = request.IdentificationBackOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationBackOfPhoto.OpenReadStream(), $"{folderName}/id_back")
+            : null;
+
+
+        /*        CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+        */
         var employee = new Employee
         {
             Email = request.Email,
-            Password = Convert.ToBase64String(passwordHash),
             FullName = request.FullName,
             Address = request.Address,
             Gender = request.Gender,
             Birthday = request.Birthday,
             IdentificationNumber = request.IdentificationNumber,
-            IdentificationFontOfPhoto = request.IdentificationFontOfPhoto,
-            IdentificationBackOfPhoto = request.IdentificationBackOfPhoto,
+            Avatar = avatarUrl, // Lưu URL ảnh vào database
+            IdentificationFontOfPhoto = idFrontUrl,
+            IdentificationBackOfPhoto = idBackUrl,
             Phone = request.Phone,
-            Status = true,
+            Status = false,
             CreateAt = DateTime.UtcNow,
             RoleId = roleId
         };
@@ -220,21 +239,35 @@ public class AuthService : IAuthService
         response.ResultStatus = ResultStatus.Failed.ToString();
         return response;
     }
-    CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-    var employee = new Employee
+        var folderName = $"Employee/{request.Email}";
+
+        var avatarUrl = request.Avatar != null
+            ? await _cloudinaryService.UploadImageAsync(request.Avatar.OpenReadStream(), $"{folderName}/avatar")
+            : null;
+
+        var idFrontUrl = request.IdentificationFontOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationFontOfPhoto.OpenReadStream(), $"{folderName}/id_front")
+            : null;
+
+        var idBackUrl = request.IdentificationBackOfPhoto != null
+            ? await _cloudinaryService.UploadImageAsync(request.IdentificationBackOfPhoto.OpenReadStream(), $"{folderName}/id_back")
+            : null;
+        var employee = new Employee
     {
         Email = request.Email,
-        Password = Convert.ToBase64String(passwordHash),
         FullName = request.FullName,
         Phone = request.Phone,
         RoleId = roleId.Value, 
         MotoType = request.MotoType,
         NumberMoto = request.NumberMoto,
+        Gender = request.Gender,    
+        Birthday = request.Birthday,    
         ColorMoto = request.ColorMoto,
-        IdentificationBackOfPhoto = request.IdentificationBackOfPhoto,
+        Avatar = avatarUrl, // Lưu URL ảnh vào database
+        IdentificationFontOfPhoto = idFrontUrl,
+        IdentificationBackOfPhoto = idBackUrl,
         IdentificationNumber = request.IdentificationNumber,
-        IdentificationFontOfPhoto = request.IdentificationFontOfPhoto, 
-        Status = true, 
+        Status = false, 
         CreateAt = DateTime.UtcNow
     };
     
@@ -278,4 +311,105 @@ public async Task<Result<string>> VerifyEmail(Guid id, string token)
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             }
         }
+
+    public async Task ForgotPasswordForCustomer(string email)
+    {
+        var customer = (await _unitOfWork.Repository<Customer>().GetAllAsync())
+            .FirstOrDefault(n => n.Email == email);
+
+        if (customer != null)
+        {
+            // 1️⃣ Tạo token reset mật khẩu
+            var token = Guid.NewGuid().ToString(); // Có thể thay bằng JWT hoặc mã hash bảo mật hơn
+
+            // 2️⃣ Lưu token vào database (tuỳ theo hệ thống của bạn)
+            // (Ví dụ, có thể thêm thuộc tính ResetPasswordToken vào Customer/Employee và lưu vào DB)
+
+            // 3️⃣ Tạo link reset mật khẩu
+            string resetUrl = $"https://yourwebsite.com/reset-password?email={email}&token={token}";
+            customer.Otp = token;
+            _unitOfWork.Repository<Customer>().Update(customer);
+            await _unitOfWork.CompleteAsync();
+            // 4️⃣ Gửi email reset mật khẩu
+            string subject = "Reset Your Password";
+            string body = $"Click vào link sau để đặt lại mật khẩu: <a href='{resetUrl}'>Reset Password</a>";
+
+            await SendEmailAsync(email, subject, body);
+        }
     }
+    public async Task ForgotPasswordForEmployee(string email)
+    {
+        var emplyee = (await _unitOfWork.Repository<Employee>().GetAllAsync())
+            .FirstOrDefault(n => n.Email == email);
+
+        if (emplyee != null)
+        {
+            // 1️⃣ Tạo token reset mật khẩu
+            var token = Guid.NewGuid().ToString(); // Có thể thay bằng JWT hoặc mã hash bảo mật hơn
+
+            // 2️⃣ Lưu token vào database (tuỳ theo hệ thống của bạn)
+            // (Ví dụ, có thể thêm thuộc tính ResetPasswordToken vào Customer/Employee và lưu vào DB)
+
+            // 3️⃣ Tạo link reset mật khẩu
+            string resetUrl = $"https://yourwebsite.com/reset-password?email={email}&token={token}";
+            emplyee.Otp = token;
+            _unitOfWork.Repository<Employee>().Update(emplyee);
+            await _unitOfWork.CompleteAsync();
+            // 4️⃣ Gửi email reset mật khẩu
+            string subject = "Reset Your Password";
+            string body = $"Click vào link sau để đặt lại mật khẩu: <a href='{resetUrl}'>Reset Password</a>";
+
+            await SendEmailAsync(email, subject, body);
+        }
+    }
+    // Hàm gửi email (có thể dùng thư viện như MailKit hoặc SMTP client)
+    private async Task SendEmailAsync(string toEmail, string subject, string body)
+    {
+        using (var smtpClient = new SmtpClient("smtp.gmail.com"))
+
+        {
+            smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "opbw bxye pymi osah");
+            smtpClient.EnableSsl = true;
+            smtpClient.Port = 587; // Cổng SMTP (thay đổi theo nhà cung cấp)
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress("minhthongpham9a2@gmail.com"),
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            };
+
+            mailMessage.To.Add(toEmail);
+            await smtpClient.SendMailAsync(mailMessage);
+        }
+    }
+    public async Task SetPasswordForCustomer(string email, string NewPassword, string token)
+    {
+        var customer = (await _unitOfWork.Repository<Customer>().GetAllAsync())
+            .FirstOrDefault(n => n.Email == email);
+
+       
+        if (customer != null && customer.Otp == token)
+        {
+            CreatePasswordHash(NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            customer.Password = Convert.ToBase64String(passwordHash);
+
+            _unitOfWork.Repository<Customer>().Update(customer);
+            await _unitOfWork.CompleteAsync();
+        }
+       
+    }
+    public async Task SetPasswordForEmployee(string email, string NewPassword, string token)
+    {
+        var employee = (await _unitOfWork.Repository<Employee>().GetAllAsync())
+            .FirstOrDefault(n => n.Email == email);
+        if (employee != null && employee.Otp == token)
+        {
+            CreatePasswordHash(NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            employee.Password = Convert.ToBase64String(passwordHash);
+            _unitOfWork.Repository<Employee>().Update(employee);
+            await _unitOfWork.CompleteAsync();
+        }
+    }
+}

@@ -1,4 +1,7 @@
-﻿namespace BusinessObject.DTO.Auth;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BusinessObject.DTO.Auth;
 
 public class CreateCourierRequest
 {
@@ -6,7 +9,6 @@ public class CreateCourierRequest
 
     public string? Address { get; set; }
 
-    public string Password { get; set; }
 
     public string? Email { get; set; }
 
@@ -17,17 +19,20 @@ public class CreateCourierRequest
     public DateTime? Birthday { get; set; }
 
     public string? IdentificationNumber { get; set; }
+    [FromForm]
+    public IFormFile? Avatar { get; set; }
 
-    public string? IdentificationFontOfPhoto { get; set; }
+    [FromForm]
+    public IFormFile? IdentificationFontOfPhoto { get; set; }
 
-    public string? IdentificationBackOfPhoto { get; set; }
-    
+    [FromForm]
+    public IFormFile? IdentificationBackOfPhoto { get; set; }
+
     public string? NumberMoto { get; set; }
     
     public string? ColorMoto {  get; set; }
     
     public string? MotoType { get; set; }   
     
-    public bool? Status { get; set; }
 
 }

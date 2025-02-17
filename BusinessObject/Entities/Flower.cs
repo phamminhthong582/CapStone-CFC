@@ -11,7 +11,6 @@ public partial class Flower
 
     public double? Price { get; set; }
 
-    public Guid? StoreId { get; set; }
 
     public string? Image { get; set; }
 
@@ -35,5 +34,4 @@ public partial class Flower
 
     public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();
 
-    public virtual Store? Store { get; set; }
 }

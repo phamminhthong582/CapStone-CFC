@@ -15,13 +15,15 @@ namespace Service.Implement
     public class ProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public ProductService(IUnitOfWork unitOfWork)
+        public ProductService(IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
         {
-            this._unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork;
+            _cloudinaryService = cloudinaryService;
         }
 
-        public async Task CreateProduct(ProductRequest productRequest, Guid StoreId)
+        public async Task CreateProduct(ProductRequest productRequest)
         {
             var product = new Product
             {
@@ -29,7 +31,6 @@ namespace Service.Implement
                 Quantity = productRequest.Quantity,
                 Price = productRequest.Price,
                 Size = productRequest.Size,
-                StoreId = StoreId,
                 Discount = productRequest.Discount,
                 Description = productRequest.Description,
                 Featured = productRequest.Featured,
@@ -40,11 +41,18 @@ namespace Service.Implement
             };
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.CompleteAsync();
+            var folderName = $"Product/{productRequest.ProductName}";
+           
             if (productRequest.Images != null && productRequest.Images.Any())
             {
+                var productUrl = productRequest.Images != null && productRequest.Images.Any()
+    ? await _cloudinaryService.UploadImageAsync(productRequest.Images.First().OpenReadStream(), $"{folderName}")
+    : null;
+    
                 var productImages = productRequest.Images.Select(imageRequest => new ProductImage
                 {
-                    ProductImage1 = imageRequest.ProductImage1,
+
+                    ProductImage1 = productUrl,
                     ProductId = product.ProductId,
                     CreateAt = DateTime.Now,
                     Status = true
@@ -76,8 +84,9 @@ namespace Service.Implement
             var productResponse = new ProductResponse{
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
-                StoreId = product.StoreId,
                 Quantity = product.Quantity,
+                Price = product.Price,
+
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Size = product.Size,
@@ -105,14 +114,14 @@ namespace Service.Implement
 
         public async Task<IEnumerable<ProductResponse>> GetProducts()
         {
-            var products = await _unitOfWork.Repository<Product>().GetAllAsync();
+            var products = await _unitOfWork.Repository<Product>().Entities.Include(n => n.Category).ToListAsync();
             var allImages = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
 
             var productResponse = products.Select(product => new ProductResponse
             {
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
-                StoreId = product.StoreId,
+                Price = product.Price,
                 Quantity = product.Quantity,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
@@ -137,7 +146,7 @@ namespace Service.Implement
             return productResponse;
         }
 
-        public async Task<IEnumerable<ProductResponse>> GetProductsByStoreId(Guid StoreId)
+    /*    public async Task<IEnumerable<ProductResponse>> GetProductsByStoreId(Guid StoreId)
         {
             var products = (await _unitOfWork.Repository<Product>().GetAllAsync()).Where(product => product.StoreId == StoreId);
 
@@ -149,6 +158,8 @@ namespace Service.Implement
                 ProductName = product.ProductName,
                 StoreId = product.StoreId,
                 Quantity = product.Quantity,
+                Price = product.Price,
+
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Size = product.Size,
@@ -170,7 +181,7 @@ namespace Service.Implement
             });
 
             return productResponse;
-        }
+        }*/
 
         public async Task UpdateProduct(UpdateProductRequest updateProductRequest, Guid ProductId)
         {
@@ -182,7 +193,7 @@ namespace Service.Implement
             product.ProductName = updateProductRequest.ProductName ?? product.ProductName; 
             product.Quantity = updateProductRequest.Quantity?? product.Quantity;
             product.Description = updateProductRequest.Description ?? product.Description;
-            product.Price= updateProductRequest.Price?? product.Price   ;
+            product.Price= updateProductRequest.Price?? product.Price;
             product.Size = updateProductRequest.Size ?? product.Size;
             product.Discount = updateProductRequest.Discount ?? product.Discount;
             product.Featured = updateProductRequest.Featured ?? product.Featured;

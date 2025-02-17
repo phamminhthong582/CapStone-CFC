@@ -63,6 +63,15 @@ namespace WebAPI.Controllers
                      code: ResponseCodeConstants.SUCCESS,
                      data: "Order thành công"));
         }
+        [HttpPost("ConvertCartToOrder")]
+        public async Task<IActionResult> ConvertCartToOrder(OrderRequest orderRequest, Guid CustomerId)
+        {
+            await orderService.ConvertCartToOrder(CustomerId, orderRequest);
+            return Ok(new BaseResponseModel<string>(
+                     statusCode: StatusCodes.Status200OK,
+                     code: ResponseCodeConstants.SUCCESS,
+                     data: "Order thành công"));
+        }
         [HttpDelete("DeleteOrder/{id}")]
         public async Task<IActionResult> DeleteOrder(Guid id)
         {

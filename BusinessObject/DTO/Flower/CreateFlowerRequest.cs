@@ -4,10 +4,7 @@ public class CreateFlowerRequest
 {
     public string? FlowerName { get; set; }
 
-    public double? Price { get; set; }
-
-    public Guid? StoreId { get; set; }
-    
+    public double? Price { get; set; } 
     public string? Color { get; set; }
 
     public string? Image { get; set; }

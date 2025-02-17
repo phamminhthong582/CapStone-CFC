@@ -15,7 +15,7 @@ public partial class Wallet
 
     public DateTime? UpdateAt { get; set; }
 
-    public DateTime? Status { get; set; }
+    public string? Status { get; set; }
 
     public virtual Customer? Customer { get; set; }
 

@@ -41,9 +41,6 @@ namespace BusinessObject.Migrations
                     b.Property<int?>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("StoreId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("CartId");
 
                     b.HasIndex("CustomerId");
@@ -163,15 +160,10 @@ namespace BusinessObject.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar");
 
-                    b.Property<Guid?>("StoreId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
                     b.HasKey("CustomerId");
-
-                    b.HasIndex("StoreId");
 
                     b.ToTable("Customer", (string)null);
                 });
@@ -383,17 +375,12 @@ namespace BusinessObject.Migrations
                     b.Property<bool?>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("StoreId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
                     b.HasKey("FlowerId");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("StoreId");
 
                     b.ToTable("Flower", (string)null);
                 });
@@ -433,15 +420,10 @@ namespace BusinessObject.Migrations
                     b.Property<bool?>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("StoreId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
                     b.HasKey("FlowerBasketId");
-
-                    b.HasIndex("StoreId");
 
                     b.ToTable("FlowerBasket", (string)null);
                 });
@@ -620,8 +602,8 @@ namespace BusinessObject.Migrations
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool?>("Status")
-                        .HasColumnType("bit");
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("StoreId")
                         .HasColumnType("uniqueidentifier");
@@ -685,17 +667,12 @@ namespace BusinessObject.Migrations
                     b.Property<bool?>("Status")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("StoreId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("StoreId");
 
                     b.ToTable("Product", (string)null);
                 });
@@ -926,8 +903,8 @@ namespace BusinessObject.Migrations
                     b.Property<Guid?>("CustomerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("Status")
-                        .HasColumnType("datetime");
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double?>("TotalPrice")
                         .HasColumnType("float");
@@ -975,8 +952,8 @@ namespace BusinessObject.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<DateTime?>("Status")
-                        .HasColumnType("datetime");
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("WalletId")
                         .HasColumnType("uniqueidentifier");
@@ -1018,16 +995,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.Customer", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Store", "Store")
-                        .WithMany("Customers")
-                        .HasForeignKey("StoreId")
-                        .HasConstraintName("FK_Customer_Store");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Delivery", b =>
@@ -1088,24 +1055,7 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("CategoryId")
                         .HasConstraintName("FK_Flower_Category");
 
-                    b.HasOne("BusinessObject.Entities.Store", "Store")
-                        .WithMany("Flowers")
-                        .HasForeignKey("StoreId")
-                        .HasConstraintName("FK_Flower_Store");
-
                     b.Navigation("Category");
-
-                    b.Navigation("Store");
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.FlowerBasket", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Store", "Store")
-                        .WithMany("FlowerBaskets")
-                        .HasForeignKey("StoreId")
-                        .HasConstraintName("FK_FlowerBasket_Store");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.FlowerCustom", b =>
@@ -1204,14 +1154,7 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("CategoryId")
                         .HasConstraintName("FK_Product_Category");
 
-                    b.HasOne("BusinessObject.Entities.Store", "Store")
-                        .WithMany("Products")
-                        .HasForeignKey("StoreId")
-                        .HasConstraintName("FK_Product_Store");
-
                     b.Navigation("Category");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.ProductCustom", b =>
@@ -1353,17 +1296,9 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Store", b =>
                 {
-                    b.Navigation("Customers");
-
                     b.Navigation("Employees");
 
-                    b.Navigation("FlowerBaskets");
-
-                    b.Navigation("Flowers");
-
                     b.Navigation("Payments");
-
-                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Wallet", b =>

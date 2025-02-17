@@ -23,7 +23,7 @@ public partial class WithdrawMoney
 
     public DateTime? CreateAt { get; set; }
 
-    public DateTime? Status { get; set; }
-
+    public string? Status { get; set; }
+  
     public virtual Wallet? Wallet { get; set; }
 }

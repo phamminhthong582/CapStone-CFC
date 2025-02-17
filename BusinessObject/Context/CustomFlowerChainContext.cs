@@ -11,7 +11,7 @@ public partial class CustomFlowerChainContext : DbContext
     public CustomFlowerChainContext()
     {
     }
-  
+
     public CustomFlowerChainContext(DbContextOptions<CustomFlowerChainContext> options)
         : base(options)
     {
@@ -56,18 +56,18 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<Store> Stores { get; set; }
 
     public virtual DbSet<Wallet> Wallets { get; set; }
-    public virtual DbSet<Cart> Carts { get; set; }  
+    public virtual DbSet<Cart> Carts { get; set; }
 
     public virtual DbSet<WithdrawMoney> WithdrawMoneys { get; set; }
-//     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//       => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
-//     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//         => optionsBuilder.UseSqlServer(
-//             "Server=(local);Database= CustomFlowerChain;UID=sa;PWD=12345;TrustServerCertificate=True");
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(GetConnectionString());
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+      => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+    /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+ #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+         => optionsBuilder.UseSqlServer(
+             "Server=(local);Database= CustomFlowerChain;UID=sa;PWD=12345;TrustServerCertificate=True");
+     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+         => optionsBuilder.UseSqlServer(GetConnectionString());*/
 
     private string? GetConnectionString()
     {
@@ -113,15 +113,13 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasColumnType("nvarchar").HasMaxLength(20);
 
-            entity.HasOne(d => d.Store).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.StoreId)
-                .HasConstraintName("FK_Customer_Store");
+         
         });
         modelBuilder.Entity<Cart>(entity =>
         {
             entity.ToTable("Cart");
             entity.Property(e => e.CartId).HasDefaultValueSql("(newid())");
-            entity.HasOne(e => e.Customer).WithMany(p=>p.Carts).HasForeignKey(d => d.CustomerId).HasConstraintName("FK_Cart_Customer");
+            entity.HasOne(e => e.Customer).WithMany(p => p.Carts).HasForeignKey(d => d.CustomerId).HasConstraintName("FK_Cart_Customer");
 
             entity.HasOne(e => e.Product).WithMany(p => p.Carts).HasForeignKey(d => d.ProductId).HasConstraintName("FK_Cart_Product");
         });
@@ -191,9 +189,7 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK_Flower_Category");
 
-            entity.HasOne(d => d.Store).WithMany(p => p.Flowers)
-                .HasForeignKey(d => d.StoreId)
-                .HasConstraintName("FK_Flower_Store");
+            
         });
 
         modelBuilder.Entity<FlowerBasket>(entity =>
@@ -205,9 +201,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.FlowerBasketName).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Store).WithMany(p => p.FlowerBaskets)
-                .HasForeignKey(d => d.StoreId)
-                .HasConstraintName("FK_FlowerBasket_Store");
+            
         });
 
         modelBuilder.Entity<FlowerCustom>(entity =>
@@ -316,7 +310,6 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK_Product_Category");
-            entity.HasOne(d => d.Store).WithMany(p => p.Products).HasForeignKey(d => d.StoreId).HasConstraintName("FK_Product_Store");
         });
 
         modelBuilder.Entity<ProductCustom>(entity =>
@@ -404,7 +397,6 @@ public partial class CustomFlowerChainContext : DbContext
 
             entity.Property(e => e.WalletId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.Status).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Wallets)
@@ -423,7 +415,6 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.Otp).HasMaxLength(255);
             entity.Property(e => e.Reason).HasMaxLength(255);
-            entity.Property(e => e.Status).HasColumnType("datetime");
 
             entity.HasOne(d => d.Wallet).WithMany(p => p.WithdrawMoneys)
                 .HasForeignKey(d => d.WalletId)
