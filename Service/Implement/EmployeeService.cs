@@ -78,6 +78,7 @@ public class EmployeeService : IEmployeeService
             .Entities
             .Include(n => n.Role)
             .Where(m => m.StoreId == StoreId)
+            .Where(a => a.Status == true)
             .ToListAsync();
 
         var rolePriority = new List<string> { "StoreManager", "Florist", "Courier" };

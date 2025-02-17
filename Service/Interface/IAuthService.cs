@@ -11,8 +11,8 @@ public interface IAuthService
     Task ForgotPasswordForCustomer(string email);
     Task ForgotPasswordForEmployee(string email);
 
-    Task<Result<EmployeeResponse>> RegisterFlorist(RegisterRequest request );
-     Task<Result<EmployeeResponse>> CreateCourierAccount(CreateCourierRequest request);
+    Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, RegisterRequest request );
+     Task<Result<EmployeeResponse>> CreateCourierAccount(Guid StoreId, CreateCourierRequest request);
      Task<Result<string>> VerifyEmail(Guid id, string token);
     Task SetPasswordForCustomer(string email, string NewPassword, string token);
     Task SetPasswordForEmployee(string email, string NewPassword, string token);

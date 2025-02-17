@@ -154,7 +154,7 @@ public class AuthService : IAuthService
     };
 }
 
-    public async Task<Result<EmployeeResponse>> RegisterFlorist(RegisterRequest request)
+    public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, RegisterRequest request)
     {
         var response = new Result<EmployeeResponse>();
         var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
@@ -205,6 +205,7 @@ public class AuthService : IAuthService
             Address = request.Address,
             Gender = request.Gender,
             Birthday = request.Birthday,
+            StoreId = StoreId,
             IdentificationNumber = request.IdentificationNumber,
             Avatar = avatarUrl, // Lưu URL ảnh vào database
             IdentificationFontOfPhoto = idFrontUrl,
@@ -222,7 +223,7 @@ public class AuthService : IAuthService
         return response;
     }
 
-   public async Task<Result<EmployeeResponse>> CreateCourierAccount(CreateCourierRequest request)
+   public async Task<Result<EmployeeResponse>> CreateCourierAccount(Guid StoreId,CreateCourierRequest request)
 {
     var response = new Result<EmployeeResponse>();
     var isEmailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
@@ -259,6 +260,7 @@ public class AuthService : IAuthService
         Phone = request.Phone,
         RoleId = roleId.Value, 
         MotoType = request.MotoType,
+        StoreId = StoreId,
         NumberMoto = request.NumberMoto,
         Gender = request.Gender,    
         Birthday = request.Birthday,    
