@@ -14,6 +14,9 @@ public partial class FlowerBasket
     public string? Image { get; set; }
 
     public int? Quantity { get; set; }
+    
+    public int? MaxQuantity { get; set; }   
+    public int? MinQuantity { get; set; }
 
     public string? Decription { get; set; }
 

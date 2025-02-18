@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250218143335_updateRefund")]
+    partial class updateRefund
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -407,12 +410,6 @@ namespace BusinessObject.Migrations
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("MaxQuantity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("MinQuantity")
-                        .HasColumnType("int");
 
                     b.Property<double?>("Price")
                         .HasColumnType("float");
