@@ -364,7 +364,7 @@ public class EmployeeService : IEmployeeService
             using (var smtpClient = new SmtpClient("smtp.gmail.com"))
              {
              smtpClient.Port = 587;
-             smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "opbw bxye pymi osah");
+             smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "nmcf zksq weyr wphx");
                 smtpClient.EnableSsl = true;
 
              var mailMessage = new MailMessage

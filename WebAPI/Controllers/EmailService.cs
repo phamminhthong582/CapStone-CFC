@@ -16,7 +16,7 @@ public class EmailService : IEmailService
     private readonly IConfiguration _configuration;
     private readonly ICustomerRepository _customerRepository;
 
-    public EmailService(IConfiguration configuration , ICustomerRepository customerRepository)
+    public EmailService(IConfiguration configuration, ICustomerRepository customerRepository)
     {
         _configuration = configuration;
         _customerRepository = customerRepository;
@@ -28,11 +28,8 @@ public class EmailService : IEmailService
         email.To.Add(MailboxAddress.Parse(request.To));
         email.Subject = request.Subject;
         email.Body = new TextPart(TextFormat.Html) { Text = request.Body };
-
-
-        // dùng SmtpClient của MailKit
         using var smtp = new SmtpClient();
-            
+
         await smtp.ConnectAsync(_configuration.GetSection("MailSettings:Host").Value, 587,
             SecureSocketOptions.Auto);
         await smtp.AuthenticateAsync(_configuration.GetSection("MailSettings:Mail").Value,
@@ -42,7 +39,6 @@ public class EmailService : IEmailService
     }
     public string GetEmailTemplate(string templateName)
     {
-        // string pathLocal = Path.Combine("C:\\FPT_University_FULL\\CAPSTONE_API\\Services\\MailTemplate\\", $"{templateName}.html");*/
         string path = Path.Combine(_configuration.GetSection("EmailTemplateDirectory").Value!,
             $"{templateName}.html");
         var template = File.ReadAllText(path, Encoding.UTF8);
@@ -50,15 +46,15 @@ public class EmailService : IEmailService
         return template;
     }
 
-    public async Task<Result<string>> SendMailRegister(string email , string token)
+    public async Task<Result<string>> SendMailRegister(string email, string token)
     {
         var response = new Result<string>();
         var user = await _customerRepository.FindCustomerByEmail(email);
         string appDomain = _configuration.GetSection("MailSettings:AppDomain").Value;
         string confirmationLink = _configuration.GetSection("MailSettings:EmailConfirmation").Value;
-        string formattedLink = string.Format(appDomain + confirmationLink, user.CustomerId , token);
+        string formattedLink = string.Format(appDomain + confirmationLink, user.CustomerId, token);
 
-        var template = GetEmailTemplate("VerifyAccountMail");
+        var template = GetEmailTemplate("VerifyAccountEmail");
         template = template.Replace($"[link]", formattedLink);
 
         SendEmailRequest content = new SendEmailRequest
@@ -68,7 +64,6 @@ public class EmailService : IEmailService
             Body = template,
         };
         await SendEmail(content);
-        // response.Messages = [""];
         response.ResultStatus = ResultStatus.Success.ToString();
         return response;
     }

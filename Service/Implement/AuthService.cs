@@ -403,7 +403,7 @@ public async Task<Result<string>> VerifyEmail(Guid id, string token)
         using (var smtpClient = new SmtpClient("smtp.gmail.com"))
 
         {
-            smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "opbw bxye pymi osah");
+            smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "nmcf zksq weyr wphx");
             smtpClient.EnableSsl = true;
             smtpClient.Port = 587; // Cổng SMTP (thay đổi theo nhà cung cấp)
 
