@@ -13,8 +13,14 @@ namespace Service.Interface
         /*Task GetMonthRevenueByStoreId(Guid StoreId);
         Task GetYearRevenueByStoreId(Guid StoreId);*/
         Task<RevenueResponse> GetGeneralRevenue();
-       /* Task GetMonthGeneralRevenuByStoreId(Guid StoreId);
-        Task GetYearGeneralRevenuByStoreId(Guid StoreId);*/
+        /* Task GetMonthGeneralRevenuByStoreId(Guid StoreId);
+         Task GetYearGeneralRevenuByStoreId(Guid StoreId);*/
+        Task<TotalOrderResponse> GetTotalOrdersByStoreId(Guid StoreId);
+
+        Task<RevenueResponse> GetLossByStoreId(Guid StoreId);
+        Task<RevenueResponse> GetGeneralLoss();
+
+        Task<TotalOrderResponse> GetTotalOrder();
 
     }
 }

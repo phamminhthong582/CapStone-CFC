@@ -6,11 +6,9 @@ namespace BusinessObject.Entities;
 public partial class Refund
 {
     public Guid RefundId { get; set; }
-
     public Guid? OrderId { get; set; }
-
+    public Guid? StoreId { get; set; }
     public double? Price { get; set; }
-
     public Guid? WallerId { get; set; }
 
     public DateTime? CreateAt { get; set; }
