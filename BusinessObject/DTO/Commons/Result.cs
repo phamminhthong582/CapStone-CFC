@@ -6,7 +6,7 @@ public class Result<T>
     public string? ResultStatus { get; set; }
     public string? RoleName { get; set; }
 
-    public string? EmployeeStatus { get; set; }
+    public string? PromotionStatus { get; set; }
     public string[]? Messages { get; set; }
 }
 
@@ -29,11 +29,12 @@ public enum ResultStatus
     NotVerified,
 
 }
-public enum EmployeeStatus
+public enum PromotionStatus
 {
-    Active,
-    Inactive,
-    NotVerified
+    Expired,
+    StillExpired,
+    
+    
 }
 
 public enum CustomerStatus
