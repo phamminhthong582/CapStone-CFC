@@ -50,6 +50,7 @@ namespace Service.Implement
             var order = new Order
             {
                 CustomerId = customerId,
+                StoreId = orderRequest.StoreId,
                 DeliveryDistrict = orderRequest.DeliveryDistrict,
                 DeliveryCity = orderRequest.DeliveryCity,
                 DeliveryAddress = orderRequest.DeliveryAddress,
@@ -58,6 +59,7 @@ namespace Service.Implement
                 Phone = orderRequest.Phone,
                 Transfer = orderRequest.Transfer,
                 CreateAt = DateTime.Now,
+                UpdateAt = DateTime.Now,
                 Refund = false,
                 Status = "Chờ thành toán",
                 PromotionId = orderRequest.PromotionId,
@@ -66,63 +68,59 @@ namespace Service.Implement
             await _unitOfWork.Repository<Order>().AddAsync(order);
             await _unitOfWork.CompleteAsync();
 
-            // Tạo danh sách chi tiết đơn hàng từ giỏ hàng
-            var orderDetails = cartItems.Select(cartItem => new OrderDetail
+            // Tạo danh sách chi tiết đơn hàng từ giỏ hàng và cập nhật số lượng sản phẩm đã bán
+            var orderDetails = new List<OrderDetail>();
+            foreach (var cartItem in cartItems)
             {
-                OrderId = order.OrderId,
-                ProductId = cartItem.ProductId,
-                Quantity = cartItem.Quantity,
-                CreateAt = DateTime.Now,
-                Status = true,
-                ProductTotalPrice = cartItem.Quantity * cartItem.Product.Price -
-                    (cartItem.Quantity * cartItem.Product.Price * cartItem.Product.Discount) / 100
-            }).ToList();
+                if (cartItem.Product == null)
+                {
+                    throw new Exception($"Product with ID {cartItem.ProductId} not found.");
+                }
 
-            // Lưu chi tiết đơn hàng vào database
+                // Cập nhật số lượng sản phẩm đã bán
+                cartItem.Product.Sold += cartItem.Quantity;
+                _unitOfWork.Repository<Product>().Update(cartItem.Product);
+
+                // Thêm OrderDetail
+                var orderDetail = new OrderDetail
+                {
+                    OrderId = order.OrderId,
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity,
+                    CreateAt = DateTime.Now,
+                    Status = true,
+                    ProductTotalPrice = cartItem.Quantity * cartItem.Product.Price -
+                        (cartItem.Quantity * cartItem.Product.Price * cartItem.Product.Discount) / 100
+                };
+                orderDetails.Add(orderDetail);
+            }
+
+            // Lưu OrderDetails vào database
             await _unitOfWork.Repository<OrderDetail>().AddRangeAsync(orderDetails);
             await _unitOfWork.CompleteAsync();
 
             // Tính tổng giá đơn hàng
-            var promotion = await _unitOfWork.Repository<Promotion>().GetByIdAsync(order.PromotionId);
-            order.OrderPrice = orderDetails.Sum(od => od.ProductTotalPrice) -
-                (orderDetails.Sum(od => od.ProductTotalPrice) * (promotion?.PromotionDiscount ?? 0)) / 100;
+            double? totalPrice = orderDetails.Sum(od => od.ProductTotalPrice);
+            if (order.PromotionId.HasValue)
+            {
+                var promotion = await _unitOfWork.Repository<Promotion>().GetByIdAsync(order.PromotionId.Value);
+                if (promotion?.PromotionDiscount > 0) // Kiểm tra promotion không null và có giảm giá hợp lệ
+                {
+                    totalPrice *= (1 - (promotion.PromotionDiscount / 100.0));
+                }
+            }
+
+            order.OrderPrice = totalPrice;
 
             // Cập nhật tổng giá đơn hàng
             _unitOfWork.Repository<Order>().Update(order);
-           /* if (order.Transfer == false)
-            {
-                var payment = new Payment()
-                {
-                    OrderId = order.OrderId,
-                    Method = "Tiền cọc",
-                    StoreId = order.StoreId,
-                    CustomerId = customerId,
-                    TotalPrice = order.OrderPrice * 30 / 100,
-                    CreateAt = DateTime.Now,
-                    Status = "chờ thanh toán tiền cọc",
-                };
-                await _unitOfWork.Repository<Payment>().AddAsync(payment);
-            }
-            else if (order.Transfer == true)
-            {
-                var payment = new Payment()
-                {
-                    OrderId = order.OrderId,
-                    Method = "Tiền tỏng",
-                    StoreId = order.StoreId,
-                    CustomerId = customerId,
-                    TotalPrice = order.OrderPrice,
-                    CreateAt = DateTime.Now,
-                    Status = "chờ thanh toán",
-                };
-                await _unitOfWork.Repository<Payment>().AddAsync(payment);
-            }*/
             await _unitOfWork.CompleteAsync();
 
             // Xóa giỏ hàng sau khi đã chuyển thành đơn hàng
             _unitOfWork.Repository<Cart>().DeleteRange(cartItems);
             await _unitOfWork.CompleteAsync();
         }
+
         public async Task CreateOrder(OrderRequest orderRequest, Guid customerId)
         {
             Guid? PromotionID = orderRequest.PromotionId;
@@ -136,14 +134,10 @@ namespace Service.Implement
 
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
 
-            if (PromotionID == null)
-            {
-                throw new Exception("Hiện không có khuyến mãi này");
-            }
-
             var order = new Order()
             {
                 CustomerId = customerId,
+                StoreId  = orderRequest.StoreId,    
                 DeliveryDistrict = DeliveryDistrict,
                 DeliveryCity = DeliveryCity,
                 DeliveryAddress = DeliveryAddress,
@@ -152,6 +146,7 @@ namespace Service.Implement
                 Phone = Phone,
                 Transfer = Transfer,
                 CreateAt = DateTime.Now,
+                UpdateAt = DateTime.Now,
                 Refund = false,
                 Status = "Chờ thành toán",
                 PromotionId = PromotionID
@@ -167,12 +162,13 @@ namespace Service.Implement
                 {
                     Guid productID = orderDetailsRequest.ProductId;
                     var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productID);
-
                     if (product == null)
                     {
                         throw new Exception($"Product with ID {orderDetailsRequest.ProductId} not found.");
                     }
-
+                    product.Sold += orderDetailsRequest.Quantity;
+                    _unitOfWork.Repository<Product>().Update(product);
+                    await _unitOfWork.CompleteAsync();
                     return new OrderDetail
                     {
                         OrderId = order.OrderId,
@@ -182,6 +178,9 @@ namespace Service.Implement
                         Status = true,
                         ProductTotalPrice = orderDetailsRequest.Quantity * product.Price - (orderDetailsRequest.Quantity * product.Price * product.Discount)/100
                     };
+                  
+
+
                 });
                 
                 // Await the tasks and gather the results into a list
@@ -191,42 +190,20 @@ namespace Service.Implement
                 await _unitOfWork.Repository<OrderDetail>().AddRangeAsync(orderDetails);
                 await _unitOfWork.CompleteAsync();
                 // Calculate the total price for the order
- 
 
-                var promotion = await _unitOfWork.Repository<Promotion>().GetByIdAsync(order.PromotionId);
-
-                order.OrderPrice = orderDetails.Sum(od => od.ProductTotalPrice) - (orderDetails.Sum(od => od.ProductTotalPrice) * promotion.PromotionDiscount)/100 ;
-           
-                    // Save the updated order with the total price
-                _unitOfWork.Repository<Order>().Update(order);
-              /*  if (order.Transfer == false)
+                double? totalPrice = orderDetails.Sum(od => od.ProductTotalPrice);
+                if (order.PromotionId.HasValue)
                 {
-                    var payment = new Payment()
+                    var promotion = await _unitOfWork.Repository<Promotion>().GetByIdAsync(order.PromotionId.Value);
+                    if (promotion?.PromotionDiscount > 0) // Kiểm tra promotion không null và có giảm giá hợp lệ
                     {
-                        OrderId = order.OrderId,
-                        Method = "Tiền cọc",
-                        StoreId = order.StoreId,
-                        CustomerId = customerId,
-                        TotalPrice = order.OrderPrice * 30 / 100,
-                        CreateAt = DateTime.Now,
-                        Status = "chờ thanh toán",
-                    };
-                    await _unitOfWork.Repository<Payment>().AddAsync(payment);
+                        totalPrice *= (1 - (promotion.PromotionDiscount / 100.0));
+                    }
                 }
-                else if(order.Transfer == true)
-                {
-                    var payment = new Payment()
-                    {
-                        OrderId = order.OrderId,
-                        Method = "Tiền tổng",
-                        StoreId = order.StoreId,
-                        CustomerId = customerId,
-                        TotalPrice = order.OrderPrice,
-                        CreateAt = DateTime.Now,
-                        Status = "chờ thanh toán",
-                    };
-                    await _unitOfWork.Repository<Payment>().AddAsync(payment);
-                }*/
+                order.OrderPrice = totalPrice;
+                // Save the updated order with the total price
+                _unitOfWork.Repository<Order>().Update(order);
+         
                 await _unitOfWork.CompleteAsync();
             }
         }

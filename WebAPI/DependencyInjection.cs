@@ -89,6 +89,9 @@ public static class DependencyInjection
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
 
+        //Revenue
+        services.AddScoped<IRevenueService, RevenueService>();
+
 
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
 

@@ -19,8 +19,6 @@ public class CustomerResponse
     public bool? Gender { get; set; }
 
     public DateTime? Birthday { get; set; }
-
-    public Guid? StoreId { get; set; }
     
     public string Status { get; set; }
 

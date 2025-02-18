@@ -14,10 +14,11 @@ namespace BusinessObject.DTO.Order
         public string? DeliveryCity { get; set; }
         public string? DeliveryAddress { get; set; }
         public string? Note { get; set; }
+        public Guid? StoreId {  get; set; }
         public DateTime? DeliveryDateTime { get; set; }
         public string? Phone { get; set; }
+        public string?Status { get; set; }
         public bool? Transfer { get; set; }
-        public string? Status { get; set; }
         public List<OrderDetailsRequest>? OrderDetails { get; set; }  
     }
 }
