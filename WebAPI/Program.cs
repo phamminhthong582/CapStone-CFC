@@ -1,4 +1,5 @@
 using BusinessObject.Context;
+using Hangfire;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
 
@@ -16,6 +17,8 @@ builder.Services.AddDbContext<CustomFlowerChainContext>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddHangfire(x => x.UseSqlServerStorage("DBDefault"));
+// builder.Services.AddHangfireServer();
 //builder.Services.AddSwaggerGen();
 
 builder.Services.AddSwaggerGen(sw =>

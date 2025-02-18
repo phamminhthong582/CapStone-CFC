@@ -44,6 +44,19 @@ public class PromotionController : Controller
         }
         return Ok(result);
     }
+    [HttpPost("update-expired-promotions")]
+    public async Task<IActionResult> UpdateExpiredPromotions()
+    {
+        try
+        {
+            await _promotionService.CheckAndUpdateExpiredPromotions();
+            return Ok(new { Message = "Expired promotions updated successfully." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = ex.Message });
+        }
+    }
     [HttpPut("{promotionId}")]
     public async Task<IActionResult> UpdatePromotion([FromRoute] Guid promotionId, UpdatePromotionRequest request)
     {
