@@ -412,6 +412,7 @@ public class EmployeeService : IEmployeeService
            : null;
         var employee = new Employee
         {
+            StoreId = storeid,
             Password = createManagerStoreRequest.Password,
             FullName = createManagerStoreRequest.FullName,
             Address = createManagerStoreRequest.Address,
@@ -419,8 +420,8 @@ public class EmployeeService : IEmployeeService
             Gender = createManagerStoreRequest.Gender,
             Phone = createManagerStoreRequest.Phone,
             Birthday = createManagerStoreRequest.Birthday,
-            RoleId = createManagerStoreRequest.RoleId,
-            Status = createManagerStoreRequest.Status,
+            RoleId = Guid.Parse("a7ad79e3-a5e8-4e85-a672-41c95a2e37ac"),
+            Status = true,
             Avatar = avatarUrl,
         };
         await _unitOfWork.Repository<Employee>().AddAsync(employee);
