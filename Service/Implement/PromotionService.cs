@@ -22,26 +22,26 @@ public class PromotionService : IPromotionService
         var list = await _promotionRepository.GetAllPromotion();
         return _mapper.Map<List<PromotionResponse>>(list);
     }
-    public async Task<Result<string>> CheckAndUpdateExpiredPromotions()
-    {
-        var expiredPromotions = await _promotionRepository.GetAllPromotion();
-        int updatedCount = 0;
-
-        foreach (var promotion in expiredPromotions)
-        {
-            if (promotion.EndDate <= DateTime.UtcNow && promotion.Status == true)
-            {
-                promotion.Status = false;
-                await _promotionRepository.UpdatePromotion(promotion);
-                updatedCount++;
-            }
-        }
-        return new Result<string>
-        {
-            ResultStatus = ResultStatus.Success.ToString(),
-            Messages = new[] { $"{updatedCount} promotions were updated successfully." }
-        };
-    }
+    // public async Task<Result<string>> CheckAndUpdateExpiredPromotions()
+    // {
+    //     var expiredPromotions = await _promotionRepository.GetAllPromotion();
+    //     int updatedCount = 0;
+    //
+    //     foreach (var promotion in expiredPromotions)
+    //     {
+    //         if (promotion.EndDate <= DateTime.UtcNow && promotion.Status == true)
+    //         {
+    //             promotion.Status = false;
+    //             await _promotionRepository.UpdatePromotion(promotion);
+    //             updatedCount++;
+    //         }
+    //     }
+    //     return new Result<string>
+    //     {
+    //         ResultStatus = ResultStatus.Success.ToString(),
+    //         Messages = new[] { $"{updatedCount} promotions were updated successfully." }
+    //     };
+    // }
     
 
     public async Task<Result<Promotion>> CreatePromotion(CreatePromotionRequest request)
