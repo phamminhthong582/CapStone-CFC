@@ -1,4 +1,7 @@
-﻿namespace BusinessObject.DTO.Flower;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BusinessObject.DTO.Flower;
 
 public class CreateFlowerRequest
 {
@@ -7,7 +10,8 @@ public class CreateFlowerRequest
     public double? Price { get; set; } 
     public string? Color { get; set; }
 
-    public string? Image { get; set; }
+    [FromForm]
+    public IFormFile? Image { get; set; }
 
     public int? Quantity { get; set; }
 

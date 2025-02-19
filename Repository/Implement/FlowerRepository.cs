@@ -15,7 +15,7 @@ public class FlowerRepository : IFlowerRepository
     }
     public async Task<List<Flower?>> GetAllFlower()
     {
-        var list = await _context.Flowers.ToListAsync();
+        var list = await _context.Flowers.Include(f => f.Category).ToListAsync();
         return list;
     }
 
