@@ -9,9 +9,7 @@ public partial class Flower
 
     public string? FlowerName { get; set; }
 
-    public double? Price { get; set; }
-
-
+    public double? Price { get; set; }  
     public string? Image { get; set; }
 
     public int? Quantity { get; set; }
