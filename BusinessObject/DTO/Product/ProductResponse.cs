@@ -13,7 +13,6 @@ namespace BusinessObject.DTO.Product
 
         public string? ProductName { get; set; }
 
-        public Guid? StoreId { get; set; }
 
         public int? Quantity { get; set; }
 

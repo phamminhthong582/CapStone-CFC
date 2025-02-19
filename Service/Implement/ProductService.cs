@@ -35,6 +35,7 @@ namespace Service.Implement
                 Description = productRequest.Description,
                 Featured = productRequest.Featured,
                 CategoryId = productRequest.CategoryId,
+                Sold = 0,
                 Status = true,
                 CreateAt = DateTime.Now,
 
@@ -111,7 +112,7 @@ namespace Service.Implement
         }
 
     
-
+        
         public async Task<IEnumerable<ProductResponse>> GetProducts()
         {
             var products = await _unitOfWork.Repository<Product>().Entities.Include(n => n.Category).ToListAsync();

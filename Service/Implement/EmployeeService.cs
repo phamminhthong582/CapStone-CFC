@@ -78,6 +78,7 @@ public class EmployeeService : IEmployeeService
             .Entities
             .Include(n => n.Role)
             .Where(m => m.StoreId == StoreId)
+            .Where(a => a.Status == true)
             .ToListAsync();
 
         var rolePriority = new List<string> { "StoreManager", "Florist", "Courier" };
@@ -363,7 +364,7 @@ public class EmployeeService : IEmployeeService
             using (var smtpClient = new SmtpClient("smtp.gmail.com"))
              {
              smtpClient.Port = 587;
-             smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "opbw bxye pymi osah");
+             smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "nmcf zksq weyr wphx");
                 smtpClient.EnableSsl = true;
 
              var mailMessage = new MailMessage
@@ -411,6 +412,7 @@ public class EmployeeService : IEmployeeService
            : null;
         var employee = new Employee
         {
+            StoreId = storeid,
             Password = createManagerStoreRequest.Password,
             FullName = createManagerStoreRequest.FullName,
             Address = createManagerStoreRequest.Address,
@@ -418,8 +420,8 @@ public class EmployeeService : IEmployeeService
             Gender = createManagerStoreRequest.Gender,
             Phone = createManagerStoreRequest.Phone,
             Birthday = createManagerStoreRequest.Birthday,
-            RoleId = createManagerStoreRequest.RoleId,
-            Status = createManagerStoreRequest.Status,
+            RoleId = Guid.Parse("a7ad79e3-a5e8-4e85-a672-41c95a2e37ac"),
+            Status = true,
             Avatar = avatarUrl,
         };
         await _unitOfWork.Repository<Employee>().AddAsync(employee);

@@ -92,6 +92,9 @@ public static class DependencyInjection
         // Hang
         
 
+        //Revenue
+        services.AddScoped<IRevenueService, RevenueService>();
+
 
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
 

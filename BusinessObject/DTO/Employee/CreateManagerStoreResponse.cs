@@ -23,7 +23,6 @@ namespace BusinessObject.DTO.Employee
         public bool? Gender { get; set; }
 
         public DateTime? Birthday { get; set; }
-        public Guid? RoleId { get; set; }
         public bool? Status { get; set; }
         [FromForm]
         public IFormFile? Avatar { get; set; }
