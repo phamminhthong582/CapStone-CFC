@@ -44,18 +44,16 @@ public class PromotionController : Controller
         }
         return Ok(result);
     }
-    [HttpPost("update-expired-promotions")]
-    public async Task<IActionResult> UpdateExpiredPromotions()
+    [HttpGet("expired")]
+    public async Task<IActionResult> GetExpiredPromotions()
     {
-        try
+        var expiredPromotions = await _promotionService.GetExpiredPromotions();
+        if (!expiredPromotions.Any())
         {
-            await _promotionService.CheckAndUpdateExpiredPromotions();
-            return Ok(new { Message = "Expired promotions updated successfully." });
+            return NotFound("No expired promotions found.");
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Message = ex.Message });
-        }
+
+        return Ok(expiredPromotions);
     }
     [HttpPut("{promotionId}")]
     public async Task<IActionResult> UpdatePromotion([FromRoute] Guid promotionId, UpdatePromotionRequest request)

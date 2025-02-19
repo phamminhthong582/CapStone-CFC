@@ -2,6 +2,7 @@
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Promotion;
 using BusinessObject.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using Repository.Interface;
 using Service.Interface;
 
@@ -11,10 +12,12 @@ public class PromotionService : IPromotionService
 {
     private readonly IPromotionRepository _promotionRepository;
     private IMapper _mapper;
-    public  PromotionService(IPromotionRepository promotionRepository , IMapper mapper)
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    public  PromotionService(IPromotionRepository promotionRepository , IMapper mapper , IServiceScopeFactory serviceScopeFactory)
     {
         _promotionRepository = promotionRepository;
         _mapper = mapper;
+        _serviceScopeFactory = serviceScopeFactory;
         
     }
     public async Task<List<PromotionResponse>> GetAllPromotion()
@@ -22,28 +25,6 @@ public class PromotionService : IPromotionService
         var list = await _promotionRepository.GetAllPromotion();
         return _mapper.Map<List<PromotionResponse>>(list);
     }
-    // public async Task<Result<string>> CheckAndUpdateExpiredPromotions()
-    // {
-    //     var expiredPromotions = await _promotionRepository.GetAllPromotion();
-    //     int updatedCount = 0;
-    //
-    //     foreach (var promotion in expiredPromotions)
-    //     {
-    //         if (promotion.EndDate <= DateTime.UtcNow && promotion.Status == true)
-    //         {
-    //             promotion.Status = false;
-    //             await _promotionRepository.UpdatePromotion(promotion);
-    //             updatedCount++;
-    //         }
-    //     }
-    //     return new Result<string>
-    //     {
-    //         ResultStatus = ResultStatus.Success.ToString(),
-    //         Messages = new[] { $"{updatedCount} promotions were updated successfully." }
-    //     };
-    // }
-    
-
     public async Task<Result<Promotion>> CreatePromotion(CreatePromotionRequest request)
     {
         if (string.IsNullOrEmpty(request.PromotionName))
@@ -198,5 +179,10 @@ public class PromotionService : IPromotionService
             response.ResultStatus = ResultStatus.Success.ToString();
             return response;
         }
+    }
+
+    public async Task<IEnumerable<Promotion>> GetExpiredPromotions()
+    {
+        return await _promotionRepository.GetExpiredPromotions();
     }
 }
