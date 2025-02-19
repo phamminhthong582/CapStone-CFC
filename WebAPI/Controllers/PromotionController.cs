@@ -44,6 +44,17 @@ public class PromotionController : Controller
         }
         return Ok(result);
     }
+    [HttpGet("expired")]
+    public async Task<IActionResult> GetExpiredPromotions()
+    {
+        var expiredPromotions = await _promotionService.GetExpiredPromotions();
+        if (!expiredPromotions.Any())
+        {
+            return NotFound("No expired promotions found.");
+        }
+
+        return Ok(expiredPromotions);
+    }
     [HttpPut("{promotionId}")]
     public async Task<IActionResult> UpdatePromotion([FromRoute] Guid promotionId, UpdatePromotionRequest request)
     {

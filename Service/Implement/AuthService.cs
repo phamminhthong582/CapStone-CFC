@@ -305,39 +305,6 @@ public async Task<Result<string>> VerifyEmail(Guid id, string token)
 }
 
 
-// public async Task<Result<EmployeeResponse>> CreateStoreManagerAccount(CreateCourierRequest request)
-//     {
-//         var isused = await _employeeRepository.FindEmployeeByEmail(request.Email);
-//         var response = new Result<EmployeeResponse>();
-//         if (isused != null)
-//         {
-//             response.Messages = new[] { "This mail is already used" };
-//             response.ResultStatus = ResultStatus.Duplicated.ToString();
-//             return response;
-//         }
-//         else
-//         {
-//             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-//             Employee? employee = new Employee();
-//             employee.Email = request.Email;
-//             *//*account.AccountId = new Guid();
-//               employee.Password = Convert.ToBase64String(passwordHash);
-//             employee.Password = Convert.ToBase64String(passwordSalt);
-//             employee.FullName = request.FullName;
-//             employee.Phone = request.Phone;
-//             employee.Role = RoleName.StoreManager.ToString();
-//             employee.Status = UserStatus.Active == UserStatus.Active;
-//             employee.CreateAt = DateTime.UtcNow;
-//
-//             var usernew = await _userRepository.Register(user);
-//             response.ResultStatus = ResultStatus.Success.ToString();
-//             response.Messages = ["Create StoreManager successfully"];
-//             response.Data = _mapper.Map<UserResponse>(user);
-//             return response;
-//
-//         }
-//     }
-
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512())
