@@ -27,9 +27,9 @@ namespace BusinessObject.Entities
                 name: "FK_Product_Store",
                 table: "Product");
 
-             migrationBuilder.DropIndex(
-                 name: "IX_Product_StoreId",
-                 table: "Product");
+             //migrationBuilder.DropIndex(
+             //    name: "IX_Product_StoreId",
+             //    table: "Product");
             
             //  migrationBuilder.DropIndex(
             //      name: "IX_FlowerBasket_StoreId",
@@ -43,9 +43,9 @@ namespace BusinessObject.Entities
             //      name: "IX_Customer_StoreId",
             //     table: "Customer");
             //
-            // migrationBuilder.DropColumn(
-            //     name: "StoreId",
-            //     table: "Product");
+            //// migrationBuilder.DropColumn(
+            ////     name: "StoreId",
+            ////     table: "Product");
 
             migrationBuilder.DropColumn(
                 name: "StoreId",

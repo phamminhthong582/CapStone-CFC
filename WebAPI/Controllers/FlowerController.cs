@@ -2,6 +2,7 @@
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Flower;
 using BusinessObject.Entities;
+using Core.Infrastructures;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
 
@@ -55,18 +56,17 @@ public class FlowerController : Controller
     }
     
     [HttpPost("create-flower")]
-    public async Task<ActionResult<Result<Flower>>> CreateFlower( [FromBody] CreateFlowerRequest request)
+    public async Task<IActionResult> CreateFlower([FromForm] CreateFlowerRequest request)
     {
         var result = await _flowerService.CreateFlower(request);
-        if (result.ResultStatus != ResultStatus.Success.ToString())
-        {
-            return StatusCode((int)HttpStatusCode.InternalServerError, result);
-        }
-        return Ok(result);
+        return Ok(new BaseResponseModel<string>(
+                    statusCode: StatusCodes.Status200OK,
+                    code: ResponseCodeConstants.SUCCESS,
+                    data: "Thêm sản phẩm mới thành công"));
     }
     // [Authorize(Roles = "Admin")]
     [HttpPut("{flowerId}")]
-    public async Task<IActionResult> UpdateFlower([FromRoute] Guid flowerId, UpdateFlowerRequest request)
+    public async Task<IActionResult> UpdateFlower(Guid flowerId, [FromForm]UpdateFlowerRequest request)
     {
         var result = await _flowerService.UpdateFlower(flowerId, request);
         return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);

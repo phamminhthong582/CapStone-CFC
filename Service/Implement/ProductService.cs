@@ -38,28 +38,45 @@ namespace Service.Implement
                 Sold = 0,
                 Status = true,
                 CreateAt = DateTime.Now,
-
             };
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.CompleteAsync();
+
             var folderName = $"Product/{productRequest.ProductName}";
-           
+
             if (productRequest.Images != null && productRequest.Images.Any())
             {
-                var productUrl = productRequest.Images != null && productRequest.Images.Any()
-    ? await _cloudinaryService.UploadImageAsync(productRequest.Images.First().OpenReadStream(), $"{folderName}")
-    : null;
-    
-                var productImages = productRequest.Images.Select(imageRequest => new ProductImage
-                {
+                Console.WriteLine($"Bắt đầu xử lý {productRequest.Images.Count()} ảnh");
+                var productImages = new List<ProductImage>();
 
-                    ProductImage1 = productUrl,
-                    ProductId = product.ProductId,
-                    CreateAt = DateTime.Now,
-                    Status = true
-                }).ToList();
+                int imageIndex = 0;
+                foreach (var image in productRequest.Images)
+                {
+                    imageIndex++;
+                    Console.WriteLine($"Đang xử lý ảnh thứ {imageIndex}");
+
+                    // Tạo tên file duy nhất cho mỗi ảnh
+                    var uniqueFileName = $"{folderName}/{Guid.NewGuid()}";
+                    var imageUrl = await _cloudinaryService.UploadImageAsync(image.OpenReadStream(), uniqueFileName);
+
+                    Console.WriteLine($"URL ảnh {imageIndex}: {imageUrl}");
+
+                    var productImage = new ProductImage
+                    {
+                        ProductImage1 = imageUrl,
+                        ProductId = product.ProductId,
+                        CreateAt = DateTime.Now,
+                        Status = true
+                    };
+
+                    productImages.Add(productImage);
+                    Console.WriteLine($"Đã thêm ảnh {imageIndex} vào list");
+                }
+
+                Console.WriteLine($"Tổng số ảnh trong list: {productImages.Count}");
                 await _unitOfWork.Repository<ProductImage>().AddRangeAsync(productImages);
                 await _unitOfWork.CompleteAsync();
+                Console.WriteLine("Đã lưu vào database");
             }
         }
 
