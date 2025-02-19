@@ -24,7 +24,7 @@ public class PromotionBackgroundService : BackgroundService
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var promotionRepository = scope.ServiceProvider.GetRequiredService<IPromotionRepository>();
-                await UpdateExpiredPromotions(promotionRepository);
+                await UpdateExpiredPromotions(promotionRepository);  // Gọi cập nhật trạng thái promotion hết hạn
             }
 
             // Delay để chạy mỗi 1 giờ
@@ -34,12 +34,14 @@ public class PromotionBackgroundService : BackgroundService
     private async Task UpdateExpiredPromotions(IPromotionRepository promotionRepository)
     {
         var expiredPromotions = await promotionRepository.GetExpiredPromotions();
+    
         foreach (var promotion in expiredPromotions)
         {
+            // Nếu promotion chưa hết hạn và có trạng thái true, cập nhật lại thành false
             if (promotion.EndDate <= DateTime.UtcNow && promotion.Status == true)
             {
-                promotion.Status = false;  
-                await promotionRepository.UpdatePromotion(promotion); 
+                promotion.Status = false;
+                await promotionRepository.UpdatePromotion(promotion);
             }
         }
     }
