@@ -11,4 +11,5 @@ public interface IPromotionService
     Task<Result<PromotionResponse>> UpdatePromotion(Guid id , UpdatePromotionRequest request);
     Task<Result<Promotion>> DeletePromotion(Guid id);
     Task<Result<PromotionResponse>> GetPromotionById(Guid id);
+    Task<IEnumerable<Promotion>> GetExpiredPromotions();
 }

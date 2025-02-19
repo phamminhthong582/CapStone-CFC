@@ -113,7 +113,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasColumnType("nvarchar").HasMaxLength(20);
 
-         
+
         });
         modelBuilder.Entity<Cart>(entity =>
         {
@@ -189,7 +189,7 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.CategoryId)
                 .HasConstraintName("FK_Flower_Category");
 
-            
+
         });
 
         modelBuilder.Entity<FlowerBasket>(entity =>
@@ -201,7 +201,7 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.FlowerBasketName).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
-            
+
         });
 
         modelBuilder.Entity<FlowerCustom>(entity =>

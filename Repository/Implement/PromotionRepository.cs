@@ -20,6 +20,13 @@ public class PromotionRepository : IPromotionRepository
         return list;
     }
 
+    public async Task<IEnumerable<Promotion>> GetExpiredPromotions()
+    {
+        return await _context.Promotions
+            .Where(p => p.EndDate <= DateTime.UtcNow && p.Status == false)
+            .ToListAsync();
+    }
+
     public async Task<Promotion> GetPromotionById(Guid id)
     {
         var promo = await _context.Promotions.FirstOrDefaultAsync(x => x.PromotionId == id);

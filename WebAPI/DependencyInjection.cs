@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Entities;
+using Hangfire;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using Repository.Implement;
 using Repository.Interface;
@@ -88,6 +89,7 @@ public static class DependencyInjection
 
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
+        // Hang
 
         //Revenue
         services.AddScoped<IRevenueService, RevenueService>();
