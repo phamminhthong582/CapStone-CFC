@@ -47,6 +47,8 @@ public class FlowerService : IFlowerService
             Quantity = request.Quantity ?? 0,
             CategoryId = request.CategoryId ?? Guid.Empty,
             Description = request.Description,
+            Feature = request.Feature,
+            Status = request.Status,
             CreateAt = DateTime.UtcNow,
             UpdateAt = DateTime.UtcNow
         };
@@ -82,7 +84,8 @@ public class FlowerService : IFlowerService
             if (!string.IsNullOrWhiteSpace(request.FlowerName)) flower.FlowerName = request.FlowerName;
             if (!string.IsNullOrWhiteSpace(request.Description)) flower.Description = request.Description;
             if (!string.IsNullOrWhiteSpace(request.Color)) flower.Color = request.Color;
-
+            flower.Status = request.Status;
+            flower.Feature = request.Feature;   
             // Xử lý upload ảnh
             string? imageUrl = flower.Image;
             if (request.Image != null)
@@ -115,6 +118,8 @@ public class FlowerService : IFlowerService
                     Image = flower.Image,
                     Quantity = flower.Quantity,
                     CategoryName = categoryName,
+                    Status = flower.Status, 
+                    Feature = flower.Feature,   
                     Color = flower.Color,
                     Description = flower.Description,
                     Sold = flower.Sold
