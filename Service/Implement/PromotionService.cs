@@ -2,6 +2,7 @@
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Promotion;
 using BusinessObject.Entities;
+using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.DependencyInjection;
 using Repository.Interface;
 using Service.Interface;
@@ -13,13 +14,16 @@ public class PromotionService : IPromotionService
     private readonly IPromotionRepository _promotionRepository;
     private IMapper _mapper;
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    public  PromotionService(IPromotionRepository promotionRepository , IMapper mapper , IServiceScopeFactory serviceScopeFactory)
+    private readonly CloudinaryService _cloudinaryService;
+
+    public PromotionService(IPromotionRepository promotionRepository, IMapper mapper, IServiceScopeFactory serviceScopeFactory, CloudinaryService cloudinaryService)
     {
         _promotionRepository = promotionRepository;
         _mapper = mapper;
         _serviceScopeFactory = serviceScopeFactory;
-        
+        _cloudinaryService = cloudinaryService;
     }
+
     public async Task<List<PromotionResponse>> GetAllPromotion()
     {
         var list = await _promotionRepository.GetAllPromotion();
@@ -60,6 +64,10 @@ public class PromotionService : IPromotionService
             };
         }
         bool status = true;
+        var folderName = $"promotion/{request.PromotionName}";
+        var promotionUrl = request.Image != null
+? await _cloudinaryService.UploadImageAsync(request.Image.OpenReadStream(), $"{folderName}")
+: null;
         var promotion = new Promotion
         {
             PromotionName = request.PromotionName,
@@ -67,6 +75,7 @@ public class PromotionService : IPromotionService
             PromotionDiscount = request.PromotionDiscount,
             PromotionCode = request.PromotionCode,
             StartDate = request.StartDate.Value,
+            Image = promotionUrl,
             EndDate = request.EndDate.Value,
             CreateAt = DateTime.UtcNow,
             Status = status, 
@@ -115,10 +124,19 @@ public class PromotionService : IPromotionService
     {
         promotion.PromotionDiscount = request.PromotionDiscount.Value;
     }
+  
     promotion.Status = promotion.EndDate > DateTime.UtcNow;
     promotion.UpdateAt = DateTime.UtcNow;
-
-    await _promotionRepository.UpdatePromotion(promotion);
+    string? imageUrl = promotion.Image;
+        if (request.Image != null)
+        {
+            var folderName = $"flower/{promotion.PromotionId}";
+            imageUrl = await _cloudinaryService.UploadImageAsync(
+                request.Image.OpenReadStream(),
+                folderName
+            );
+        }
+     await _promotionRepository.UpdatePromotion(promotion);
 
     return new Result<PromotionResponse>
     {
@@ -132,6 +150,7 @@ public class PromotionService : IPromotionService
             Quantity = promotion.Quantity,
             PromotionDiscount = promotion.PromotionDiscount,
             Status = promotion.Status,
+            Image = promotion.Image,    
             CreateAt = promotion.CreateAt,
             UpdateAt = promotion.UpdateAt
         },

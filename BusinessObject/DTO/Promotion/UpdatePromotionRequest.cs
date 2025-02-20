@@ -1,4 +1,7 @@
-﻿namespace BusinessObject.DTO.Promotion;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BusinessObject.DTO.Promotion;
 
 public class UpdatePromotionRequest
 {
@@ -9,7 +12,8 @@ public class UpdatePromotionRequest
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
-
+    [FromForm]
+    public IFormFile? Image { get; set; }
     public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }

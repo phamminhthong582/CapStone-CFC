@@ -35,7 +35,7 @@ public class PromotionController : Controller
         return Ok(result);
     }
     [HttpPost("create-promotion")]
-    public async Task<ActionResult<Result<Promotion>>> CreatePromotion( [FromBody] CreatePromotionRequest request)
+    public async Task<ActionResult<Result<Promotion>>> CreatePromotion( [FromForm] CreatePromotionRequest request)
     {
         var result = await _promotionService.CreatePromotion(request);
         if (result.ResultStatus != ResultStatus.Success.ToString())
@@ -56,7 +56,7 @@ public class PromotionController : Controller
         return Ok(expiredPromotions);
     }
     [HttpPut("{promotionId}")]
-    public async Task<IActionResult> UpdatePromotion([FromRoute] Guid promotionId, UpdatePromotionRequest request)
+    public async Task<IActionResult> UpdatePromotion( Guid promotionId, [FromForm] UpdatePromotionRequest request)
     {
         var result = await _promotionService.UpdatePromotion(promotionId ,request);
         return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
