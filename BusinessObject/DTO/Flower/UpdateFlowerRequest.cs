@@ -13,6 +13,8 @@ public class UpdateFlowerRequest
     public int? Quantity { get; set; }
     public string? FlowerName {  get; set; }
     public string? Color { get; set; }
+    public bool? Feature { get; set; }
+    public bool? Status { get; set; }
 
     public Guid? CategoryId { get; set; }
 

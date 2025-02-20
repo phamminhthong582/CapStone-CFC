@@ -25,7 +25,7 @@ public partial class Flower
     public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
-
+    public bool? Feature { get; set; }
     public bool? Status { get; set; }
 
     public virtual Category? Category { get; set; }

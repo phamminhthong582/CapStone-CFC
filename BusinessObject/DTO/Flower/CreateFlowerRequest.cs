@@ -14,7 +14,8 @@ public class CreateFlowerRequest
     public IFormFile? Image { get; set; }
 
     public int? Quantity { get; set; }
-
+    public bool? Feature { get; set; }
+    public bool? Status { get; set; }
     public Guid? CategoryId { get; set; }
 
     public string? Description { get; set; }
