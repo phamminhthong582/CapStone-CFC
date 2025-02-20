@@ -10,7 +10,7 @@ public partial class Promotion
     public string? PromotionName { get; set; }
 
     public int? Quantity { get; set; }
-
+    public string? Image { get; set; }
     public double? PromotionDiscount { get; set; }
 
     public string? PromotionCode { get; set; }

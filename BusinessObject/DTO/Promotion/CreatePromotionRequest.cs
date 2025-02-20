@@ -1,4 +1,7 @@
-﻿namespace BusinessObject.DTO.Promotion;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BusinessObject.DTO.Promotion;
 
 public class CreatePromotionRequest
 {
@@ -9,7 +12,8 @@ public class CreatePromotionRequest
     public double? PromotionDiscount { get; set; }
 
     public string? PromotionCode { get; set; }
-    
+    [FromForm]
+    public IFormFile? Image { get; set; }
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
