@@ -35,7 +35,7 @@ public class FlowerBasketController : Controller
         return Ok(result);
     }
     [HttpPost("create-flowerbasket")]
-    public async Task<ActionResult<Result<FlowerBasket>>> CreateFlowerBasket( [FromBody] CreateFlowerBasketRequest request)
+    public async Task<ActionResult<Result<FlowerBasket>>> CreateFlowerBasket( [FromForm] CreateFlowerBasketRequest request)
     {
         var result = await _flowerBasketService.CreateFlowerBasket(request);
         if (result.ResultStatus != ResultStatus.Success.ToString())
@@ -46,7 +46,7 @@ public class FlowerBasketController : Controller
     }
     // [Authorize(Roles = "Admin")]
     [HttpPut("{flowerbasketId}")]
-    public async Task<IActionResult> UpdateFlowerBasket([FromRoute] Guid flowerbasketId, UpdateFlowerBasketRequest request)
+    public async Task<IActionResult> UpdateFlowerBasket([FromRoute] Guid flowerbasketId, [FromForm] UpdateFlowerBasketRequest request)
     {
         var result = await _flowerBasketService.UpdateFlowerBasket(flowerbasketId, request);
         return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);

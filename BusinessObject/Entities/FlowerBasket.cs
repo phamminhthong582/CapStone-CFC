@@ -14,7 +14,7 @@ public partial class FlowerBasket
     public string? Image { get; set; }
 
     public int? Quantity { get; set; }
-    
+    public Guid? CategoryId { get; set; }
     public int? MaxQuantity { get; set; }   
     public int? MinQuantity { get; set; }
 
@@ -29,6 +29,8 @@ public partial class FlowerBasket
     public DateTime? UpdateAt { get; set; }
 
     public bool? Status { get; set; }
+    public virtual Category? Category { get; set; }
+
 
     public virtual ICollection<ProductCustom> ProductCustoms { get; set; } = new List<ProductCustom>();
 

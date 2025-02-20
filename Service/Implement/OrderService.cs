@@ -225,19 +225,26 @@ namespace Service.Implement
 
         public async Task<IEnumerable<OrderResponse>> GetOrderByCustomerId(Guid CustomerID)
         {
-            var orders = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).Where( order => order.CustomerId == CustomerID).ToListAsync();
+            var orders = await _unitOfWork.GetRepo<Order>().Entities
+                .Include(d => d.Promotion)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(order => order.CustomerId == CustomerID)
+                .ToListAsync();
+
             var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
             var productImage = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+
             var orderResponse = orders.Select(order => new OrderResponse
             {
                 OrderId = order.OrderId,
                 OrderPrice = order.OrderPrice,
                 CustomerId = CustomerID,
-                ProductCustomId = order.ProductCustomId,    
+                ProductCustomId = order.ProductCustomId,
                 StaffId = order.StaffId,
                 PromotionId = order.PromotionId,
-                PromotionName = order.Promotion.PromotionName,
-                PromotionDiscount = order.Promotion.PromotionDiscount,
+                PromotionName = order.Promotion?.PromotionName,
+                PromotionDiscount = order.Promotion?.PromotionDiscount ?? 0,
                 DeliveryAddress = order.DeliveryAddress,
                 DeliveryDistrict = order.DeliveryDistrict,
                 DeliveryCity = order.DeliveryCity,
@@ -250,30 +257,31 @@ namespace Service.Implement
                 CreateAt = order.CreateAt,
                 UpdateAt = order.UpdateAt,
                 Status = order.Status,
-                OrderDetails = order.OrderDetails.Where(orderDetail =>  orderDetail.OrderId == order.OrderId)
-                                                   .Select(orderDetail => new OrderDetailsResponse
-                                                   {
-                                                       OrderDetailId = orderDetail.OrderDetailId,
-                                                       ProductId = orderDetail.ProductId,   
-                                                       ProductName = orderDetail.Product.ProductName,
-                                                       ProductImage = productImage.Where(pi => pi.ProductId == orderDetail.ProductId)
-                                                             .Select(pi => pi.ProductImage1)
-                                                            .FirstOrDefault(),
-                                                       Price = orderDetail.Product.Price,   
-                                                       Discount = orderDetail.Product.Discount,
-                                                       ProductTotalPrice = orderDetail.ProductTotalPrice,
-                                                       Quantity = orderDetail.Product.Quantity,
-                                                       OrderId = orderDetail.OrderId,   
-                                                       CreateAt =  orderDetail.CreateAt,    
-                                                       UpdateAt = orderDetail?.UpdateAt,    
-                                                       Status = orderDetail?.Status,
-                                                   }).ToList()
+                OrderDetails = order.OrderDetails?
+                    .Where(orderDetail => orderDetail.OrderId == order.OrderId)
+                    .Select(orderDetail => new OrderDetailsResponse
+                    {
+                        OrderDetailId = orderDetail.OrderDetailId,
+                        ProductId = orderDetail.ProductId,
+                        ProductName = orderDetail.Product?.ProductName,
+                        ProductImage = productImage
+                            .Where(pi => pi.ProductId == orderDetail.ProductId)
+                            .Select(pi => pi.ProductImage1)
+                            .FirstOrDefault(),
+                        Price = orderDetail.Product?.Price ?? 0,
+                        Discount = orderDetail.Product?.Discount ?? 0,
+                        ProductTotalPrice = orderDetail.ProductTotalPrice,
+                        Quantity = orderDetail.Product?.Quantity ?? 0,
+                        OrderId = orderDetail.OrderId,
+                        CreateAt = orderDetail.CreateAt,
+                        UpdateAt = orderDetail.UpdateAt,
+                        Status = orderDetail.Status
+                    })
+                    .ToList() ?? new List<OrderDetailsResponse>()
             });
+
             return orderResponse;
-
-
         }
-
         public async Task<OrderResponse> GetOrderById(Guid OrderId)
         {
             var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == OrderId);
@@ -330,9 +338,16 @@ namespace Service.Implement
 
         public async Task<IEnumerable<OrderResponse>> GetOrderByStaffId(Guid StaffId)
         {
-            var orders = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).Where(order => order.StaffId == StaffId).ToListAsync();
+            var orders = await _unitOfWork.GetRepo<Order>().Entities
+                .Include(d => d.Promotion)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(order => order.StaffId == StaffId)
+                .ToListAsync();
+
             var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
             var productImage = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+
             var orderResponse = orders.Select(order => new OrderResponse
             {
                 OrderId = order.OrderId,
@@ -341,8 +356,8 @@ namespace Service.Implement
                 ProductCustomId = order.ProductCustomId,
                 StaffId = order.StaffId,
                 PromotionId = order.PromotionId,
-                PromotionName = order.Promotion.PromotionName,
-                PromotionDiscount = order.Promotion.PromotionDiscount,
+                PromotionName = order.Promotion?.PromotionName,
+                PromotionDiscount = order.Promotion?.PromotionDiscount ?? 0, // Add default value if null
                 DeliveryAddress = order.DeliveryAddress,
                 DeliveryDistrict = order.DeliveryDistrict,
                 DeliveryCity = order.DeliveryCity,
@@ -355,33 +370,44 @@ namespace Service.Implement
                 CreateAt = order.CreateAt,
                 UpdateAt = order.UpdateAt,
                 Status = order.Status,
-                OrderDetails = order.OrderDetails.Where(orderDetail => orderDetail.OrderId == order.OrderId)
-                                                   .Select(orderDetail => new OrderDetailsResponse
-                                                   {
-                                                       OrderDetailId = orderDetail.OrderDetailId,
-                                                       ProductId = orderDetail.ProductId,
-                                                       ProductName = orderDetail.Product.ProductName,
-                                                       ProductImage = productImage.Where(pi => pi.ProductId == orderDetail.ProductId)
-                                                             .Select(pi => pi.ProductImage1)
-                                                            .FirstOrDefault(),
-                                                       Price = orderDetail.Product.Price,
-                                                       Discount = orderDetail.Product.Discount,
-                                                       ProductTotalPrice = orderDetail.ProductTotalPrice,
-                                                       Quantity = orderDetail.Product.Quantity,
-                                                       OrderId = orderDetail.OrderId,
-                                                       CreateAt = orderDetail.CreateAt,
-                                                       UpdateAt = orderDetail?.UpdateAt,
-                                                       Status = orderDetail?.Status,
-                                                   }).ToList()
+                OrderDetails = order.OrderDetails?
+                    .Where(orderDetail => orderDetail.OrderId == order.OrderId)
+                    .Select(orderDetail => new OrderDetailsResponse
+                    {
+                        OrderDetailId = orderDetail.OrderDetailId,
+                        ProductId = orderDetail.ProductId,
+                        ProductName = orderDetail.Product?.ProductName,
+                        ProductImage = productImage
+                            .Where(pi => pi.ProductId == orderDetail.ProductId)
+                            .Select(pi => pi.ProductImage1)
+                            .FirstOrDefault(),
+                        Price = orderDetail.Product?.Price ?? 0,
+                        Discount = orderDetail.Product?.Discount ?? 0,
+                        ProductTotalPrice = orderDetail.ProductTotalPrice,
+                        Quantity = orderDetail.Product?.Quantity ?? 0,
+                        OrderId = orderDetail.OrderId,
+                        CreateAt = orderDetail.CreateAt,
+                        UpdateAt = orderDetail.UpdateAt,
+                        Status = orderDetail.Status
+                    })
+                    .ToList() ?? new List<OrderDetailsResponse>() // Return empty list if null
             });
+
             return orderResponse;
         }
 
         public async Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID)
         {
-            var orders = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).Where(order => order.StoreId == StoreID).ToListAsync();
+            var orders = await _unitOfWork.GetRepo<Order>().Entities
+                .Include(d => d.Promotion)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(order => order.StoreId == StoreID)
+                .ToListAsync();
+
             var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
             var productImage = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+
             var orderResponse = orders.Select(order => new OrderResponse
             {
                 OrderId = order.OrderId,
@@ -390,8 +416,8 @@ namespace Service.Implement
                 ProductCustomId = order.ProductCustomId,
                 StaffId = order.StaffId,
                 PromotionId = order.PromotionId,
-                PromotionName = order.Promotion.PromotionName,
-                PromotionDiscount = order.Promotion.PromotionDiscount,
+                PromotionName = order.Promotion?.PromotionName,
+                PromotionDiscount = order.Promotion?.PromotionDiscount ?? 0,
                 DeliveryAddress = order.DeliveryAddress,
                 DeliveryDistrict = order.DeliveryDistrict,
                 DeliveryCity = order.DeliveryCity,
@@ -404,25 +430,29 @@ namespace Service.Implement
                 CreateAt = order.CreateAt,
                 UpdateAt = order.UpdateAt,
                 Status = order.Status,
-                OrderDetails = order.OrderDetails.Where(orderDetail => orderDetail.OrderId == order.OrderId)
-                                                   .Select(orderDetail => new OrderDetailsResponse
-                                                   {
-                                                       OrderDetailId = orderDetail.OrderDetailId,
-                                                       ProductId = orderDetail.ProductId,
-                                                       ProductName = orderDetail.Product.ProductName,
-                                                       ProductImage = productImage.Where(pi => pi.ProductId == orderDetail.ProductId)
-                                                             .Select(pi => pi.ProductImage1)
-                                                            .FirstOrDefault(),
-                                                       Price = orderDetail.Product.Price,
-                                                       Discount = orderDetail.Product.Discount,
-                                                       ProductTotalPrice = orderDetail.ProductTotalPrice,
-                                                       Quantity = orderDetail.Product.Quantity,
-                                                       OrderId = orderDetail.OrderId,
-                                                       CreateAt = orderDetail.CreateAt,
-                                                       UpdateAt = orderDetail?.UpdateAt,
-                                                       Status = orderDetail?.Status,
-                                                   }).ToList()
+                OrderDetails = order.OrderDetails?
+                    .Where(orderDetail => orderDetail.OrderId == order.OrderId)
+                    .Select(orderDetail => new OrderDetailsResponse
+                    {
+                        OrderDetailId = orderDetail.OrderDetailId,
+                        ProductId = orderDetail.ProductId,
+                        ProductName = orderDetail.Product?.ProductName,
+                        ProductImage = productImage
+                            .Where(pi => pi.ProductId == orderDetail.ProductId)
+                            .Select(pi => pi.ProductImage1)
+                            .FirstOrDefault(),
+                        Price = orderDetail.Product?.Price ?? 0,
+                        Discount = orderDetail.Product?.Discount ?? 0,
+                        ProductTotalPrice = orderDetail.ProductTotalPrice,
+                        Quantity = orderDetail.Product?.Quantity ?? 0,
+                        OrderId = orderDetail.OrderId,
+                        CreateAt = orderDetail.CreateAt,
+                        UpdateAt = orderDetail.UpdateAt,
+                        Status = orderDetail.Status
+                    })
+                    .ToList() ?? new List<OrderDetailsResponse>()
             });
+
             return orderResponse;
         }
 

@@ -7,6 +7,10 @@ namespace Service.Interface;
 public interface ICategoryService
 {
     Task<List<CategoryResponse>> GetAllCategory();
+    Task<List<CategoryResponse>> GetCategoryByProductType();
+    Task<List<CategoryResponse>> GetCategoryByFlowerType();
+    Task<List<CategoryResponse>> GetCategoryByBasketType();
+
     Task<Result<Category>> CreateCategory(CreateCategoryRequest request);
     Task<Result<CategoryResponse>> UpdateNameCategory(Guid id,UpdateCategoryRequest request);
     Task<Result<Category>> DeleteCategory(Guid id);

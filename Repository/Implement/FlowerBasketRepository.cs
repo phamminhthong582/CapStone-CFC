@@ -15,7 +15,7 @@ public class FlowerBasketRepository : IFlowerBasketRepository
     }
     public async Task<List<FlowerBasket>> GetAllFlowerBasket()
     {
-        var list = await _context.FlowerBaskets.ToListAsync();
+        var list = await _context.FlowerBaskets.Include(f => f.Category).ToListAsync();
         return list; 
     }
 

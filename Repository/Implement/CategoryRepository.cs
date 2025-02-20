@@ -18,7 +18,23 @@ public class CategoryRepository : ICategoryRepository
         var list = await _context.Categories.ToListAsync();
         return list;
     }
+    public async Task<List<Category>> GetAllCategoryByProductType()
+    {
+        var list = await _context.Categories.Where(n=> n.Type == "Product").ToListAsync();
+        return list;
+    }
 
+    public async Task<List<Category>> GetAllCategoryByFlowerType()
+    {
+        var list = await _context.Categories.Where(n => n.Type == "Flower").ToListAsync();
+        return list;
+    }
+
+    public async Task<List<Category>> GetAllCategoryByBasketType()
+    {
+        var list = await _context.Categories.Where(n => n.Type == "BAsket").ToListAsync();
+        return list;
+    }
     public async Task<Category> GetCategoryById(Guid id)
     {
         var cate = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == id);
@@ -50,4 +66,6 @@ public class CategoryRepository : ICategoryRepository
         await _context.SaveChangesAsync();
         return cate;
     }
+
+  
 }

@@ -24,7 +24,23 @@ public class CategoryService : ICategoryService
         var list = await _categoryRepository.GetAllCategory();
         return _mapper.Map<List<CategoryResponse>>(list);
     }
+    public async Task<List<CategoryResponse>> GetCategoryByProductType()
+    {
+        var list = await _categoryRepository.GetAllCategoryByProductType();
+        return _mapper.Map<List<CategoryResponse>>(list);
+    }
 
+    public async Task<List<CategoryResponse>> GetCategoryByFlowerType()
+    {
+        var list = await _categoryRepository.GetAllCategoryByFlowerType();
+        return _mapper.Map<List<CategoryResponse>>(list);
+    }
+
+    public async Task<List<CategoryResponse>> GetCategoryByBasketType()
+    {
+        var list = await _categoryRepository.GetAllCategoryByBasketType();
+        return _mapper.Map<List<CategoryResponse>>(list);
+    }
     public async Task<Result<Category>> CreateCategory( CreateCategoryRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
@@ -34,6 +50,7 @@ public class CategoryService : ICategoryService
         var newCategory = new Category
         {
             CategoryName = request.Name,
+            Type = request.Type,    
             Status = true, 
             CreateAt =  DateTime.UtcNow,
             UpdateAt =DateTime.UtcNow
@@ -59,7 +76,7 @@ public class CategoryService : ICategoryService
             throw new ArgumentException("Cannot replace by white space", nameof(request.CategoryName));
         }
         category.CategoryName = request.CategoryName;
-
+        category.Type = request.Type;
         await _categoryRepository.UpdateCategory(category);
         return new Result<CategoryResponse>
         {
@@ -119,4 +136,6 @@ public class CategoryService : ICategoryService
     {
         throw new NotImplementedException();
     }
+
+  
 }

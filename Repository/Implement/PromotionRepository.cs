@@ -23,7 +23,7 @@ public class PromotionRepository : IPromotionRepository
     public async Task<IEnumerable<Promotion>> GetExpiredPromotions()
     {
         return await _context.Promotions
-            .Where(p => p.EndDate <= DateTime.UtcNow && p.Status == false)
+            .Where(promotion => promotion.EndDate <= DateTime.UtcNow)  // Lấy các promotion hết hạn
             .ToListAsync();
     }
 
