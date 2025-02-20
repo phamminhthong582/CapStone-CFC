@@ -16,7 +16,7 @@ builder.Services.AddDbContext<CustomFlowerChainContext>();
 //var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddHostedService<PromotionBackgroundService>();
+builder.Services.AddHostedService<PromotionBackgroundService>();
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddHangfire(x => x.UseSqlServerStorage("DBDefault"));
 // builder.Services.AddHangfireServer();

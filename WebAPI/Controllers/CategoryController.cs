@@ -23,6 +23,24 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.GetAllCategory();
         return Ok(result);
     }
+    [HttpGet("getCartegoryByProductType")]
+    public async Task<IActionResult> GetCategoryByProductType()
+    {
+        var result = await _categoryService.GetCategoryByProductType();
+        return Ok(result);
+    }
+    [HttpGet("GetCategoryByFlowerType")]
+    public async Task<IActionResult> GetCategoryByFlowerType()
+    {
+        var result = await _categoryService.GetCategoryByFlowerType();
+        return Ok(result);
+    }
+    [HttpGet("GetCategoryByBasketType")]
+    public async Task<IActionResult> GetCategoryByBasketType()
+    {
+        var result = await _categoryService.GetCategoryByFlowerType();
+        return Ok(result);
+    }
     [HttpGet("Id")]
     public async Task<IActionResult> GetCategoryById(Guid id)
     {
