@@ -76,7 +76,7 @@ public class CategoryService : ICategoryService
             throw new ArgumentException("Cannot replace by white space", nameof(request.CategoryName));
         }
         category.CategoryName = request.CategoryName;
-
+        category.Type = request.Type;
         await _categoryRepository.UpdateCategory(category);
         return new Result<CategoryResponse>
         {
