@@ -42,13 +42,14 @@ public class TokenService : ITokenService
         if (user is Employee employee)
         {
             claims.AddRange(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, employee.FullName ?? throw new ArgumentNullException(nameof(employee.FullName))),
-                new Claim("Id", employee.EmployeeId.ToString()),
-                new Claim(ClaimTypes.Role, employee.RoleId.ToString()),
-                new Claim("FullName", employee.FullName ?? ""),
-                new Claim("Avatar", employee.Avatar ?? "")
-            });
+  {
+    new Claim(ClaimTypes.NameIdentifier, employee.FullName ?? throw new ArgumentNullException(nameof(employee.FullName))),
+    new Claim("Id", employee.EmployeeId.ToString()),
+    new Claim(ClaimTypes.Role, employee.RoleId.ToString()),
+    new Claim("FullName", employee.FullName ?? ""),
+    new Claim("Avatar", employee.Avatar ?? ""),
+    new Claim("StoreId", employee.StoreId?.ToString() ?? "") // Thêm StoreId
+});
         }
         
         else if (user is Customer customer)
