@@ -94,6 +94,14 @@ public static class DependencyInjection
         //Revenue
         services.AddScoped<IRevenueService, RevenueService>();
 
+        //logger
+        services.AddLogging(builder =>
+        {
+            builder.AddConsole();
+            builder.AddDebug();
+            // Có thể thêm các provider khác như file logging
+            builder.AddAzureWebAppDiagnostics(); // Nếu deploy lên Azure
+        });
 
         services.AddAutoMapper(typeof(MapperConfig).Assembly);
 

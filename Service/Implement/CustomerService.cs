@@ -5,6 +5,7 @@ using BusinessObject.DTO.Customer;
 using BusinessObject.Entities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Repository.Interface;
 using Service.Interface;
 
@@ -19,9 +20,16 @@ public class CustomerService : ICustomerService
     private readonly IMemoryCache _cache;
     private readonly string tempdata = "tempdatakey";
     private readonly IEmailService _emailService;
+    private readonly ILogger<CustomerService> _logger; // Thay đổi kiểu logger
 
-    public CustomerService(ICustomerRepository customerRepository, IMapper mapper, IRoleRepository roleRepository , IEmailService emailService, IMemoryCache memoryCache
-    , IConfiguration configuration)
+    public CustomerService(
+        ICustomerRepository customerRepository,
+        IMapper mapper,
+        IRoleRepository roleRepository,
+        IEmailService emailService,
+        IMemoryCache memoryCache,
+        IConfiguration configuration,
+        ILogger<CustomerService> logger) // Thêm parameter logger
     {
         _customerRepository = customerRepository;
         _mapper = mapper;
@@ -29,44 +37,70 @@ public class CustomerService : ICustomerService
         _roleRepository = roleRepository;
         _emailService = emailService;
         _configuration = configuration;
-
+        _logger = logger; // Gán logger
     }
     public async Task<Result<CustomerResponse>> RegisterCustomer(CreateCustomerRequest request)
     {
-        var isMailUsed = await _customerRepository.FindCustomerByEmail(request.Email);
-        var response = new Result<CustomerResponse>();
+        try
+        {
+            var response = new Result<CustomerResponse>();
 
-        if (isMailUsed != null)
-        {
-            response.Messages = new[] { "This mail is already used" };
-            response.ResultStatus = ResultStatus.Duplicated.ToString();
+            // Log the incoming request
+            _logger.LogInformation($"Starting registration for email: {request.Email}");
+
+            var isMailUsed = await _customerRepository.FindCustomerByEmail(request.Email);
+            if (isMailUsed != null)
+            {
+                _logger.LogWarning($"Email {request.Email} is already in use");
+                response.Messages = new[] { "This mail is already used" };
+                response.ResultStatus = ResultStatus.Duplicated.ToString();
+                return response;
+            }
+
+            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+            Customer customer = new Customer
+            {
+                Email = request.Email,
+                Password = Convert.ToBase64String(passwordHash),
+                Status = CustomerStatus.NotVerified.ToString(),
+            };
+
+            _logger.LogInformation("Attempting to register customer in database");
+            var user = await _customerRepository.RegisterCustomer(customer);
+
+            var token = _customerRepository.CreateRandomToken();
+            var cacheEntryOption = new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromMinutes(10))
+                .SetPriority(CacheItemPriority.Normal);
+
+            _logger.LogInformation("Setting cache entry for verification token");
+            _cache.Set(tempdata, token, cacheEntryOption);
+
+            _logger.LogInformation("Attempting to send verification email");
+            var mail = await _emailService.SendMailRegister(customer.Email, token);
+
+            if (mail.ResultStatus != ResultStatus.Success.ToString())
+            {
+                _logger.LogError("Failed to send verification email");
+                response.Messages = new[] { "Failed to send confirmation email." };
+                response.ResultStatus = ResultStatus.Failed.ToString();
+                return response;
+            }
+
+            response.RoleName = RoleName.Customer.ToString();
+            response.ResultStatus = ResultStatus.Success.ToString();
+            response.Messages = new[] { "Register successfully!" };
+            response.Data = _mapper.Map<CustomerResponse>(user);
+
+            _logger.LogInformation("Registration completed successfully");
             return response;
         }
-        CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-        Customer customer = new Customer
+        catch (Exception ex)
         {
-            Email = request.Email,
-            Password = Convert.ToBase64String(passwordHash),
-            Status = CustomerStatus.NotVerified.ToString(),
-        };
-        var user = await _customerRepository.RegisterCustomer(customer);
-        var token = _customerRepository.CreateRandomToken();
-        var cacheEntryOption = new MemoryCacheEntryOptions()
-            .SetSlidingExpiration(TimeSpan.FromMinutes(10))
-            .SetPriority(CacheItemPriority.Normal);
-        _cache.Set(tempdata, token, cacheEntryOption);
-        var mail = await _emailService.SendMailRegister(customer.Email, token);
-        if (mail.ResultStatus != ResultStatus.Success.ToString())
-        {
-            response.Messages = new[] { "Failed to send confirmation email." };
-            response.ResultStatus = ResultStatus.Failed.ToString();
-            return response;
+            _logger.LogError(ex, "Error during customer registration");
+            throw; // Let the middleware handle the exception
         }
-        response.RoleName = RoleName.Customer.ToString();
-        response.ResultStatus = ResultStatus.Success.ToString();
-        response.Messages = new []{"Register successfully!"};
-        response.Data = _mapper.Map<CustomerResponse>(user);
-        return response;
     }
     public async Task<List<CustomerResponse>> GetAllCustomer()
     {

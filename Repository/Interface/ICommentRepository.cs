@@ -6,4 +6,5 @@ public interface ICommentRepository
 {
     Task<List<Comment>> GetAllComment();
     Task<Comment> AddComment(Comment comment);
+    Task<List<Comment>> GetCommentByProductId(Guid productId);
 }

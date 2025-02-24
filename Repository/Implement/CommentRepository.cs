@@ -18,11 +18,20 @@ public class CommentRepository : ICommentRepository
         var list = await _context.Comments.ToListAsync();
         return list;
     }
+    
 
     public async Task<Comment> AddComment(Comment comment)
     {
         await _context.Comments.AddAsync(comment);
         await _context.SaveChangesAsync();
         return comment;
+    }
+
+    public async Task<List<Comment>> GetCommentByProductId(Guid productId)
+    {
+        return await _context.Comments
+            .Where(c => c.ProductId == productId)
+            .Include(c => c.Customer) 
+            .ToListAsync();
     }
 }

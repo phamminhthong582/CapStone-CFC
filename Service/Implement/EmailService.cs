@@ -39,10 +39,15 @@ public class EmailService : IEmailService
     }
     public string GetEmailTemplate(string templateName)
     {
-        string path = Path.Combine(_configuration.GetSection("EmailTemplateDirectory").Value!,
-            $"{templateName}.html");
+        string path = Path.Combine(_configuration["EmailTemplateDirectory"], $"{templateName}.html");
+
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Email template not found: {path}");
+        }
+
         var template = File.ReadAllText(path, Encoding.UTF8);
-        template = template.Replace("[path]", _configuration.GetSection("RedirectUrl").Value);
+        template = template.Replace("[path]", _configuration["RedirectUrl"]);
         return template;
     }
 

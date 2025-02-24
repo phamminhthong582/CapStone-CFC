@@ -11,6 +11,8 @@ public class CommentResponse
     public int? Rating { get; set; }
 
     public string? Feedback { get; set; }
+    
+    public string CustomerName { get; set; }
 
     public bool? Status { get; set; }
 }

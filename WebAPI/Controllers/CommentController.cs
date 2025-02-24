@@ -23,6 +23,23 @@ public class CommentController : Controller
       var result = await _commentService.GetAllComment();
       return Ok(result);
    }
+   [HttpGet("get-comments-by-productId")]
+   public async Task<IActionResult> GetCommentsByProductId([FromQuery] Guid productId)
+   {
+      if (productId == Guid.Empty)
+      {
+         return BadRequest("Product ID is required.");
+      }
+
+      var comments = await _commentService.GetCommentByProductId(productId);
+
+      if (comments == null || comments.Count == 0)
+      {
+         return NotFound("No comments found for this product.");
+      }
+
+      return Ok(new { data = comments });
+   }
    [HttpPost("create-comment")]
    public async Task<ActionResult<Result<Comment>>> CreateComment( [FromBody] CreateCommentRequest request)
    {
