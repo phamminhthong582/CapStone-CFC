@@ -123,7 +123,7 @@ public class EmployeeService : IEmployeeService
         var florists = employees
             .Where(e => e.Role != null
                      && e.Role.RoleName == RoleName.Florist.ToString()
-                     && !(e.Status ?? false)) // Chỉ lấy Status == false hoặc null
+                     && !(e.Status ?? false))
             .ToList();
 
         // Chuyển danh sách đã lọc sang EmployeeResponse
@@ -151,7 +151,7 @@ public class EmployeeService : IEmployeeService
     }
 
 
-    public async Task<IEnumerable<EmployeeResponse>> GetCourierWithStoreIdWithStatusFalse(Guid storeid)
+    public async Task<IEnumerable<CourierResponse>> GetCourierWithStoreIdWithStatusFalse(Guid storeid)
     {
         if (storeid == Guid.Empty) // Kiểm tra StoreId hợp lệ
         {
@@ -173,7 +173,7 @@ public class EmployeeService : IEmployeeService
 
         // Chuyển danh sách đã lọc sang EmployeeResponse
         var employeeResponse = florists
-            .Select(employee => new EmployeeResponse
+            .Select(employee => new CourierResponse
             {
                 EmployeeId = employee.EmployeeId,
                 FullName = employee.FullName,
@@ -189,6 +189,10 @@ public class EmployeeService : IEmployeeService
                 StoreId = employee.StoreId,
                 Status = employee.Status,
                 Avatar = employee.Avatar,
+                MotoType = employee.MotoType,   
+                NumberMoto = employee.NumberMoto,
+                ColorMoto = employee.ColorMoto,
+
             })
             .ToList();
 
@@ -212,7 +216,7 @@ public class EmployeeService : IEmployeeService
         var florists = employees
             .Where(e => e.Role != null
                      && e.Role.RoleName == RoleName.Florist.ToString()
-                     && !(e.Status ?? true)) // Chỉ lấy Status == false hoặc null
+                     && (e.Status ?? true)) // Chỉ lấy Status == false hoặc null
             .ToList();
 
         // Chuyển danh sách đã lọc sang EmployeeResponse
@@ -240,7 +244,7 @@ public class EmployeeService : IEmployeeService
     }
 
 
-    public async Task<IEnumerable<EmployeeResponse>> GetCourierWithStoreIdWithStatusTrue(Guid storeid)
+    public async Task<IEnumerable<CourierResponse>> GetCourierWithStoreIdWithStatusTrue(Guid storeid)
     {
         if (storeid == Guid.Empty) // Kiểm tra StoreId hợp lệ
         {
@@ -257,12 +261,12 @@ public class EmployeeService : IEmployeeService
         var florists = employees
             .Where(e => e.Role != null
                      && e.Role.RoleName == RoleName.Courier.ToString()
-                     && !(e.Status ?? true)) // Chỉ lấy Status == false hoặc null
+                     && (e.Status ?? true)) // Chỉ lấy Status == false hoặc null
             .ToList();
 
         // Chuyển danh sách đã lọc sang EmployeeResponse
         var employeeResponse = florists
-            .Select(employee => new EmployeeResponse
+            .Select(employee => new CourierResponse
             {
                 EmployeeId = employee.EmployeeId,
                 FullName = employee.FullName,
@@ -278,6 +282,9 @@ public class EmployeeService : IEmployeeService
                 StoreId = employee.StoreId,
                 Status = employee.Status,
                 Avatar = employee.Avatar,
+                MotoType = employee.MotoType,
+                NumberMoto = employee.NumberMoto,
+                ColorMoto = employee.ColorMoto,
             })
             .ToList();
 
@@ -358,7 +365,51 @@ public class EmployeeService : IEmployeeService
                 $"Your account has been approved. Your new password is: <strong>{newPassword}</strong>");
         }
     }
- 
+   
+    public async Task Reject(Guid employeeId, string reason)
+    {
+        var employee = await _unitOfWork.Repository<Employee>().GetByIdAsync(employeeId);
+        if (employee == null)
+        {
+            throw new Exception("Employee not found");
+        }
+
+        if (employee.Status != false)
+        {
+            throw new Exception("Employee is not in a rejectable state.");
+        }
+
+        if (string.IsNullOrWhiteSpace(employee.Email))
+        {
+            throw new Exception("Employee does not have a valid email address.");
+        }
+
+        // Gửi email thông báo từ chối
+        await SendEmailAsync(employee.Email, "Your Account Rejection",
+            $"Your account has been rejected. Reason: <strong>{reason}</strong>");
+
+        // Xóa nhân viên sau khi gửi email thành công
+        _unitOfWork.Repository<Employee>().Delete(employee);
+        await _unitOfWork.CompleteAsync();
+    }
+    public async Task UpdateStatusEmloyee(Guid employeeid, bool status)
+    {
+        var employee = await _unitOfWork.Repository<Employee>().GetByIdAsync(employeeid);
+        if (employee == null)
+        {
+            throw new Exception("Employee not found");
+        }
+
+            employee.Status = status;
+            string newPassword = PasswordGenerator.GenerateRandomPassword(12);
+            employee.Password = newPassword;
+
+            _unitOfWork.Repository<Employee>().Update(employee);
+            await _unitOfWork.CompleteAsync();
+
+           
+        
+    }
     public async Task SendEmailAsync(string toEmail, string subject, string body)
     {
             using (var smtpClient = new SmtpClient("smtp.gmail.com"))
@@ -427,4 +478,6 @@ public class EmployeeService : IEmployeeService
         await _unitOfWork.Repository<Employee>().AddAsync(employee);
         await _unitOfWork.CompleteAsync();  
     }
+
+   
 }

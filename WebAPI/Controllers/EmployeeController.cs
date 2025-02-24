@@ -46,6 +46,25 @@ public class EmployeeController : ControllerBase
 
 
     }
+  
+    [HttpPost("ApproveEmployee")]
+    public async Task<IActionResult> ApproveEmployee(Guid employeeId)
+    {
+        await _employeeService.ApproveEmployee(employeeId);
+        return Ok(new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status200OK,
+                   code: ResponseCodeConstants.SUCCESS,
+                   data: "Thêm sản phẩm mới thành công"));
+    }
+    [HttpPost("RejectEmployee")]
+    public async Task<IActionResult> RejectEmployee(Guid employeeId,string reason)
+    {
+        await _employeeService.Reject(employeeId, reason);
+        return Ok(new BaseResponseModel<string>(
+                   statusCode: StatusCodes.Status200OK,
+                   code: ResponseCodeConstants.SUCCESS,
+                   data: "Thêm sản phẩm mới thành công"));
+    }
     [HttpGet("storeId-florist-status-true")]
     public async Task<IActionResult> GetFloristWithStoreIdWithStatusTrue(Guid storeid)
     {
@@ -56,21 +75,12 @@ public class EmployeeController : ControllerBase
              data: result));
 
     }
-    [HttpPost("ApproveEmployee")]
-    public async Task<IActionResult> ApproveEmployee(Guid employeeId)
-    {
-        await _employeeService.ApproveEmployee(employeeId);
-        return Ok(new BaseResponseModel<string>(
-                   statusCode: StatusCodes.Status200OK,
-                   code: ResponseCodeConstants.SUCCESS,
-                   data: "Thêm sản phẩm mới thành công"));
-    }
     [HttpGet("storeId-courier-status-true")]
     public async Task<IActionResult> GetCourierWithStoreIdWithStatusTrue(Guid storeid)
     {
         var result = await _employeeService.GetCourierWithStoreIdWithStatusTrue(storeid);
 
-        return Ok(new BaseResponseModel<IEnumerable<EmployeeResponse>>(
+        return Ok(new BaseResponseModel<IEnumerable<CourierResponse>>(
                statusCode: StatusCodes.Status200OK,
                code: ResponseCodeConstants.SUCCESS,
                data: result));
@@ -90,7 +100,7 @@ public class EmployeeController : ControllerBase
    {
       var result = await _employeeService.GetCourierWithStoreIdWithStatusFalse(storeid);
 
-        return Ok(new BaseResponseModel<IEnumerable<EmployeeResponse>>(
+        return Ok(new BaseResponseModel<IEnumerable<CourierResponse>>(
                statusCode: StatusCodes.Status200OK,
                code: ResponseCodeConstants.SUCCESS,
                data: result));
@@ -107,7 +117,16 @@ public class EmployeeController : ControllerBase
 
       return Ok(result);
    }
-   [HttpDelete("delete-employee")]
+    [HttpPut("updateEmployeeStatus")]
+    public async Task<IActionResult> updateEmployeeStatus(Guid employeeId,bool Status)
+    {
+        await _employeeService.UpdateStatusEmloyee(employeeId, Status);
+        return Ok(new BaseResponseModel<string>(
+                  statusCode: StatusCodes.Status200OK,
+                  code: ResponseCodeConstants.SUCCESS,
+                  data: "Thêm sản phẩm mới thành công"));
+    }
+    [HttpDelete("delete-employee")]
    public async Task<ActionResult<Result<Employee>>> DeleteEmployee(Guid id)
    {
       var result = await _employeeService.DeleteEmployee(id);
