@@ -60,4 +60,20 @@ public class CommentService : ICommentService
         };
         return response;
     }
+
+    public async Task<List<CommentResponse>> GetCommentByProductId(Guid productId)
+    {
+        var comments = await _commentRepository.GetCommentByProductId(productId);
+
+        return comments.Select(c => new CommentResponse
+        {
+            CommentId = c.CommentId,
+            Feedback = c.Feedback,
+            CustomerId = c.CustomerId,
+            Rating = c.Rating,
+            Status = c.Status,
+            CustomerName = c.Customer != null ? c.Customer.FullName : "Anonymous", 
+        }).ToList();
+
+    }
 }
