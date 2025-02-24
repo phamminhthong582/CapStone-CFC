@@ -16,6 +16,8 @@ public interface IAuthService
      Task<Result<string>> VerifyEmail(Guid id, string token);
     Task SetPasswordForCustomer(string email, string NewPassword, string token);
     Task SetPasswordForEmployee(string email, string NewPassword, string token);
+    Task ChangedPaswordForCustomer(Guid customerId, string newPassword);
+    Task ChangedPaswordForEmployee(Guid employeeid, string newPassword);
     
 
 }
