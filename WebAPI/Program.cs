@@ -1,4 +1,5 @@
 using BusinessObject.Context;
+using Core.Middleware;
 using Hangfire;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
@@ -70,6 +71,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 //}
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 
 //app.UseDefaultFiles();
 
