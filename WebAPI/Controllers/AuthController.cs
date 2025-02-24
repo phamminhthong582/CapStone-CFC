@@ -7,6 +7,7 @@ using BusinessObject.DTO.Response;
 using Core.Infrastructures;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implement;
 using Service.Interface;
 
 namespace WebAPI.Controllers;
@@ -88,6 +89,24 @@ public class AuthController : ControllerBase
         }
 
         return result;
+    }
+    [HttpPut("changedPasswordByCustomer")]
+    public async Task<IActionResult> changedPasswordByCustomer(Guid customerId, string newPassword)
+    {
+        await _authService.ChangedPaswordForCustomer(customerId, newPassword);
+        return Ok(new BaseResponseModel<string>(
+                  statusCode: StatusCodes.Status200OK,
+                  code: ResponseCodeConstants.SUCCESS,
+                  data: "cập nhật sẩn phẩm thành công"));
+    }
+    [HttpPut("changedPasswordByEmployee")]
+    public async Task<IActionResult> changedPasswordByEmployee(Guid employeeId, string newPassword)
+    {
+        await _authService.ChangedPaswordForEmployee(employeeId, newPassword);
+        return Ok(new BaseResponseModel<string>(
+                  statusCode: StatusCodes.Status200OK,
+                  code: ResponseCodeConstants.SUCCESS,
+                  data: "cập nhật sẩn phẩm thành công"));
     }
     [HttpGet("confirm-email")]
     public async Task<IActionResult> VerifyEmail(Guid id, string token)

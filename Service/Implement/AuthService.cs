@@ -414,4 +414,20 @@ public async Task<Result<string>> VerifyEmail(Guid id, string token)
             await _unitOfWork.CompleteAsync();
         }
     }
+
+    public async Task ChangedPaswordForCustomer(Guid customerId, string newPassword)
+    {
+        var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
+        customer.Password = newPassword;
+        _unitOfWork.Repository<Customer>().Update(customer);
+        await _unitOfWork.CompleteAsync();
+    }
+
+    public async Task ChangedPaswordForEmployee(Guid employeeid , string newPassword)
+    {
+        var employee = await _unitOfWork.Repository<Employee>().GetByIdAsync(employeeid);
+        employee.Password = newPassword;
+        _unitOfWork.Repository<Employee>().Update(employee);
+        await _unitOfWork.CompleteAsync();
+    }
 }
