@@ -35,6 +35,7 @@ public partial class Customer
     public string? Avatar { get; set; }
 
     public string? Otp { get; set; }
+    public virtual ICollection<ChatRoom> ChatRooms { get; set; } = new List<ChatRoom>();
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
