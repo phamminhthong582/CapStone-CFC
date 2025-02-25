@@ -27,7 +27,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="DTO\Chat\" />
       <Folder Include="DTO\Customer\" />
+      <Folder Include="DTO\Message\" />
+      <Folder Include="DTO\Notification\" />
     </ItemGroup>
 
 </Project>
