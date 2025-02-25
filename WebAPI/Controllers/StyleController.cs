@@ -7,7 +7,7 @@ using Service.Interface;
 
 namespace WebAPI.Controllers
 {
-    [Route("api/flowerBaskets")]
+    [Route("api/style")]
     [ApiController]
 
     public class StyleController : Controller
