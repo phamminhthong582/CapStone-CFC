@@ -11,6 +11,7 @@ public partial class ProductCustom
 
     public Guid? FlowerBasketId { get; set; }
     public Guid? StyleId {  get; set; }
+    public Guid? AccessoryId { get; set; }
 
     public int? Quantity { get; set; }
 
@@ -29,6 +30,9 @@ public partial class ProductCustom
     public virtual FlowerBasket? FlowerBasket { get; set; }
 
     public virtual Style? Style { get; set; }
+
+    public virtual Accessory? Accessory { get; set; }
+
 
     public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();
 

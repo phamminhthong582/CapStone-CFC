@@ -79,7 +79,7 @@ namespace Service.Implement
             style.Description = !string.IsNullOrEmpty(styleRequest.Description) ? styleRequest.Description : style.Description;
             style.Note = !string.IsNullOrEmpty(styleRequest.Note) ? styleRequest.Note : style.Note;
             style.Status = styleRequest.Status ?? style.Status;
-
+            style.UpdateAt = DateTime.Now;
             _unitOfWork.GetRepo<Style>().Update(style);
             await _unitOfWork.CompleteAsync();
         }

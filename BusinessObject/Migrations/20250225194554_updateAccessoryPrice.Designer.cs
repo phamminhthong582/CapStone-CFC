@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250225194554_updateAccessoryPrice")]
+    partial class updateAccessoryPrice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

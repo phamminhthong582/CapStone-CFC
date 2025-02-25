@@ -90,6 +90,9 @@ public static class DependencyInjection
         //Style
         services.AddScoped<IStyleService, StyleService>();
 
+        //Style
+        services.AddScoped<IAccessoryService, AccessoryService>();
+
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
 
