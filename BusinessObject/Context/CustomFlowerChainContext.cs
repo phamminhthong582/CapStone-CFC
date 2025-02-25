@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Org.BouncyCastle.Asn1;
 
 namespace BusinessObject.Context;
 
@@ -57,8 +58,15 @@ public partial class CustomFlowerChainContext : DbContext
 
     public virtual DbSet<Wallet> Wallets { get; set; }
     public virtual DbSet<Cart> Carts { get; set; }
+    public virtual DbSet<ChatRoom> ChatRooms { get; set; }
+    public virtual DbSet<Message> Messages { get; set; }
+
+    public virtual DbSet<Notification> Notifications { get; set; }
 
     public virtual DbSet<WithdrawMoney> WithdrawMoneys { get; set; }
+
+    public virtual DbSet<Style> Styles { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
       => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
@@ -205,6 +213,15 @@ public partial class CustomFlowerChainContext : DbContext
             .HasForeignKey(d => d.CategoryId)
             .HasConstraintName("FK_FlowerBasket_Category");
         });
+        modelBuilder.Entity<Style>(entity =>
+        {
+            entity.ToTable("Style");
+
+            entity.Property(e => e.StyleId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+        });
 
         modelBuilder.Entity<FlowerCustom>(entity =>
         {
@@ -325,6 +342,9 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.FlowerBasket).WithMany(p => p.ProductCustoms)
                 .HasForeignKey(d => d.FlowerBasketId)
                 .HasConstraintName("FK_ProductCustom_FlowerBasket");
+            entity.HasOne(d => d.Style).WithMany(p => p.ProductCustoms)
+               .HasForeignKey(d => d.StyleId)
+               .HasConstraintName("FK_ProductCustom_Style");
         });
 
         modelBuilder.Entity<ProductImage>(entity =>
@@ -422,6 +442,44 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.WalletId)
                 .HasConstraintName("FK_WithdrawMoney_Refund");
         });
+        modelBuilder.Entity<ChatRoom>(entity =>
+        {
+            entity.ToTable("ChatRoom");
+
+            entity.Property(e => e.ChatRoomId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.HasOne(d => d.Customer).WithMany(p => p.ChatRooms)
+                .HasForeignKey(d => d.CustomerId)
+                .HasConstraintName("FK_ChatRoom_Customer");
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.ChatRooms)
+                .HasForeignKey(d => d.CustomerId)
+                .HasConstraintName("FK_ChatRoom_Employee");
+        });
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.ToTable("Message");
+
+            entity.Property(e => e.MessageId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.HasOne(d => d.ChatRoom).WithMany(p => p.Messages)
+                .HasForeignKey(d => d.ChatRoomId)
+                .HasConstraintName("FK_Message_ChatRoom");
+        });
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notification");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+            entity.Property(e => e.NotificationId).HasDefaultValueSql("(newid())");
+
+            entity.HasOne(d => d.Message).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.MessageId)
+                .HasConstraintName("FK_NotificationId_Message");
+        });
+
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -10,6 +10,7 @@ public partial class ProductCustom
     public string? ProductName { get; set; }
 
     public Guid? FlowerBasketId { get; set; }
+    public Guid? StyleId {  get; set; }
 
     public int? Quantity { get; set; }
 
@@ -26,6 +27,8 @@ public partial class ProductCustom
     public bool? Status { get; set; }
 
     public virtual FlowerBasket? FlowerBasket { get; set; }
+
+    public virtual Style? Style { get; set; }
 
     public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();
 
