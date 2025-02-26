@@ -93,6 +93,9 @@ public static class DependencyInjection
 
         //Revenue
         services.AddScoped<IRevenueService, RevenueService>();
+        //ChatRoom
+        services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
+        services.AddScoped<IChatRoomService, ChatRoomService>();
 
         //logger
         services.AddLogging(builder =>

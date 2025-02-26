@@ -16,6 +16,7 @@ public partial class MapperConfig : Profile
         AddFlowerBasketMapperConfig();
         AddProductCustomMapperConfig();
         AddFlowerCustomMapperConfig();
+        AddChatRoomMapperConfig();
     }
 
     partial void AddCategoryMapperConfig();
@@ -28,4 +29,5 @@ public partial class MapperConfig : Profile
     partial void AddFlowerBasketMapperConfig();
     partial void AddProductCustomMapperConfig();
     partial void AddFlowerCustomMapperConfig();
+    partial void AddChatRoomMapperConfig();
 }

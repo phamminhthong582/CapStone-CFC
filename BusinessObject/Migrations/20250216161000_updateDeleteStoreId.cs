@@ -27,25 +27,25 @@ namespace BusinessObject.Entities
                 name: "FK_Product_Store",
                 table: "Product");
 
-             //migrationBuilder.DropIndex(
-             //    name: "IX_Product_StoreId",
-             //    table: "Product");
-            
             //  migrationBuilder.DropIndex(
-            //      name: "IX_FlowerBasket_StoreId",
-            //      table: "FlowerBasket");
+            //      name: "IX_Product_StoreId",
+            //      table: "Product");
             //
-            //  migrationBuilder.DropIndex(
-            //      name: "IX_Flower_StoreId",
-            //      table: "Flower");
+            //   migrationBuilder.DropIndex(
+            //       name: "IX_FlowerBasket_StoreId",
+            //       table: "FlowerBasket");
             //
-            //  migrationBuilder.DropIndex(
-            //      name: "IX_Customer_StoreId",
-            //     table: "Customer");
+            //   migrationBuilder.DropIndex(
+            //       name: "IX_Flower_StoreId",
+            //       table: "Flower");
             //
-            //// migrationBuilder.DropColumn(
-            ////     name: "StoreId",
-            ////     table: "Product");
+            //   migrationBuilder.DropIndex(
+            //       name: "IX_Customer_StoreId",
+            //      table: "Customer");
+            //
+            // migrationBuilder.DropColumn(
+            //      name: "StoreId",
+            //      table: "Product");
 
             migrationBuilder.DropColumn(
                 name: "StoreId",
