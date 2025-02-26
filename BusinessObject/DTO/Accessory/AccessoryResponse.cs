@@ -12,11 +12,13 @@ namespace BusinessObject.DTO.Accessory
         public string? Name { get; set; }
         public string? Note { get; set; }
         public double? Price { get; set; }
-
+        public string? CategoryName { get; set; }
         public string? Description { get; set; }
         public string? Image { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
         public bool? Status { get; set; }
+        public bool? Feature { get; set; }
+
     }
 }

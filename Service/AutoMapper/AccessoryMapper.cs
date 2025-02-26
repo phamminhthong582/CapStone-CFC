@@ -13,7 +13,8 @@ public partial class MapperConfig : Profile
 {
     partial void AddAccessoryMapperConfig()
     {
-        CreateMap<Accessory, AccessoryResponse>().ReverseMap();
+        CreateMap<Accessory, AccessoryResponse>().ForMember(dest => dest.CategoryName,
+                opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null));
         CreateMap<Accessory, AccessoryRequest>().ReverseMap();
     }
 

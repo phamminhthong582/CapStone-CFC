@@ -223,6 +223,10 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
+            entity.HasOne(d => d.Category).WithMany(p => p.Styles)
+            .HasForeignKey(d => d.CategoryId)
+            .HasConstraintName("FK_Style_Category");
+
         });
 
         modelBuilder.Entity<Accessory>(entity =>
@@ -232,6 +236,10 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.AccessoryId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Accessories)
+            .HasForeignKey(d => d.CategoryId)
+            .HasConstraintName("FK_Accessory_Category");
 
         });
 

@@ -13,10 +13,13 @@ namespace BusinessObject.DTO.Accessory
         public string? Name { get; set; }
         public string? Note { get; set; }
         public double? Price { get; set; }
+        public Guid? CategoryId { get; set; }
 
         public string? Description { get; set; }
         [FromForm]
         public IFormFile? Image { get; set; }
         public bool? Status { get; set; }
+        public bool? Feature { get; set; }
+
     }
 }

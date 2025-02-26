@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Style;
 using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
 using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
@@ -34,10 +35,12 @@ namespace Service.Implement
             : null;
             var newStyle = new Style
             {
+                CategoryId = styleRequest.CategoryId,
                 Name = styleRequest.Name,
                 Description = styleRequest.Description,
                 Note = styleRequest.Note,
                 Image = StyleUrl,
+                Feature = styleRequest.Feature,
                 CreateAt = DateTime.UtcNow,
                 UpdateAt = DateTime.UtcNow,
                 Status = true,
@@ -57,12 +60,15 @@ namespace Service.Implement
 
         public async Task<IEnumerable<StyleResponse>> GetAllStyle()
         {
-            var list = await _unitOfWork.GetRepo<Style>().GetAllAsync();
+            var list = await _unitOfWork.GetRepo<Style>().Entities.Include(n => n.Category).ToListAsync();
             return _mapper.Map<IEnumerable<StyleResponse>>(list); 
         }
         public async Task<StyleResponse> GetStyleById(Guid id)
         {
-            var style = await _unitOfWork.GetRepo<Style>().GetByIdAsync(id);
+            var style = await _unitOfWork.GetRepo<Style>()
+                .Entities
+                 .Include(n => n.Category)
+             .FirstOrDefaultAsync(n => n.StyleId == id);
             return _mapper.Map<StyleResponse>(style);
 
         }
@@ -82,6 +88,8 @@ namespace Service.Implement
             style.Description = !string.IsNullOrEmpty(styleRequest.Description) ? styleRequest.Description : style.Description;
             style.Note = !string.IsNullOrEmpty(styleRequest.Note) ? styleRequest.Note : style.Note;
             style.Status = styleRequest.Status ?? style.Status;
+            style.CategoryId = styleRequest.CategoryId;
+            style.Feature = styleRequest.Feature;
             style.Image = StyleUrl ?? style.Image;
             style.UpdateAt = DateTime.Now;
             _unitOfWork.GetRepo<Style>().Update(style);

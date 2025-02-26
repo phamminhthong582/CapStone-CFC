@@ -10,6 +10,8 @@ namespace BusinessObject.Entities
     {
         public Guid? AccessoryId { get; set; }
         public string? Name { get; set; }
+        public Guid? CategoryId { get; set; }
+
         public double? Price  { get; set; }
         public string? Note { get; set; }
         public string? Description { get; set; }
@@ -17,6 +19,10 @@ namespace BusinessObject.Entities
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
         public bool? Status { get; set; }
+        public bool? Feature { get; set; }
+
+        public virtual Category? Category { get; set; }
+
         public virtual ICollection<ProductCustom> ProductCustoms { get; set; } = new List<ProductCustom>();
     }
 }
