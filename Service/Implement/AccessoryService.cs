@@ -73,7 +73,10 @@ namespace Service.Implement
             {
                 throw new KeyNotFoundException($"Style with ID {id} not found.");
             }
-
+            var folderName = $"flowerBasket/{accessoryRequest.Name}";
+            var AccessoryUrl = accessoryRequest.Image != null
+            ? await _cloudinaryService.UploadImageAsync(accessoryRequest.Image.OpenReadStream(), $"{folderName}")
+            : null;
             asccessory.Name = !string.IsNullOrEmpty(accessoryRequest.Name) ? accessoryRequest.Name : asccessory.Name;
             asccessory.Description = !string.IsNullOrEmpty(accessoryRequest.Description) ? accessoryRequest.Description : asccessory.Description;
             asccessory.Note = !string.IsNullOrEmpty(accessoryRequest.Note) ? accessoryRequest.Note : asccessory.Note;
@@ -82,6 +85,7 @@ namespace Service.Implement
                 asccessory.Price = accessoryRequest.Price.Value;
             }
             asccessory.Status = accessoryRequest.Status ?? asccessory.Status;
+            asccessory.Image = AccessoryUrl ?? asccessory.Image;
             asccessory.UpdateAt = DateTime.Now;
 
             _unitOfWork.GetRepo<Accessory>().Update(asccessory);

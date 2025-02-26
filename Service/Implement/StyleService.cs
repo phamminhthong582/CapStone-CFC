@@ -74,11 +74,15 @@ namespace Service.Implement
             {
                 throw new KeyNotFoundException($"Style with ID {id} not found.");
             }
-
+            var folderName = $"flowerBasket/{styleRequest.Name}";
+            var StyleUrl = styleRequest.Image != null
+            ? await _cloudinaryService.UploadImageAsync(styleRequest.Image.OpenReadStream(), $"{folderName}")
+            : null;
             style.Name = !string.IsNullOrEmpty(styleRequest.Name) ? styleRequest.Name : style.Name;
             style.Description = !string.IsNullOrEmpty(styleRequest.Description) ? styleRequest.Description : style.Description;
             style.Note = !string.IsNullOrEmpty(styleRequest.Note) ? styleRequest.Note : style.Note;
             style.Status = styleRequest.Status ?? style.Status;
+            style.Image = StyleUrl ?? style.Image;
             style.UpdateAt = DateTime.Now;
             _unitOfWork.GetRepo<Style>().Update(style);
             await _unitOfWork.CompleteAsync();
