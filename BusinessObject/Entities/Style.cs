@@ -14,9 +14,14 @@ namespace BusinessObject.Entities
         public string? Note {  get; set; }
         public string? Description { get; set; } 
         public string? Image {  get; set; }
+        public Guid? CategoryId { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
         public bool? Status { get; set; }
+        public bool? Feature { get; set; }
+
+        public virtual Category? Category { get; set; }
+
         public virtual ICollection<ProductCustom> ProductCustoms { get; set; } = new List<ProductCustom>();
 
 

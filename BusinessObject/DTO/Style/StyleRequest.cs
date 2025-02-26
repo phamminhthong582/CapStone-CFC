@@ -13,9 +13,12 @@ namespace BusinessObject.DTO.Style
         public string? Name { get; set; }
         public string? Note { get; set; }
         public string? Description { get; set; }
+        public Guid? CategoryId { get; set; }
         [FromForm]
         public IFormFile? Image { get; set; }
         public bool? Status { get; set; }
+        public bool? Feature { get; set; }
+
 
     }
 }

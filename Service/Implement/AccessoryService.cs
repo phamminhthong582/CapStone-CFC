@@ -3,6 +3,7 @@ using BusinessObject.DTO.Accessory;
 using BusinessObject.DTO.Request;
 using BusinessObject.DTO.Style;
 using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using Service.Interface;
 using System;
@@ -33,11 +34,13 @@ namespace Service.Implement
             : null;
             var newAccessory = new Accessory
             {
+                CategoryId = accessoryRequest.CategoryId,
                 Name = accessoryRequest.Name,
                 Description = accessoryRequest.Description,
                 Note = accessoryRequest.Note,
                 Price = accessoryRequest.Price,
                 Image = AccessoryUrl,
+                Feature = accessoryRequest.Feature,
                 CreateAt = DateTime.UtcNow,
                 UpdateAt = DateTime.UtcNow,
                 Status = true,
@@ -62,13 +65,14 @@ namespace Service.Implement
 
         public async Task<IEnumerable<AccessoryResponse>> GetAllAccessory()
         {
-            var list = await _unitOfWork.GetRepo<Accessory>().GetAllAsync();
+            var list = await _unitOfWork.GetRepo<Accessory>().Entities.Include(n => n.Category).ToListAsync();
             return _mapper.Map<IEnumerable<AccessoryResponse>>(list);
         }
 
         public async Task UpdateAccessory(Guid id, AccessoryRequest accessoryRequest)
         {
-            var asccessory = await _unitOfWork.GetRepo<Accessory>().GetByIdAsync(id);
+            var asccessory = await _unitOfWork.GetRepo<Accessory>().Entities
+                 .Include(n => n.Category).FirstOrDefaultAsync(n => n.AccessoryId == id);
             if (asccessory == null)
             {
                 throw new KeyNotFoundException($"Style with ID {id} not found.");
@@ -86,6 +90,8 @@ namespace Service.Implement
             }
             asccessory.Status = accessoryRequest.Status ?? asccessory.Status;
             asccessory.Image = AccessoryUrl ?? asccessory.Image;
+            asccessory.CategoryId = accessoryRequest.CategoryId;
+            asccessory.Feature = accessoryRequest.Feature;
             asccessory.UpdateAt = DateTime.Now;
 
             _unitOfWork.GetRepo<Accessory>().Update(asccessory);

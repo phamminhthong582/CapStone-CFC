@@ -35,6 +35,18 @@ public class CategoryRepository : ICategoryRepository
         var list = await _context.Categories.Where(n => n.Type == "BAsket").ToListAsync();
         return list;
     }
+
+    public async Task<List<Category>> GetCategoryByStyleType()
+    {
+        var list = await _context.Categories.Where(n => n.Type == "Style").ToListAsync();
+        return list;
+    }
+
+    public async Task<List<Category>> GetCategoryByAccessoryType()
+    {
+        var list = await _context.Categories.Where(n => n.Type == "Accessory").ToListAsync();
+        return list;
+    }
     public async Task<Category> GetCategoryById(Guid id)
     {
         var cate = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == id);

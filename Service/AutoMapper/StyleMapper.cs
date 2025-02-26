@@ -13,7 +13,8 @@ public partial class MapperConfig : Profile
 {
     partial void AddStyleMapperConfig()
     {
-        CreateMap<Style, StyleResponse>().ReverseMap();
+        CreateMap<Style, StyleResponse>().ForMember(dest => dest.CategoryName,
+                opt => opt.MapFrom(src => src.Category != null ? src.Category.CategoryName : null));
         CreateMap<Style, StyleRequest>().ReverseMap();
     }
 }

@@ -41,6 +41,17 @@ public class CategoryService : ICategoryService
         var list = await _categoryRepository.GetAllCategoryByBasketType();
         return _mapper.Map<List<CategoryResponse>>(list);
     }
+    public async Task<List<CategoryResponse>> GetCategoryByStyleType()
+    {
+        var list = await _categoryRepository.GetCategoryByStyleType();
+        return _mapper.Map<List<CategoryResponse>>(list);
+    }
+
+    public async Task<List<CategoryResponse>> GetCategoryByAccessoryType()
+    {
+        var list = await _categoryRepository.GetCategoryByAccessoryType();
+        return _mapper.Map<List<CategoryResponse>>(list);
+    }
     public async Task<Result<Category>> CreateCategory( CreateCategoryRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
@@ -137,5 +148,5 @@ public class CategoryService : ICategoryService
         throw new NotImplementedException();
     }
 
-  
+    
 }
