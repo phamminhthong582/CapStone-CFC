@@ -97,7 +97,10 @@ namespace Service.Implement
 
         public async Task<ProductResponse> GetProductById(Guid id)
         {
-            var product = (await _unitOfWork.Repository<Product>().GetByIdAsync(id));
+            var product = await _unitOfWork.Repository<Product>().Entities
+                        .Include(p => p.Category)
+                        .FirstOrDefaultAsync(p => p.ProductId == id);
+
             var allImages = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
 
             var productResponse = new ProductResponse{
