@@ -32,6 +32,7 @@ namespace Service.Implement
                 Price = productRequest.Price,
                 Size = productRequest.Size,
                 Discount = productRequest.Discount,
+                Weight = productRequest.Weight,
                 Description = productRequest.Description,
                 Featured = productRequest.Featured,
                 CategoryId = productRequest.CategoryId,
@@ -96,7 +97,10 @@ namespace Service.Implement
 
         public async Task<ProductResponse> GetProductById(Guid id)
         {
-            var product = (await _unitOfWork.Repository<Product>().GetByIdAsync(id));
+            var product = await _unitOfWork.Repository<Product>().Entities
+                        .Include(p => p.Category)
+                        .FirstOrDefaultAsync(p => p.ProductId == id);
+
             var allImages = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
 
             var productResponse = new ProductResponse{
@@ -104,9 +108,10 @@ namespace Service.Implement
                 ProductName = product.ProductName,
                 Quantity = product.Quantity,
                 Price = product.Price,
-
+                Weight = product.Weight,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
+              
                 Size = product.Size,
                 Discount = product.Discount,
                 Description = product.Description,
@@ -143,6 +148,7 @@ namespace Service.Implement
                 Quantity = product.Quantity,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
+                Weight = product.Weight,
                 Size = product.Size,
                 Discount = product.Discount,
                 Description = product.Description,
@@ -213,6 +219,7 @@ namespace Service.Implement
             product.Description = updateProductRequest.Description ?? product.Description;
             product.Price= updateProductRequest.Price?? product.Price;
             product.Size = updateProductRequest.Size ?? product.Size;
+            product.Weight = updateProductRequest.Weight ?? product.Weight;
             product.Discount = updateProductRequest.Discount ?? product.Discount;
             product.Featured = updateProductRequest.Featured ?? product.Featured;
             product.CategoryId = updateProductRequest.CategoryId ?? product.CategoryId;

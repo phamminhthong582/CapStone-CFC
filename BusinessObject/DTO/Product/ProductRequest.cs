@@ -13,6 +13,7 @@ namespace BusinessObject.DTO.Product
         public string? ProductName { get; set; }
         public int? Quantity { get; set; }
         public double? Price { get; set; }
+        public double? Weight { get; set; }
         public string? Size { get; set; }
         public double? Discount { get; set; }
         public string? Description { get; set; }

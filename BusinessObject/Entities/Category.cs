@@ -20,5 +20,9 @@ public partial class Category
 
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     public virtual ICollection<FlowerBasket> FlowerBaskets { get; set; } = new List<FlowerBasket>();
+    public virtual ICollection<Style> Styles { get; set; } = new List<Style>();
+    public virtual ICollection<Accessory> Accessories { get; set; } = new List<Accessory>();
+
+
 
 }

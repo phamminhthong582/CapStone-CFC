@@ -86,7 +86,7 @@ public class FlowerBasketService : IFlowerBasketService
             flowerBasket.Decription = request.Description;
         if (request.Feature.HasValue)
             flowerBasket.Feature = request.Feature.Value;
-
+        flowerBasket.CategoryId = request.CategoryId;
         if (request.Status.HasValue)
             flowerBasket.Status = request.Status.Value;
 

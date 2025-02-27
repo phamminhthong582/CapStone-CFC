@@ -67,15 +67,17 @@ public partial class CustomFlowerChainContext : DbContext
 
     public virtual DbSet<Style> Styles { get; set; }
 
-//     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//       => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
-     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public virtual DbSet<Accessory> Accessories { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+      => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+    /* protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
  #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
          => optionsBuilder.UseSqlServer(
-             "Server=DESKTOP-T4BVTKU\\SQLEXPRESS;Database= CustomFlowerChain;UID=sa;PWD=123456;TrustServerCertificate=True");
-     // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-     //     => optionsBuilder.UseSqlServer(GetConnectionString());*/
+             "Server=(local);Database= CustomFlowerChain;UID=sa;PWD=12345;TrustServerCertificate=True");
+     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+         => optionsBuilder.UseSqlServer(GetConnectionString());*/
 
     private string? GetConnectionString()
     {
@@ -221,6 +223,24 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
+            entity.HasOne(d => d.Category).WithMany(p => p.Styles)
+            .HasForeignKey(d => d.CategoryId)
+            .HasConstraintName("FK_Style_Category");
+
+        });
+
+        modelBuilder.Entity<Accessory>(entity =>
+        {
+            entity.ToTable("Accessory");
+
+            entity.Property(e => e.AccessoryId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Accessories)
+            .HasForeignKey(d => d.CategoryId)
+            .HasConstraintName("FK_Accessory_Category");
+
         });
 
         modelBuilder.Entity<FlowerCustom>(entity =>
@@ -345,6 +365,9 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Style).WithMany(p => p.ProductCustoms)
                .HasForeignKey(d => d.StyleId)
                .HasConstraintName("FK_ProductCustom_Style");
+            entity.HasOne(d => d.Accessory).WithMany(p => p.ProductCustoms)
+               .HasForeignKey(d => d.AccessoryId)
+               .HasConstraintName("FK_ProductCustom_Accessory");
         });
 
         modelBuilder.Entity<ProductImage>(entity =>
@@ -454,7 +477,7 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasConstraintName("FK_ChatRoom_Customer");
 
             entity.HasOne(d => d.Employee).WithMany(p => p.ChatRooms)
-                .HasForeignKey(d => d.CustomerId)
+                .HasForeignKey(d => d.EmployeeId)
                 .HasConstraintName("FK_ChatRoom_Employee");
         });
         modelBuilder.Entity<Message>(entity =>

@@ -41,6 +41,18 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.GetCategoryByFlowerType();
         return Ok(result);
     }
+    [HttpGet("GetCategoryByStyleType")]
+    public async Task<IActionResult> GetCategoryByStyleType()
+    {
+        var result = await _categoryService.GetCategoryByStyleType();
+        return Ok(result);
+    }
+    [HttpGet("GetCategoryByAccessoryType")]
+    public async Task<IActionResult> GetCategoryByAccessoryType()
+    {
+        var result = await _categoryService.GetCategoryByAccessoryType();
+        return Ok(result);
+    }
     [HttpGet("Id")]
     public async Task<IActionResult> GetCategoryById(Guid id)
     {

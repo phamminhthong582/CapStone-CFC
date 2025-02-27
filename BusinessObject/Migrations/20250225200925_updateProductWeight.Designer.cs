@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250225200925_updateProductWeight")]
+    partial class updateProductWeight
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,17 +32,11 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("(newid())");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool?>("Feature")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
@@ -60,8 +57,6 @@ namespace BusinessObject.Migrations
                         .HasColumnType("datetime");
 
                     b.HasKey("AccessoryId");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Accessory", (string)null);
                 });
@@ -146,8 +141,6 @@ namespace BusinessObject.Migrations
                     b.HasKey("ChatRoomId");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("EmployeeId");
 
                     b.ToTable("ChatRoom", (string)null);
                 });
@@ -1075,17 +1068,11 @@ namespace BusinessObject.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("(newid())");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool?>("Feature")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
@@ -1103,8 +1090,6 @@ namespace BusinessObject.Migrations
                         .HasColumnType("datetime");
 
                     b.HasKey("StyleId");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Style", (string)null);
                 });
@@ -1184,16 +1169,6 @@ namespace BusinessObject.Migrations
                     b.ToTable("WithdrawMoney", (string)null);
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.Accessory", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Category", "Category")
-                        .WithMany("Accessories")
-                        .HasForeignKey("CategoryId")
-                        .HasConstraintName("FK_Accessory_Category");
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Cart", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Customer", "Customer")
@@ -1220,7 +1195,7 @@ namespace BusinessObject.Migrations
 
                     b.HasOne("BusinessObject.Entities.Employee", "Employee")
                         .WithMany("ChatRooms")
-                        .HasForeignKey("EmployeeId")
+                        .HasForeignKey("CustomerId")
                         .HasConstraintName("FK_ChatRoom_Employee");
 
                     b.Navigation("Customer");
@@ -1484,16 +1459,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("Waller");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.Style", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Category", "Category")
-                        .WithMany("Styles")
-                        .HasForeignKey("CategoryId")
-                        .HasConstraintName("FK_Style_Category");
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Wallet", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Customer", "Customer")
@@ -1521,15 +1486,11 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Category", b =>
                 {
-                    b.Navigation("Accessories");
-
                     b.Navigation("FlowerBaskets");
 
                     b.Navigation("Flowers");
 
                     b.Navigation("Products");
-
-                    b.Navigation("Styles");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.ChatRoom", b =>

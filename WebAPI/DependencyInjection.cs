@@ -87,8 +87,17 @@ public static class DependencyInjection
         //Payment
         services.AddScoped<IPaymentService, PaymentService>();
 
+        //Style
+        services.AddScoped<IStyleService, StyleService>();
+
+        //Style
+        services.AddScoped<IAccessoryService, AccessoryService>();
+
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
+
+      
+
         // Hang
 
         //Revenue
