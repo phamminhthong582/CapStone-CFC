@@ -50,21 +50,25 @@ public class ChatRoomService : IChatRoomService
     public async Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request)
     {
         var response = new Result<ChatRoom>();  
-        var employee = await _employeeRepository.GetEmployeesById(request.EmployeeId);
-        var customer = await _customerRepository.GetCustomerById(request.CustomerId);
-
-        if (employee == null || customer == null)
-        {
-            response.Messages = new[] { "Employee or Customer not found." };
-            response.ResultStatus = ResultStatus.Error.ToString();
+        if (request.CustomerId == Guid.Empty) {
+            response.Messages = new[] { "Customer ID is invalid." };
+            response.ResultStatus = ResultStatus.Invalid.ToString();
             return response;
         }
-        if (request.CustomerId == Guid.Empty || request.EmployeeId == Guid.Empty)
-        {
-            response.Messages = new[] { "Customer ID or Employee ID is invalid." };
+
+        if (request.EmployeeId == Guid.Empty) {
+            response.Messages = new[] { "Employee ID is invalid." };
             response.ResultStatus = ResultStatus.Invalid.ToString();
-            return response;  
+            return response;
         }
+        // var employee = await _employeeRepository.GetEmployeesById(request.EmployeeId);
+        //  var customer = await _customerRepository.GetCustomerById(request.CustomerId);
+        //
+        //  if (employee == null || customer == null) {
+        //      response.Messages = new[] { "Employee or Customer not found." };
+        //      response.ResultStatus = ResultStatus.Error.ToString();
+        //      return response;
+        //  }
         var chatRoom = new ChatRoom
         {
             CustomerId = request.CustomerId,
