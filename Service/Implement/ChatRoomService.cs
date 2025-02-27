@@ -12,11 +12,15 @@ public class ChatRoomService : IChatRoomService
 {
     private readonly IChatRoomRepository _chatRoomRepository;
     private readonly IMapper _mapper;
+    private readonly IEmployeeRepository _employeeRepository;
+    private readonly ICustomerRepository _customerRepository;
 
-    public ChatRoomService(IChatRoomRepository chatRoomRepository, IMapper mapper)
+    public ChatRoomService(IChatRoomRepository chatRoomRepository,ICustomerRepository customerRepository,IEmployeeRepository employeeRepository, IMapper mapper)
     {
         _chatRoomRepository = chatRoomRepository;
         _mapper = mapper;
+        _employeeRepository = employeeRepository;
+        _customerRepository = customerRepository;
     }
     public async Task<List<ChatRoomResponse>> GetAllChatRoom()
     {
@@ -46,6 +50,15 @@ public class ChatRoomService : IChatRoomService
     public async Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request)
     {
         var response = new Result<ChatRoom>();  
+        var employee = await _employeeRepository.GetEmployeesById(request.EmployeeId);
+        var customer = await _customerRepository.GetCustomerById(request.CustomerId);
+
+        if (employee == null || customer == null)
+        {
+            response.Messages = new[] { "Employee or Customer not found." };
+            response.ResultStatus = ResultStatus.Error.ToString();
+            return response;
+        }
         if (request.CustomerId == Guid.Empty || request.EmployeeId == Guid.Empty)
         {
             response.Messages = new[] { "Customer ID or Employee ID is invalid." };

@@ -33,8 +33,13 @@ public enum ChatRoomStatus
 {
     Active, 
     Closed,
-    
-    
+}
+
+public enum MessageStatus
+{
+    Sent, 
+    Delivered, 
+    Read
 }
 
 public enum CustomerStatus

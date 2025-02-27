@@ -96,6 +96,9 @@ public static class DependencyInjection
         //ChatRoom
         services.AddScoped<IChatRoomRepository, ChatRoomRepository>();
         services.AddScoped<IChatRoomService, ChatRoomService>();
+        //Message
+        services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IMessageService, MessageService>();
 
         //logger
         services.AddLogging(builder =>
