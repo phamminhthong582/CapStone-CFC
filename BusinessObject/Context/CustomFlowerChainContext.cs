@@ -479,6 +479,10 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Employee).WithMany(p => p.ChatRooms)
                 .HasForeignKey(d => d.EmployeeId)
                 .HasConstraintName("FK_ChatRoom_Employee");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.ChatRooms)
+                .HasForeignKey(d => d.OrderId)
+                .HasConstraintName("FK_ChatRoom_Order");
         });
         modelBuilder.Entity<Message>(entity =>
         {
