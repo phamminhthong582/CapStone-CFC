@@ -25,33 +25,13 @@ public class FlowerCustomService : IFlowerCustomService
 
     public async Task<Result<FlowerCustom>> CreateFlowerCustom(CreateFlowerCustomRequest request)
     {
-        if (request.FlowerId == Guid.Empty)
-        {
-            throw new ArgumentException("FlowerId cannot be empty", nameof(request.FlowerId));
-        }
-        if (request.ProductCustomId == Guid.Empty)
-        {
-            throw new ArgumentException("ProductCustomId cannot be empty", nameof(request.ProductCustomId));
-        }
-        var flowerExists = await _flowerCustomRepository.ExistsFlower(request.FlowerId);
-        var productExists = await _flowerCustomRepository.ExistsProductCustom(request.ProductCustomId);
-
-        if (!flowerExists || !productExists)
-        {
-            return new Result<FlowerCustom>
-            {
-                ResultStatus = ResultStatus.NotFound.ToString(),
-                Messages = new [] {"Flower or ProductCustom does not exist"}
-            };
-        }
+      
+      
         var newFlowerCustom = new FlowerCustom
         {
             FlowerCustomId = Guid.NewGuid(),
-            FlowerId = request.FlowerId,
-            ProductCustomId = request.ProductCustomId,
-            Quantity = request.Quantity,  
-            Price = request.Price,  
-            Status = request.Status,  
+            
+            Quantity = request.Quantity,
             CreateAt = DateTime.UtcNow,
             UpdateAt = DateTime.UtcNow
         };
@@ -94,7 +74,6 @@ public class FlowerCustomService : IFlowerCustomService
         {
             FlowerCustomId = existingFlowerCustom.FlowerCustomId,
             Quantity = existingFlowerCustom.Quantity ?? 0,
-            Price = existingFlowerCustom.Price ?? 0.0, 
             Status = existingFlowerCustom.Status ?? true, 
             UpdateAt = existingFlowerCustom.UpdateAt
         };
