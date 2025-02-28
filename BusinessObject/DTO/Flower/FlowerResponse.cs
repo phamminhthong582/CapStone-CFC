@@ -8,7 +8,7 @@ namespace BusinessObject.DTO.Flower
 {
     public class FlowerResponse
     {
-        public Guid FlowerId { get; set; }
+        public Guid? FlowerId { get; set; }
         
         public string? FlowerName { get; set; }
 

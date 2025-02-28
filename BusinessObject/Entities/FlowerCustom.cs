@@ -19,7 +19,7 @@ public partial class FlowerCustom
 
     public DateTime? UpdateAt { get; set; }
 
-    public bool? Status { get; set; }
+    public bool? Status { get; set; } 
 
     public virtual Flower? Flower { get; set; }
 

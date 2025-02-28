@@ -7,9 +7,10 @@ namespace Service.Interface;
 
 public interface IProductCustomService
 {
-    Task<List<ProductCustomResponse>> GetAllProductCustom();
-    Task<Result<ProductCustom>> CreateProductCustom(CreateProductCustomRequest request);
+    Task<IEnumerable<ProductCustomResponse>> GetAllProductCustom();
+
+    Task<Result<ProductCustom>> CreateProductCustom(Guid CustomerId, CreateProductCustomRequest request);
     Task<Result<ProductCustomResponse>> UpdateProductCustom(Guid id, UpdateProductCustomRequest request);
     Task<Result<ProductCustom>> DeleteProductCustom(Guid id);
-    Task<Result<ProductCustomResponse>> GetProductCustomById(Guid id);
+    Task<ProductCustomResponse> GetProductCustomById(Guid id);
 }

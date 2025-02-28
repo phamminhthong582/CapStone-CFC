@@ -51,9 +51,10 @@ public class FlowerCustomRepository : IFlowerCustomRepository
         return flowerCustom;
     }
 
-    public async Task<bool> ExistsFlower(Guid flowerId)
+   
+    public async Task<bool> ExistsFlowers(List<Guid> flowerIds)
     {
-        return await _context.Flowers.AnyAsync(f => f.FlowerId == flowerId);
+        return await _context.Flowers.AnyAsync(f => flowerIds.Contains(f.FlowerId));
     }
 
     public async Task<bool> ExistsProductCustom(Guid productCustomId)

@@ -33,9 +33,9 @@ public class ProductCustomController : Controller
         return Ok(result);
     }
     [HttpPost("create-productcustom")]
-    public async Task<ActionResult<Result<FlowerBasket>>> CreateProductCustom( [FromBody] CreateProductCustomRequest request)
+    public async Task<ActionResult<Result<FlowerBasket>>> CreateProductCustom(Guid CustomerId, [FromBody] CreateProductCustomRequest request)
     {
-        var result = await _productCustomService.CreateProductCustom(request);
+        var result = await _productCustomService.CreateProductCustom(CustomerId,request);
         if (result.ResultStatus != ResultStatus.Success.ToString())
         {
             return StatusCode((int)HttpStatusCode.InternalServerError, result);

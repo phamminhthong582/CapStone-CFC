@@ -1,9 +1,20 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.Flower;
+using BusinessObject.DTO.FlowerBasket;
+using BusinessObject.DTO.FlowerCustom;
 using BusinessObject.DTO.ProductCustom;
+using BusinessObject.DTO.Style;
 using BusinessObject.Entities;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
+using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
+using System.Drawing;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.Implement;
 
@@ -11,41 +22,259 @@ public class ProductCustomService : IProductCustomService
 {
     private readonly IProductCustomRepository _productCustomRepository;
     private readonly IMapper _mapper;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ProductCustomService(IProductCustomRepository productCustomRepository, IMapper mapper)
+    public ProductCustomService(IProductCustomRepository productCustomRepository, IMapper mapper, IUnitOfWork unitOfWork)
     {
         _productCustomRepository = productCustomRepository;
         _mapper = mapper;
-    }
-    public async Task<List<ProductCustomResponse>> GetAllProductCustom()
-    {
-        var list = await _productCustomRepository.GetAllProductCustom();
-        return _mapper.Map<List<ProductCustomResponse>>(list);
+        _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<ProductCustom>> CreateProductCustom(CreateProductCustomRequest request)
+    public async Task<IEnumerable<ProductCustomResponse>> GetAllProductCustom()
+    {
+        var productCustoms = await _unitOfWork.Repository<ProductCustom>().Entities
+                                    .Include(n => n.FlowerBasket)
+                                        .ThenInclude(fb => fb.Category)
+                                    .Include(a => a.Style)
+                                        .ThenInclude(s => s.Category)
+                                    .Include(m => m.Accessory)
+                                    .ToListAsync();
+
+        var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
+                                    .Include(fc => fc.Flower)
+                                        .ThenInclude(f => f.Category)
+                                    .ToListAsync();
+
+        var productCustomResponse = productCustoms.Select(productCustom => new ProductCustomResponse
+        {
+            ProductCustomId = productCustom.ProductCustomId,
+            ProductName = productCustom.ProductName,
+            Quantity = productCustom.Quantity,
+            TotalPrice = productCustom.TotalPrice,
+            CustomerId = productCustom.CustomerId,
+            CreateAt = productCustom.CreateAt,
+            UpdateAt = productCustom.UpdateAt,
+            Status = productCustom.Status,
+            flowerBasketResponse = productCustom.FlowerBasket != null ? new FlowerBasketResponse
+            {
+                FlowerBasketId = productCustom.FlowerBasket.FlowerBasketId,
+                FlowerBasketName = productCustom.FlowerBasket.FlowerBasketName,
+                MaxQuantity = productCustom.FlowerBasket.MaxQuantity,
+                MinQuantity = productCustom.FlowerBasket.MinQuantity,
+                Quantity = productCustom.FlowerBasket.Quantity,
+                Image = productCustom.FlowerBasket.Image,
+                CategoryName = productCustom.FlowerBasket.Category?.CategoryName,
+                Price = productCustom.FlowerBasket.Price,
+                Decription = productCustom.FlowerBasket.Decription,
+                Feature = productCustom.FlowerBasket.Feature,
+                Status = productCustom.FlowerBasket.Status,
+                Sold = productCustom.FlowerBasket.Sold,
+                CreateAt = productCustom.FlowerBasket.CreateAt,
+                UpdateAt = productCustom.FlowerBasket.UpdateAt,
+            } : null,
+            styleResponse = productCustom.Style != null ? new StyleResponse
+            {
+                StyleId = productCustom.Style.StyleId,
+                Name = productCustom.Style.Name,
+                Description = productCustom.Style.Description,
+                Note = productCustom.Style.Note,
+                CategoryName = productCustom.Style.Category?.CategoryName,
+                Image = productCustom.Style.Image,
+                CreateAt = productCustom.Style.CreateAt,
+                UpdateAt = productCustom.Style.UpdateAt,
+                Status = productCustom.Style.Status,
+                Feature = productCustom.Style.Feature,
+            } : null,
+            flowerCustomResponses = flowerCustoms
+                                    .Where(a => a.ProductCustomId == productCustom.ProductCustomId)
+                                    .Select(a => new FlowerCustomResponse
+                                    {
+                                        FlowerCustomId = a.FlowerCustomId,
+                                        FlowerId = a.FlowerId,
+                                        Quantity = a.Quantity,
+                                        TotalPrice = a.Price,
+                                        CreateAt = a.CreateAt,
+                                        UpdateAt = a.UpdateAt,
+                                        Status = a.Status,
+                                        flowerResponse = a.Flower != null ? new FlowerResponse
+                                        {
+                                            FlowerId = a.Flower.FlowerId,
+                                            FlowerName = a.Flower.FlowerName,
+                                            Price = a.Flower.Price,
+                                            Color = a.Flower.Color,
+                                            Image = a.Flower.Image,
+                                            Quantity = a.Flower.Quantity,
+                                            CategoryName = a.Flower.Category?.CategoryName,
+                                            Description = a.Flower.Description,
+                                            Sold = a.Flower.Sold,
+                                            Feature = a.Flower.Feature,
+                                            Status = a.Flower.Status,
+                                        } : null
+                                    }).ToList()
+        });
+        return productCustomResponse;
+    }
+    public async Task<ProductCustomResponse> GetProductCustomById(Guid id)
+    {
+        var productCustom = await _unitOfWork.Repository<ProductCustom>().Entities
+                                  .Include(n => n.FlowerBasket)
+                                      .ThenInclude(fb => fb.Category)
+                                  .Include(a => a.Style)
+                                      .ThenInclude(s => s.Category)
+                                  .Include(m => m.Accessory)
+                                  .FirstOrDefaultAsync(n => n.ProductCustomId == id );
+
+        var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
+                                    .Include(fc => fc.Flower)
+                                        .ThenInclude(f => f.Category)
+                                    .ToListAsync();
+
+        var productCustomResponse = new ProductCustomResponse
+        {
+            ProductCustomId = productCustom.ProductCustomId,
+            ProductName = productCustom.ProductName,
+            Quantity = productCustom.Quantity,
+            TotalPrice = productCustom.TotalPrice,
+            CustomerId = productCustom.CustomerId,
+            CreateAt = productCustom.CreateAt,
+            UpdateAt = productCustom.UpdateAt,
+            Status = productCustom.Status,
+            flowerBasketResponse = productCustom.FlowerBasket != null ? new FlowerBasketResponse
+            {
+                FlowerBasketId = productCustom.FlowerBasket.FlowerBasketId,
+                FlowerBasketName = productCustom.FlowerBasket.FlowerBasketName,
+                MaxQuantity = productCustom.FlowerBasket.MaxQuantity,
+                MinQuantity = productCustom.FlowerBasket.MinQuantity,
+                Quantity = productCustom.FlowerBasket.Quantity,
+                Image = productCustom.FlowerBasket.Image,
+                CategoryName = productCustom.FlowerBasket.Category?.CategoryName,
+                Price = productCustom.FlowerBasket.Price,
+                Decription = productCustom.FlowerBasket.Decription,
+                Feature = productCustom.FlowerBasket.Feature,
+                Status = productCustom.FlowerBasket.Status,
+                Sold = productCustom.FlowerBasket.Sold,
+                CreateAt = productCustom.FlowerBasket.CreateAt,
+                UpdateAt = productCustom.FlowerBasket.UpdateAt,
+            } : null,
+            styleResponse = productCustom.Style != null ? new StyleResponse
+            {
+                StyleId = productCustom.Style.StyleId,
+                Name = productCustom.Style.Name,
+                Description = productCustom.Style.Description,
+                Note = productCustom.Style.Note,
+                CategoryName = productCustom.Style.Category?.CategoryName,
+                Image = productCustom.Style.Image,
+                CreateAt = productCustom.Style.CreateAt,
+                UpdateAt = productCustom.Style.UpdateAt,
+                Status = productCustom.Style.Status,
+                Feature = productCustom.Style.Feature,
+            } : null,
+            flowerCustomResponses = flowerCustoms
+                                    .Where(a => a.ProductCustomId == productCustom.ProductCustomId)
+                                    .Select(a => new FlowerCustomResponse
+                                    {
+                                        FlowerCustomId = a.FlowerCustomId,
+                                        FlowerId = a.FlowerId,
+                                        Quantity = a.Quantity,
+                                        TotalPrice = a.Price,
+                                        CreateAt = a.CreateAt,
+                                        UpdateAt = a.UpdateAt,
+                                        Status = a.Status,
+                                        flowerResponse = a.Flower != null ? new FlowerResponse
+                                        {
+                                            FlowerId = a.Flower.FlowerId,
+                                            FlowerName = a.Flower.FlowerName,
+                                            Price = a.Flower.Price,
+                                            Color = a.Flower.Color,
+                                            Image = a.Flower.Image,
+                                            Quantity = a.Flower.Quantity,
+                                            CategoryName = a.Flower.Category?.CategoryName,
+                                            Description = a.Flower.Description,
+                                            Sold = a.Flower.Sold,
+                                            Feature = a.Flower.Feature,
+                                            Status = a.Flower.Status,
+                                        } : null
+                                    }).ToList()
+        };
+        return productCustomResponse;
+    }
+    public async Task<Result<ProductCustom>> CreateProductCustom(Guid customerId, CreateProductCustomRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.ProductName))
         {
             throw new ArgumentException("FlowerBasket name cannot be null or whitespace", nameof(request.ProductName));
         }
 
+        var flowerBasket = await _unitOfWork.GetRepo<FlowerBasket>().GetByIdAsync(request.FlowerBasketId);
+        var accessory = await _unitOfWork.GetRepo<Accessory>().GetByIdAsync(request.AccessoryId);
+
         var productCustom = new ProductCustom
         {
             ProductName = request.ProductName,
-            CustomerId = request.CustomerId ?? Guid.Empty,
+            CustomerId = customerId,
             Description = request.Description,
+            Quantity = request.Quantity,
             FlowerBasketId = request.FlowerBasketId,
-            TotalPrice = request.TotalPrice,
-            Quantity = request.Quantity
-            
+            StyleId = request.StyleId,
+            AccessoryId = request.AccessoryId,
+            CreateAt = DateTime.Now,
+            UpdateAt = DateTime.Now,
+            Status = true // Added Status as noted in your comment
         };
 
-        await _productCustomRepository.CreateProductCustom(productCustom);
+        await _unitOfWork.Repository<ProductCustom>().AddAsync(productCustom);
+        await _unitOfWork.CompleteAsync();
+
+        if (request.createFlowerCustomRequests != null && request.createFlowerCustomRequests.Any())
+        {
+            var flowerCustoms = new List<FlowerCustom>();
+            int flowerCustomIndex = 0;
+            double totalFlowersPrice = 0;
+
+            foreach (var flower in request.createFlowerCustomRequests)
+            {
+                var flowerById = await _unitOfWork.Repository<Flower>().GetByIdAsync(flower.FlowerId);
+                flowerCustomIndex++;
+                var flowerPrice = flowerById.Price * flower.Quantity;
+
+                var flowerCustom = new FlowerCustom
+                {
+                    FlowerId = flower.FlowerId,
+                    Price = flowerById.Price * flower.Quantity,
+                    Quantity = flower.Quantity,
+                    CreateAt = DateTime.Now,
+                    UpdateAt = DateTime.Now,
+                    Status = true,
+                };
+
+                totalFlowersPrice += flowerPrice ?? 0;
+                flowerCustoms.Add(flowerCustom);
+                Console.WriteLine($"Đã thêm hoa {flowerCustomIndex} vào list");
+            }
+
+            Console.WriteLine($"Tổng số hoa trong list: {flowerCustoms.Count}");
+            productCustom.TotalPrice = ((flowerBasket?.Price ?? 0) + (accessory?.Price ?? 0) + totalFlowersPrice) * request.Quantity;
+
+            await _unitOfWork.Repository<FlowerCustom>().AddRangeAsync(flowerCustoms);
+            _unitOfWork.Repository<ProductCustom>().Update(productCustom);
+            await _unitOfWork.CompleteAsync();
+            Console.WriteLine("Đã lưu vào database");
+        }
+        else
+        {
+            // Set total price even if there are no flowers
+            productCustom.TotalPrice = ((flowerBasket?.Price ?? 0) + (accessory?.Price ?? 0)) * request.Quantity;
+            _unitOfWork.Repository<ProductCustom>().Update(productCustom);
+            await _unitOfWork.CompleteAsync();
+        }
+
+        // Get a clean copy of the product without navigation properties loaded
+      
 
         return new Result<ProductCustom>
         {
-            Data = productCustom,
+          
             ResultStatus = ResultStatus.Success.ToString(),
             Messages = new[] { "ProductCustom created successfully" }
         };
@@ -90,7 +319,6 @@ public class ProductCustomService : IProductCustomService
             ProductName = productCustom.ProductName,
             CustomerId = productCustom.CustomerId ?? Guid.Empty,
             TotalPrice = productCustom.TotalPrice ?? 0.0,  
-            FlowerBasketId = productCustom.FlowerBasketId ?? Guid.Empty, 
             Description = productCustom.Description,
             Quantity = productCustom.Quantity ?? 0,
             Status = productCustom.Status ?? false,   
@@ -128,22 +356,5 @@ public class ProductCustomService : IProductCustomService
         };
     }
 
-    public async Task<Result<ProductCustomResponse>> GetProductCustomById(Guid id)
-    {
-        var response = new Result<ProductCustomResponse>();
-        var productCustom = await _productCustomRepository.GetProductCustomById(id);
-        if (productCustom == null)
-        {
-            response.Messages = ["ProductCustom not found!"];
-            response.ResultStatus = ResultStatus.NotFound.ToString();
-            return response;
-        }
-        else
-        {
-            response.Data = _mapper.Map<ProductCustomResponse>(productCustom);
-            response.Messages = ["Successfully!"];
-            response.ResultStatus = ResultStatus.Success.ToString();
-            return response;
-        }
-    }
+   
 }
