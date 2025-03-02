@@ -268,7 +268,7 @@ public partial class CustomFlowerChainContext : DbContext
 
             entity.Property(e => e.OrderId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
-            entity.Property(e => e.DeliveryDateTime).HasColumnType("datetime");
+            entity.Property(e => e.RecipientTime).HasColumnType("datetime");
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.PromotionId).HasColumnName("PromotionID");
             entity.Property(e => e.DeliveryCity).HasColumnName("DeliveryCity");

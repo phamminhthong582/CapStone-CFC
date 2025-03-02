@@ -55,7 +55,7 @@ namespace Service.Implement
                 DeliveryCity = orderRequest.DeliveryCity,
                 DeliveryAddress = orderRequest.DeliveryAddress,
                 Note = orderRequest.Note,
-                DeliveryDateTime = orderRequest.DeliveryDateTime,
+                RecipientTime = orderRequest.RecipientTime,
                 Phone = orderRequest.Phone,
                 Transfer = orderRequest.Transfer,
                 CreateAt = DateTime.Now,
@@ -128,10 +128,11 @@ namespace Service.Implement
             string? DeliveryCity = orderRequest.DeliveryCity;
             string? DeliveryAddress = orderRequest.DeliveryAddress;
             string? Note = orderRequest.Note;
-            DateTime? DeliveryDateTime = orderRequest.DeliveryDateTime;
+            DateTime? DeliveryDateTime = orderRequest.RecipientTime;
             string? Phone = orderRequest.Phone;
             bool? Transfer = orderRequest.Transfer;
-
+            bool? Delivery = orderRequest.Delivery;
+            string? RecipientName = orderRequest.RecipientName;
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
 
             var order = new Order()
@@ -142,14 +143,16 @@ namespace Service.Implement
                 DeliveryCity = DeliveryCity,
                 DeliveryAddress = DeliveryAddress,
                 Note = Note,
-                DeliveryDateTime = DeliveryDateTime,
+                RecipientTime = DeliveryDateTime,
                 Phone = Phone,
+                RecipientName = RecipientName,
                 Transfer = Transfer,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Refund = false,
                 Status = "Chờ thành toán",
-                PromotionId = PromotionID
+                PromotionId = PromotionID,
+                Delivery = Delivery,
             };
             
             // Add order to database
@@ -216,9 +219,9 @@ namespace Service.Implement
                 throw new KeyNotFoundException("order not found");
 
             }
-            _unitOfWork.Repository<Order>().Delete(order);
             var orderDetails = (await _unitOfWork.Repository<OrderDetail>().GetAllAsync()).Where(d => d.OrderId == order.OrderId);
              _unitOfWork.Repository<OrderDetail>().DeleteRange(orderDetails);
+            _unitOfWork.Repository<Order>().Delete(order);
             await _unitOfWork.CompleteAsync();
 
         }
@@ -250,7 +253,7 @@ namespace Service.Implement
                 DeliveryCity = order.DeliveryCity,
                 StoreId = order.StoreId,
                 Note = order.Note,
-                DeliveryDateTime = order.DeliveryDateTime,
+                DeliveryDateTime = order.RecipientTime,
                 Phone = order.Phone,
                 Transfer = order.Transfer,
                 Refund = order.Refund,
@@ -307,7 +310,7 @@ namespace Service.Implement
                 DeliveryCity = order.DeliveryCity,
                 StoreId = order.StoreId,
                 Note = order.Note,
-                DeliveryDateTime = order.DeliveryDateTime,
+                DeliveryDateTime = order.RecipientTime,
                 Phone = order.Phone,
                 Transfer = order.Transfer,
                 Refund = order.Refund,
@@ -363,7 +366,7 @@ namespace Service.Implement
                 DeliveryCity = order.DeliveryCity,
                 StoreId = order.StaffId,
                 Note = order.Note,
-                DeliveryDateTime = order.DeliveryDateTime,
+                DeliveryDateTime = order.RecipientTime,
                 Phone = order.Phone,
                 Transfer = order.Transfer,
                 Refund = order.Refund,
@@ -423,7 +426,7 @@ namespace Service.Implement
                 DeliveryCity = order.DeliveryCity,
                 StoreId = StoreID,
                 Note = order.Note,
-                DeliveryDateTime = order.DeliveryDateTime,
+                DeliveryDateTime = order.RecipientTime,
                 Phone = order.Phone,
                 Transfer = order.Transfer,
                 Refund = order.Refund,
@@ -463,7 +466,7 @@ namespace Service.Implement
             order.DeliveryCity = orderRequest.DeliveryCity ?? order.DeliveryCity;
             order.DeliveryAddress = orderRequest.DeliveryAddress ?? order.DeliveryAddress;
             order.Note= orderRequest.Note ?? order.Note;
-            order.DeliveryDateTime = orderRequest.DeliveryDateTime ?? order.DeliveryDateTime;
+            order.RecipientTime = orderRequest.RecipientTime ?? order.RecipientTime;
             order.Phone= orderRequest.Phone ?? order.Phone;
             order.Transfer = orderRequest.Transfer ?? order.Transfer;
             order.Status = orderRequest.Status ?? order.Status;
