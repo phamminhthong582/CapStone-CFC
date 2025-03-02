@@ -16,9 +16,9 @@ public class MessageRepository : IMessageRepository
     public async Task<List<Message>> GetMessageByChatRoomId(Guid chatroomId)
     {
         return await _context.Messages
-            .Where(m => m.ChatRoomId == chatroomId)  // Lọc tin nhắn theo chatRoomId
-            .OrderBy(m => m.CreateAt)  // Sắp xếp theo thời gian tạo tin nhắn (nếu cần)
-            .ToListAsync();  // Lấy danh sách tin nhắn
+            .Where(m => m.ChatRoomId == chatroomId) 
+            .OrderBy(m => m.CreateAt)  
+            .ToListAsync();  
     }
 
     public async Task<Message> CreateMessage(Message message)

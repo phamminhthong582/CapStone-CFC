@@ -14,14 +14,17 @@ public class ChatRoomService : IChatRoomService
     private readonly IMapper _mapper;
     private readonly IEmployeeRepository _employeeRepository;
     private readonly ICustomerRepository _customerRepository;
+    private readonly IOrderRepository _orderRepository;
+    
     
 
-    public ChatRoomService(IChatRoomRepository chatRoomRepository,ICustomerRepository customerRepository,IEmployeeRepository employeeRepository, IMapper mapper)
+    public ChatRoomService(IChatRoomRepository chatRoomRepository,IOrderRepository orderRepository,ICustomerRepository customerRepository,IEmployeeRepository employeeRepository, IMapper mapper)
     {
         _chatRoomRepository = chatRoomRepository;
         _mapper = mapper;
         _employeeRepository = employeeRepository;
         _customerRepository = customerRepository;
+        _orderRepository = orderRepository;
     }
     public async Task<List<ChatRoomResponse>> GetAllChatRoom()
     {
@@ -50,50 +53,32 @@ public class ChatRoomService : IChatRoomService
 
     public async Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request)
     {
-        var response = new Result<ChatRoom>();  
-        //if (request.CustomerId == Guid.Empty) {
-        //    response.Messages = new[] { "Customer ID is invalid." };
-        //    response.ResultStatus = ResultStatus.Invalid.ToString();
-        //    return response;
-        //}
-
-        //if (request.EmployeeId == Guid.Empty) {
-        //    response.Messages = new[] { "Employee ID is invalid." };
-        //    response.ResultStatus = ResultStatus.Invalid.ToString();
-        //    return response;
-        //}
+        var response = new Result<ChatRoom>();
         if (request.OrderId == Guid.Empty)
         {
             response.Messages = new[] { "OrderId ID is invalid." };
             response.ResultStatus = ResultStatus.Invalid.ToString();
             return response;
         }
-        //var employee = await _employeeRepository.GetEmployeesById(request.EmployeeId);
-        //var customer = await _customerRepository.GetCustomerById(request.CustomerId);
-
-        //if (employee == null || customer == null)
-        //{
-        //    response.Messages = new[] { "Employee or Customer not found." };
-        //    response.ResultStatus = ResultStatus.Error.ToString();
-        //    return response;
-        //}
+        var order =  await _orderRepository.GetOrderById(request.OrderId);
+        var customerId = order.CustomerId;
+        var employeeId = order.StaffId;
+        
+        
         var chatRoom = new ChatRoom
         {
-            //CustomerId = request.CustomerId,
-            //EmployeeId = request.EmployeeId,  
-            // lây cusomerId , staffId từ order qua cho customerId và employeeID ben chatroom
-            OrderId = request.OrderId,
-            Status = ChatRoomStatus.Active.ToString(), 
+            CustomerId = customerId,  
+            EmployeeId = employeeId,  
+            Status = ChatRoomStatus.Active.ToString(),
             CreateAt = DateTime.UtcNow
         };
-        var createdChatRoom = await _chatRoomRepository.CreateChatRoom(chatRoom);
+        var createdChatRoom =  _chatRoomRepository.CreateChatRoom(chatRoom);
         if (createdChatRoom == null)
         {
             response.Messages = new[] { "Failed to create chat room." };
             response.ResultStatus = ResultStatus.Error.ToString();
-            return response; 
+            return response;
         }
-        response.Data = createdChatRoom;
         response.Messages = new[] { "Successfully!" };
         response.ResultStatus = ResultStatus.Success.ToString();
 

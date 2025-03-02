@@ -65,6 +65,7 @@ public static class DependencyInjection
 
         //Order
         services.AddScoped<IOrderService, OrderService>();  
+        services.AddScoped<IOrderRepository, OrderRepository>();  
 
         //Delivery
         services.AddScoped<IDeliveryService, DeliveryService>();
@@ -108,6 +109,9 @@ public static class DependencyInjection
         //Message
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IMessageService, MessageService>();
+        //Notification
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         //logger
         services.AddLogging(builder =>

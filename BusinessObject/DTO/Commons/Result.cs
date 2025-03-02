@@ -29,6 +29,12 @@ public enum ResultStatus
     NotVerified,
 
 }
+
+public enum NotificationStatus
+{
+    Unread,
+    Read,
+}
 public enum ChatRoomStatus
 {
     Active, 
