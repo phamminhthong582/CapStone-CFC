@@ -4,6 +4,7 @@ public class ChatRoomResponse
 {
     public Guid? ChatRoomId {  get; set; }
     public Guid CustomerId { get; set; }
+    public Guid? OrderId {  get; set; }
     public Guid? EmployeeId { get; set; }
     public string Status { get; set; } 
     public DateTime CreateAt { get; set; }

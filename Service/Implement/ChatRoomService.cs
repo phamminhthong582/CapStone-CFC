@@ -61,6 +61,11 @@ public class ChatRoomService : IChatRoomService
             response.ResultStatus = ResultStatus.Invalid.ToString();
             return response;
         }
+        // if (request.OrderId == Guid.Empty) {
+        //     response.Messages = new[] { "OrderId ID is invalid." };
+        //     response.ResultStatus = ResultStatus.Invalid.ToString();
+        //     return response;
+        // }
         // var employee = await _employeeRepository.GetEmployeesById(request.EmployeeId);
         //  var customer = await _customerRepository.GetCustomerById(request.CustomerId);
         //
@@ -73,6 +78,7 @@ public class ChatRoomService : IChatRoomService
         {
             CustomerId = request.CustomerId,
             EmployeeId = request.EmployeeId,
+            // OrderId = request.OrderId,
             Status = ChatRoomStatus.Active.ToString(), 
             CreateAt = DateTime.UtcNow
         };
