@@ -18,6 +18,8 @@ public partial class MapperConfig : Profile
         AddFlowerCustomMapperConfig();
         AddStyleMapperConfig();
         AddAccessoryMapperConfig();
+        AddMessageMapperConfig();
+        AddChatRoomMapperConfig();
     }
 
     partial void AddCategoryMapperConfig();
@@ -32,5 +34,7 @@ public partial class MapperConfig : Profile
     partial void AddFlowerCustomMapperConfig();
     partial void AddStyleMapperConfig();
     partial void AddAccessoryMapperConfig();
+    partial void AddChatRoomMapperConfig();
+    partial void AddMessageMapperConfig();
 
 }

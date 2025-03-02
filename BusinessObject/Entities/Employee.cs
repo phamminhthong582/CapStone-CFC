@@ -50,7 +50,6 @@ public partial class Employee
     public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-    public virtual ICollection<ChatRoom> ChatRooms { get; set; } = new List<ChatRoom>();
     public virtual Role? Role { get; set; }
 
     public virtual Store? Store { get; set; }
