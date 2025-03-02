@@ -25,11 +25,10 @@ public class ChatRoomRepository : IChatRoomRepository
         return chatRoom;
     }
 
-    public async Task<ChatRoom> CreateChatRoom(ChatRoom chatRoom)
+    public async Task CreateChatRoom(ChatRoom chatRoom)
     {
         await _context.ChatRooms.AddAsync(chatRoom);
         await _context.SaveChangesAsync();
-        return chatRoom;
     }
 
     public async Task<ChatRoom> DeleteChatRoom(Guid id)
