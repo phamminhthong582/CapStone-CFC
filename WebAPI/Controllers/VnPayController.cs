@@ -49,17 +49,17 @@ namespace WebAPI.Controllers
                 if (!Guid.TryParse(response.OrderDescription, out Guid orderId))
                 {
                     Console.WriteLine("Invalid Payment ID");
-                    return Redirect("http://localhost:3000/payment-failure");
+                    return Redirect("http://localhost:5174/payment-failure");
                 }
 
                 if (response.VnPayResponseCode == "00")
                 {
                     await _paymentService.CreatePayment(orderId);
-                    return Redirect("http://localhost:3000/payment-success");
+                    return Redirect("http://localhost:5174/payment-success");
                 }
                 else
                 {
-                    return Redirect("http://localhost:3000/payment-failure");
+                    return Redirect("http://localhost:5174/payment-failure");
                 }
             }
             catch (Exception ex)

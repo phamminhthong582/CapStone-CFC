@@ -121,7 +121,7 @@ namespace Service.Implement
             await _unitOfWork.CompleteAsync();
         }
 
-        public async Task CreateOrder(OrderRequest orderRequest, Guid customerId)
+        public async Task<Order> CreateOrder(OrderRequest orderRequest, Guid customerId)
         {
             Guid? PromotionID = orderRequest.PromotionId;
             string? DeliveryDistrict = orderRequest.DeliveryDistrict;
@@ -209,6 +209,7 @@ namespace Service.Implement
          
                 await _unitOfWork.CompleteAsync();
             }
+            return order;  // This returns the complete order object with its OrderId
         }
 
         public async Task DeleteOrder(Guid OrderID)
@@ -274,7 +275,7 @@ namespace Service.Implement
                         Price = orderDetail.Product?.Price ?? 0,
                         Discount = orderDetail.Product?.Discount ?? 0,
                         ProductTotalPrice = orderDetail.ProductTotalPrice,
-                        Quantity = orderDetail.Product?.Quantity ?? 0,
+                        Quantity = orderDetail.Quantity ?? 0,
                         OrderId = orderDetail.OrderId,
                         CreateAt = orderDetail.CreateAt,
                         UpdateAt = orderDetail.UpdateAt,
