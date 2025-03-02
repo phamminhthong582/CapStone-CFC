@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250302092433_updateOrderByRecipientTimeAndRecipientName")]
+    partial class updateOrderByRecipientTimeAndRecipientName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,6 +150,10 @@ namespace BusinessObject.Migrations
                         .HasColumnType("datetime");
 
                     b.HasKey("ChatRoomId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("EmployeeId");
 
                     b.HasIndex("OrderId");
 
@@ -1220,10 +1227,24 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.ChatRoom", b =>
                 {
+                    b.HasOne("BusinessObject.Entities.Customer", "Customer")
+                        .WithMany("ChatRooms")
+                        .HasForeignKey("CustomerId")
+                        .HasConstraintName("FK_ChatRoom_Customer");
+
+                    b.HasOne("BusinessObject.Entities.Employee", "Employee")
+                        .WithMany("ChatRooms")
+                        .HasForeignKey("EmployeeId")
+                        .HasConstraintName("FK_ChatRoom_Employee");
+
                     b.HasOne("BusinessObject.Entities.Order", "Order")
                         .WithMany("ChatRooms")
                         .HasForeignKey("OrderId")
                         .HasConstraintName("FK_ChatRoom_Order");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Employee");
 
                     b.Navigation("Order");
                 });
@@ -1541,6 +1562,8 @@ namespace BusinessObject.Migrations
                 {
                     b.Navigation("Carts");
 
+                    b.Navigation("ChatRooms");
+
                     b.Navigation("Comments");
 
                     b.Navigation("Feedbacks");
@@ -1554,6 +1577,8 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Employee", b =>
                 {
+                    b.Navigation("ChatRooms");
+
                     b.Navigation("Deliveries");
 
                     b.Navigation("Orders");

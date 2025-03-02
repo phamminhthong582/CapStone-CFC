@@ -15,7 +15,7 @@ namespace BusinessObject.Entities
         public string? Status { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
-        public virtual Message Message { get; set; }  // Quan hệ 1-1 với Message
+        public virtual Message Message { get; set; }  
 
     }
 }

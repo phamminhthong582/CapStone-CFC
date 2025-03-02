@@ -42,7 +42,7 @@ namespace Service.Implement
             }
             else if (order.Transfer == true && order.Status == "đã thanh toán" )
             {
-                TimeSpan timeUntilDelivery = order.DeliveryDateTime.Value - DateTime.Now; // Tính khoảng cách thời gian
+                TimeSpan timeUntilDelivery = order.RecipientTime.Value - DateTime.Now; // Tính khoảng cách thời gian
 
                 if (timeUntilDelivery.TotalHours > 24 && order.Status == "đã thanh toán")
                 {

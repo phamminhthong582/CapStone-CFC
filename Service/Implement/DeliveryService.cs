@@ -52,7 +52,7 @@ namespace Service.Implement
                 CustomerName = order.Customer.FullName,
                 CustomerPhone = order.Customer.Phone,
                 DeliveryLocation = string.Join(", ", order.DeliveryAddress, order.DeliveryDistrict, order.DeliveryCity),
-                DeliveryTime = order.DeliveryDateTime,
+                DeliveryTime = order.RecipientTime,
                 Status = "Bắt đầu giao",
             };
 

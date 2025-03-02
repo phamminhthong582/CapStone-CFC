@@ -20,13 +20,13 @@ public partial class Order
     public string? DeliveryDistrict { get; set; }
 
     public string? DeliveryCity { get; set; }
-
+    public string? RecipientName {  get; set; }
     public string? DeliveryAddress { get; set; }
     public Guid? StoreId { get; set; }
 
     public string? Note { get; set; }
 
-    public DateTime? DeliveryDateTime { get; set; }
+    public DateTime? RecipientTime { get; set; }
 
     public string? Phone { get; set; }
 
@@ -37,9 +37,9 @@ public partial class Order
     public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }
+    public bool? Delivery { get; set; }
 
     public string? Status { get; set; }
-
     public virtual Customer? Customer { get; set; }
 
     public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();

@@ -6,7 +6,7 @@ public class Result<T>
     public string? ResultStatus { get; set; }
     public string? RoleName { get; set; }
 
-    public string? PromotionStatus { get; set; }
+    public string? ChatRoomStatus { get; set; }
     public string[]? Messages { get; set; }
 }
 
@@ -29,12 +29,17 @@ public enum ResultStatus
     NotVerified,
 
 }
-public enum PromotionStatus
+public enum ChatRoomStatus
 {
-    Expired,
-    StillExpired,
-    
-    
+    Active, 
+    Closed,
+}
+
+public enum MessageStatus
+{
+    Sent, 
+    Delivered, 
+    Read
 }
 
 public enum CustomerStatus

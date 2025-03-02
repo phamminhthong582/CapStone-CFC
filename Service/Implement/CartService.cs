@@ -117,21 +117,27 @@ namespace Service.Implement
 
         public async Task UpdateQuantityAsync(Guid cartId, int quantity)
         {
-            var cart = await _unitOfWork.Repository<Cart>().GetByIdAsync(cartId);
-            if (quantity > 0)
+            var cart = await _unitOfWork.Repository<Cart>().Entities.Include(n => n.Product).FirstOrDefaultAsync(n => n.CartId == cartId);
+
+            if (cart == null)
             {
-                cart.Quantity = quantity;
-                cart.ProductTotalPrice = (cart.Product.Price - (cart.Product.Price * cart.Product.Discount) / 100) * quantity;
-                _unitOfWork.Repository<Cart>().Update(cart);
-                await _unitOfWork.CompleteAsync();
+                throw new Exception("Cart not found.");
             }
-            else
+
+            if (cart.Product == null)
+            {
+                throw new Exception("Product not found in the cart.");
+            }
+
+            if (quantity <= 0)
             {
                 throw new Exception("Quantity must be greater than 0");
             }
+
+            cart.Quantity = quantity;
+            cart.ProductTotalPrice = (cart.Product.Price - (cart.Product.Price * cart.Product.Discount) / 100) * quantity;
             _unitOfWork.Repository<Cart>().Update(cart);
             await _unitOfWork.CompleteAsync();
-
         }
     }
 }

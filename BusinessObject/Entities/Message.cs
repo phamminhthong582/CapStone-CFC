@@ -18,7 +18,7 @@ namespace BusinessObject.Entities
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
         public virtual ChatRoom? ChatRoom { get; set; }
-        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();  // Quan hệ 1-n với Notification
+        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();  
 
     }
 }
