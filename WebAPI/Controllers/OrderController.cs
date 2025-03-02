@@ -57,11 +57,27 @@ namespace WebAPI.Controllers
         [HttpPost("CreateOrder")]
         public async Task<IActionResult> CreateOrder(OrderRequest orderRequest, Guid CustomerId)
         {
-            await orderService.CreateOrder(orderRequest, CustomerId);
-            return Ok(new BaseResponseModel<string>(
-                     statusCode: StatusCodes.Status200OK,
-                     code: ResponseCodeConstants.SUCCESS,
-                     data: "Order thành công"));
+            try
+            {
+                var createdOrder = await orderService.CreateOrder(orderRequest, CustomerId);
+
+                return Ok(new
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Code = "Success!",
+                    Message = "Order thành công",
+                    OrderId = createdOrder.OrderId  // Now we can include the OrderId
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Code = ResponseCodeConstants.FAILED,
+                    Message = ex.Message
+                });
+            }
         }
         [HttpPost("ConvertCartToOrder")]
         public async Task<IActionResult> ConvertCartToOrder(OrderRequest orderRequest, Guid CustomerId)
