@@ -120,7 +120,7 @@ namespace Service.Implement
             _unitOfWork.Repository<Cart>().DeleteRange(cartItems);
             await _unitOfWork.CompleteAsync();
         }
-
+        
         public async Task<Order> CreateOrder(OrderRequest orderRequest, Guid customerId)
         {
             Guid? PromotionID = orderRequest.PromotionId;
@@ -210,6 +210,60 @@ namespace Service.Implement
                 await _unitOfWork.CompleteAsync();
             }
             return order;  // This returns the complete order object with its OrderId
+        }
+
+        public async Task<Order> CreateOrderCustom(Guid Customer, OrderCustomRequest orderCustomRequest)
+        {
+            Guid? PromotionID = orderCustomRequest.PromotionId;
+            string? DeliveryDistrict = orderCustomRequest.DeliveryDistrict;
+            string? DeliveryCity = orderCustomRequest.DeliveryCity;
+            string? DeliveryAddress = orderCustomRequest.DeliveryAddress;
+            string? Note = orderCustomRequest.Note;
+            DateTime? DeliveryDateTime = orderCustomRequest.RecipientTime;
+            string? Phone = orderCustomRequest.Phone;
+            bool? Transfer = orderCustomRequest.Transfer;
+            bool? Delivery = orderCustomRequest.Delivery;
+            string? RecipientName = orderCustomRequest.RecipientName;
+            var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(Customer);
+
+            var order = new Order()
+            {
+                CustomerId = Customer,
+                StoreId = orderCustomRequest.StoreId,
+                ProductCustomId = orderCustomRequest.ProductCustomId,
+                DeliveryDistrict = DeliveryDistrict,
+                DeliveryCity = DeliveryCity,
+                DeliveryAddress = DeliveryAddress,
+                Note = Note,
+                RecipientTime = DeliveryDateTime,
+                Phone = Phone,
+                RecipientName = RecipientName,
+                Transfer = Transfer,
+                CreateAt = DateTime.Now,
+                UpdateAt = DateTime.Now,
+                Refund = false,
+                Status = "Chờ thành toán",
+                PromotionId = PromotionID,
+                Delivery = Delivery,
+            };
+            await _unitOfWork.Repository<Order>().AddAsync(order);
+            await _unitOfWork.CompleteAsync();
+            var productCustom = await _unitOfWork.GetRepo<ProductCustom>().GetByIdAsync(orderCustomRequest.ProductCustomId);
+            double? totalPrice = productCustom.TotalPrice;
+            if (order.PromotionId.HasValue)
+            {
+                var promotion = await _unitOfWork.Repository<Promotion>().GetByIdAsync(order.PromotionId.Value);
+                if (promotion?.PromotionDiscount > 0) // Kiểm tra promotion không null và có giảm giá hợp lệ
+                {
+                    totalPrice *= (1 - (promotion.PromotionDiscount / 100.0));
+                }
+            }
+            order.OrderPrice = totalPrice;
+            _unitOfWork.Repository<Order>().Update(order);
+
+           await _unitOfWork.CompleteAsync();
+            
+            return order; 
         }
 
         public async Task DeleteOrder(Guid OrderID)

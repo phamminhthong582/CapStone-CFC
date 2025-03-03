@@ -21,6 +21,6 @@ namespace Service.Interface
         Task<IEnumerable<OrderResponse>> GetOrderByStaffId(Guid StaffId);
         Task ConvertCartToOrder(Guid CustomerID, OrderRequest orderRequest);
 
-
+        Task<Order> CreateOrderCustom(Guid Customer , OrderCustomRequest orderCustomRequest);
     }
 }

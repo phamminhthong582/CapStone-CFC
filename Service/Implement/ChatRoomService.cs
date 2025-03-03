@@ -67,6 +67,7 @@ public class ChatRoomService : IChatRoomService
         
         var chatRoom = new ChatRoom
         {
+            
             CustomerId = customerId,  
             EmployeeId = employeeId,  
             Status = ChatRoomStatus.Active.ToString(),
