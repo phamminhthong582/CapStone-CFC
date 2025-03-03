@@ -105,13 +105,17 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPost("ConvertCartToOrder")]
-        public async Task<IActionResult> ConvertCartToOrder(OrderRequest orderRequest, Guid CustomerId)
+        public async Task<IActionResult> ConvertCartToOrder(OrderCartRequest orderRequest, Guid CustomerId)
         {
-            await orderService.ConvertCartToOrder(CustomerId, orderRequest);
-            return Ok(new BaseResponseModel<string>(
-                     statusCode: StatusCodes.Status200OK,
-                     code: ResponseCodeConstants.SUCCESS,
-                     data: "Order thành công"));
+            var createdOrder = await orderService.ConvertCartToOrder(CustomerId, orderRequest);
+
+            return Ok(new
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Code = "Success!",
+                Message = "Order thành công",
+                OrderId = createdOrder.OrderId  // Now we can include the OrderId
+            });
         }
         [HttpDelete("DeleteOrder/{id}")]
         public async Task<IActionResult> DeleteOrder(Guid id)
