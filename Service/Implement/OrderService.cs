@@ -25,7 +25,7 @@ namespace Service.Implement
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task ConvertCartToOrder(Guid customerId, OrderRequest orderRequest)
+        public async Task<Order> ConvertCartToOrder(Guid customerId, OrderCartRequest orderRequest)
         {
             // Lấy thông tin khách hàng
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
@@ -119,6 +119,7 @@ namespace Service.Implement
             // Xóa giỏ hàng sau khi đã chuyển thành đơn hàng
             _unitOfWork.Repository<Cart>().DeleteRange(cartItems);
             await _unitOfWork.CompleteAsync();
+            return order;
         }
         
         public async Task<Order> CreateOrder(OrderRequest orderRequest, Guid customerId)
