@@ -23,15 +23,12 @@ public class ProductCustomController : Controller
         var result = await _productCustomService.GetAllProductCustom();
         return Ok(result);
     }
-    //[HttpGet("Id")]
-    //public async Task<IActionResult> GetProductCustomById(Guid id)
-    //{
-    //    var result = await _productCustomService.GetProductCustomById(id);
-
-    //    if (result.ResultStatus != ResultStatus.Success.ToString())
-    //        return StatusCode((int)HttpStatusCode.InternalServerError, result);
-    //    return Ok(result);
-    //}
+    [HttpGet("Id")]
+    public async Task<IActionResult> GetProductCustomById(Guid id)
+    {
+        var result = await _productCustomService.GetProductCustomById(id);
+        return Ok(result);
+    }
     [HttpPost("create-productcustom")]
     public async Task<ActionResult<Result<FlowerBasket>>> CreateProductCustom(Guid CustomerId, [FromBody] CreateProductCustomRequest request)
     {
@@ -39,8 +36,15 @@ public class ProductCustomController : Controller
         if (result.ResultStatus != ResultStatus.Success.ToString())
         {
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
+
         }
-        return Ok(result);
+        return Ok(new
+        {
+            StatusCode = StatusCodes.Status200OK,
+            Code = "Success!",
+            Message = "custom thành công",
+            CustomeId = result.Data.ProductCustomId
+        });
     }
     // [Authorize(Roles = "Admin")]
     [HttpPut("{productcustomId}")]

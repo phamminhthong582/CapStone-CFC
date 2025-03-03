@@ -34,7 +34,7 @@ namespace Service.Implement
             }
             else if (order.Transfer == false)
             {
-                return CreatePaymentUrl(ordeId, (decimal)order.OrderPrice * 30 / 100);
+                return CreatePaymentUrl(ordeId, (decimal)order.OrderPrice * 50 / 100);
 
             }
             return null; 

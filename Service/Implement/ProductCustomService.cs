@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessObject.DTO.Accessory;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Flower;
 using BusinessObject.DTO.FlowerBasket;
@@ -38,7 +39,7 @@ public class ProductCustomService : IProductCustomService
                                         .ThenInclude(fb => fb.Category)
                                     .Include(a => a.Style)
                                         .ThenInclude(s => s.Category)
-                                    .Include(m => m.Accessory)
+                                    .Include(m => m.Accessory).ThenInclude(q => q.Category)
                                     .ToListAsync();
 
         var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
@@ -86,6 +87,18 @@ public class ProductCustomService : IProductCustomService
                 Status = productCustom.Style.Status,
                 Feature = productCustom.Style.Feature,
             } : null,
+            accessoryResponse = productCustom.Accessory != null ? new AccessoryResponse
+            {
+                AccessoryId = productCustom.Accessory.AccessoryId,
+                Name = productCustom.Accessory.Name,
+                Note = productCustom.Accessory.Note,
+                Price = productCustom.Accessory.Price,
+                CategoryName = productCustom.Accessory.Category?.CategoryName,
+                Description = productCustom.Accessory.Description,
+                Image = productCustom.Accessory.Image,
+                Status = productCustom.Accessory.Status,
+                Feature= productCustom.Accessory.Feature,
+            } : null,
             flowerCustomResponses = flowerCustoms
                                     .Where(a => a.ProductCustomId == productCustom.ProductCustomId)
                                     .Select(a => new FlowerCustomResponse
@@ -113,6 +126,7 @@ public class ProductCustomService : IProductCustomService
                                         } : null
                                     }).ToList()
         });
+
         return productCustomResponse;
     }
     public async Task<ProductCustomResponse> GetProductCustomById(Guid id)
@@ -170,6 +184,18 @@ public class ProductCustomService : IProductCustomService
                 Status = productCustom.Style.Status,
                 Feature = productCustom.Style.Feature,
             } : null,
+            accessoryResponse = productCustom.Accessory != null ? new AccessoryResponse
+            {
+                AccessoryId = productCustom.Accessory.AccessoryId,
+                Name = productCustom.Accessory.Name,
+                Note = productCustom.Accessory.Note,
+                Price = productCustom.Accessory.Price,
+                CategoryName = productCustom.Accessory.Category?.CategoryName,
+                Description = productCustom.Accessory.Description,
+                Image = productCustom.Accessory.Image,
+                Status = productCustom.Accessory.Status,
+                Feature = productCustom.Accessory.Feature,
+            } : null,
             flowerCustomResponses = flowerCustoms
                                     .Where(a => a.ProductCustomId == productCustom.ProductCustomId)
                                     .Select(a => new FlowerCustomResponse
@@ -199,7 +225,7 @@ public class ProductCustomService : IProductCustomService
         };
         return productCustomResponse;
     }
-    public async Task<Result<ProductCustom>> CreateProductCustom(Guid customerId, CreateProductCustomRequest request)
+        public async Task<Result<ProductCustom>> CreateProductCustom(Guid customerId, CreateProductCustomRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.ProductName))
         {
@@ -240,6 +266,7 @@ public class ProductCustomService : IProductCustomService
 
                 var flowerCustom = new FlowerCustom
                 {
+                    ProductCustomId = productCustom.ProductCustomId,
                     FlowerId = flower.FlowerId,
                     Price = flowerById.Price * flower.Quantity,
                     Quantity = flower.Quantity,
@@ -270,16 +297,16 @@ public class ProductCustomService : IProductCustomService
         }
 
         // Get a clean copy of the product without navigation properties loaded
-      
+
 
         return new Result<ProductCustom>
         {
-          
+            Data = productCustom, // Include the entire productCustom object
             ResultStatus = ResultStatus.Success.ToString(),
             Messages = new[] { "ProductCustom created successfully" }
         };
     }
-
+   
     public async Task<Result<ProductCustomResponse>> UpdateProductCustom(Guid id, UpdateProductCustomRequest request)
     {
         var productCustom = await _productCustomRepository.GetProductCustomById(id);
@@ -337,24 +364,33 @@ public class ProductCustomService : IProductCustomService
     public async Task<Result<ProductCustom>> DeleteProductCustom(Guid id)
     {
         var productCustom = await _productCustomRepository.GetProductCustomById(id);
-    
         if (productCustom == null)
         {
             return new Result<ProductCustom>
             {
                 ResultStatus = ResultStatus.NotFound.ToString(),
-                Messages = new []{"ProductCustom not found."}
+                Messages = new[] { "ProductCustom not found." }
             };
         }
 
+        var flower =( await _unitOfWork.Repository<FlowerCustom>().GetAllAsync()).Where(n => n.ProductCustomId == productCustom.ProductCustomId);
+
         await _productCustomRepository.DeleteProductCustom(id);
+
+        if (flower != null)
+        {
+             _unitOfWork.Repository<FlowerCustom>().DeleteRange(flower);
+        }
+
+        await _unitOfWork.CompleteAsync();
 
         return new Result<ProductCustom>
         {
             ResultStatus = ResultStatus.Success.ToString(),
-            Messages = new []{"ProductCustom deleted successfully."}
+            Messages = new[] { "ProductCustom deleted successfully." }
         };
     }
 
-   
+
+
 }

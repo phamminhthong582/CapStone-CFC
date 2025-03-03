@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.FlowerBasket;
+﻿using BusinessObject.DTO.Accessory;
+using BusinessObject.DTO.FlowerBasket;
 using BusinessObject.DTO.FlowerCustom;
 using BusinessObject.DTO.Style;
 
@@ -9,7 +10,9 @@ public class ProductCustomResponse
     public Guid? ProductCustomId { get; set; }
     public string? ProductName { get; set; }
     public FlowerBasketResponse? flowerBasketResponse { get; set; }
-    public StyleResponse? styleResponse { get; set; }    
+    public StyleResponse? styleResponse { get; set; }
+    public AccessoryResponse? accessoryResponse { get; set; }
+
     public List<FlowerCustomResponse>? flowerCustomResponses { get; set; }
     public int? Quantity { get; set; }
     public double? TotalPrice { get; set; }
