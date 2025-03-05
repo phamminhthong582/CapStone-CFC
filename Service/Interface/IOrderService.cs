@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.Order;
+﻿using BusinessObject.DTO.Employee;
+using BusinessObject.DTO.Order;
 using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
@@ -22,5 +23,8 @@ namespace Service.Interface
         Task<Order> ConvertCartToOrder(Guid CustomerID, OrderCartRequest orderRequest);
 
         Task<Order> CreateOrderCustom(Guid Customer , OrderCustomRequest orderCustomRequest);
+
+        Task AutoUpdateOrder();
+        Task<IEnumerable<EmployeeResponse>> GetStaffForOrderId(Guid orderId);
     }
 }

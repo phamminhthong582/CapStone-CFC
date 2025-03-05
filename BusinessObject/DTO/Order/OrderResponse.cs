@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO.OrderDetails;
+using BusinessObject.DTO.ProductCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace BusinessObject.DTO.Order
         public double? OrderPrice { get; set; }
 
         public Guid? ProductCustomId { get; set; }
+        public ProductCustomResponse? ProductCustomResponse { get; set; }
 
         public Guid? CustomerId { get; set; }
 

@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.Order;
+﻿using BusinessObject.DTO.Employee;
+using BusinessObject.DTO.Order;
 using BusinessObject.DTO.Product;
 using Core.Infrastructures;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,16 @@ namespace WebAPI.Controllers
         {
             var result = await orderService.GetOrderById(OrderId);
             return Ok(new BaseResponseModel<OrderResponse>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+
+        [HttpGet("GetStaffByOrderId")]
+        public async Task<IActionResult> GetStaffForOrderId(Guid OrderId)
+        {
+            var result = await orderService.GetStaffForOrderId(OrderId);
+            return Ok(new BaseResponseModel<IEnumerable<EmployeeResponse>>(
               statusCode: StatusCodes.Status200OK,
               code: ResponseCodeConstants.SUCCESS,
               data: result));
