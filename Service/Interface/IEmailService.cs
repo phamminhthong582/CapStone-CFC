@@ -7,4 +7,7 @@ public interface IEmailService
 {
     Task SendEmail(SendEmailRequest request);
     Task<Result<string>> SendMailRegister(string email , string token);
+
+
+
 }
