@@ -99,7 +99,7 @@ namespace Service.Implement
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Refund = false,
-                Status = "Chờ thành toán",
+                Status = "Pending Payment",
                 PromotionId = orderRequest.PromotionId,
             };
 
@@ -189,7 +189,7 @@ namespace Service.Implement
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Refund = false,
-                Status = "Chờ thành toán",
+                Status = "Pending Payment",
                 PromotionId = PromotionID,
                 Delivery = Delivery,
             };
@@ -281,7 +281,7 @@ namespace Service.Implement
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Refund = false,
-                Status = "Chờ thành toán",
+                Status = "Pending Payment",
                 PromotionId = PromotionID,
                 Delivery = Delivery,
             };
@@ -305,21 +305,196 @@ namespace Service.Implement
             return order; 
         }
 
-        public async Task DeleteOrder(Guid OrderID)
+        public async Task DeleteOrder(Guid orderID)
         {
-            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(OrderID);
-            if(order == null)
+            var order = await _unitOfWork.Repository<Order>().Entities.Include(m => m.ProductCustom)
+                .Include(n => n.OrderDetails).FirstOrDefaultAsync(a => a.OrderId == orderID);
+            if (order == null)
             {
-                throw new KeyNotFoundException("order not found");
-
+                throw new KeyNotFoundException("Order not found");
             }
-            var orderDetails = (await _unitOfWork.Repository<OrderDetail>().GetAllAsync()).Where(d => d.OrderId == order.OrderId);
-             _unitOfWork.Repository<OrderDetail>().DeleteRange(orderDetails);
-            _unitOfWork.Repository<Order>().Delete(order);
-            await _unitOfWork.CompleteAsync();
+            if (order.ProductCustomId == null)
+            {
 
+                // Lấy danh sách OrderDetail liên quan
+                var orderDetails = (await _unitOfWork.Repository<OrderDetail>().GetAllAsync()).Where(a => a.OrderId == order.OrderId);
+                _unitOfWork.Repository<OrderDetail>().DeleteRange(orderDetails);
+                _unitOfWork.Repository<Order>().Delete(order);
+                await _unitOfWork.CompleteAsync();
+            }
+            // Nếu có ProductCustomId, kiểm tra và xóa ProductCustom
+            else if (order.ProductCustomId != null)
+            {
+                var productCustom = await _unitOfWork.Repository<ProductCustom>()
+                    .Entities
+                    .Include(n => n.FlowerCustoms)
+                    .FirstOrDefaultAsync(m => m.ProductCustomId == order.ProductCustomId);
+
+                var flowerCustom = await _unitOfWork.Repository<FlowerCustom>().Entities.Where(n => n.ProductCustomId == productCustom.ProductCustomId).ToListAsync();
+
+
+                
+                    _unitOfWork.Repository<ProductCustom>().Delete(productCustom);
+                    _unitOfWork.Repository<FlowerCustom>().DeleteRange(flowerCustom);
+                     _unitOfWork.Repository<Order>().Delete(order);
+                    await _unitOfWork.CompleteAsync();
+
+
+                
+            }
+
+         
+
+            // Lưu thay đổi vào database
         }
 
+        public async Task<IEnumerable<OrderResponse>> GetFailOrderByCustomerId(Guid CustomerID)
+        {
+            var orders = await _unitOfWork.GetRepo<Order>().Entities
+               .Include(d => d.Promotion)
+               .Include(o => o.OrderDetails)
+                   .ThenInclude(od => od.Product)
+                   .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
+                   .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
+                   .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
+
+               .Where(order => order.CustomerId == CustomerID &&  order.Status == "Pending Payment")
+               .ToListAsync();
+
+            var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
+                                   .Include(fc => fc.Flower)
+                                       .ThenInclude(f => f.Category)
+                                   .ToListAsync();
+
+            var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
+            var productImage = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+
+            var orderResponse = orders.Select(order => new OrderResponse
+            {
+                OrderId = order.OrderId,
+                OrderPrice = order.OrderPrice,
+                CustomerId = CustomerID,
+                ProductCustomId = order.ProductCustomId,
+                ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
+                {
+                    ProductCustomId = order.ProductCustomId,
+                    ProductName = order.ProductCustom.ProductName,
+                    Quantity = order.ProductCustom.Quantity,
+                    TotalPrice = order.ProductCustom.TotalPrice,
+                    CustomerId = order.ProductCustom.CustomerId,
+                    CreateAt = order.ProductCustom.CreateAt,
+                    UpdateAt = order.ProductCustom.UpdateAt,
+                    Status = order.ProductCustom.Status,
+                    flowerBasketResponse = order.ProductCustom.FlowerBasket != null ? new FlowerBasketResponse
+                    {
+                        FlowerBasketId = order.ProductCustom.FlowerBasket.FlowerBasketId,
+                        FlowerBasketName = order.ProductCustom.FlowerBasket.FlowerBasketName,
+                        MaxQuantity = order.ProductCustom.FlowerBasket.MaxQuantity,
+                        MinQuantity = order.ProductCustom.FlowerBasket.MinQuantity,
+                        Quantity = order.ProductCustom.FlowerBasket.Quantity,
+                        Image = order.ProductCustom.FlowerBasket.Image,
+                        CategoryName = order.ProductCustom.FlowerBasket.Category?.CategoryName,
+                        Price = order.ProductCustom.FlowerBasket.Price,
+                        Decription = order.ProductCustom.FlowerBasket.Decription,
+                        Feature = order.ProductCustom.FlowerBasket.Feature,
+                        Status = order.ProductCustom.FlowerBasket.Status,
+                        Sold = order.ProductCustom.FlowerBasket.Sold,
+                        CreateAt = order.ProductCustom.FlowerBasket.CreateAt,
+                        UpdateAt = order.ProductCustom.FlowerBasket.UpdateAt,
+                    } : null,
+                    styleResponse = order.ProductCustom.Style != null ? new StyleResponse
+                    {
+                        StyleId = order.ProductCustom.Style.StyleId,
+                        Name = order.ProductCustom.Style.Name,
+                        Description = order.ProductCustom.Style.Description,
+                        Note = order.ProductCustom.Style.Note,
+                        CategoryName = order.ProductCustom.Style.Category?.CategoryName,
+                        Image = order.ProductCustom.Style.Image,
+                        CreateAt = order.ProductCustom.Style.CreateAt,
+                        UpdateAt = order.ProductCustom.Style.UpdateAt,
+                        Status = order.ProductCustom.Style.Status,
+                        Feature = order.ProductCustom.Style.Feature,
+                    } : null,
+                    accessoryResponse = order.ProductCustom.Accessory != null ? new AccessoryResponse
+                    {
+                        AccessoryId = order.ProductCustom.Accessory.AccessoryId,
+                        Name = order.ProductCustom.Accessory.Name,
+                        Note = order.ProductCustom.Accessory.Note,
+                        Price = order.ProductCustom.Accessory.Price,
+                        CategoryName = order.ProductCustom.Accessory.Category?.CategoryName,
+                        Description = order.ProductCustom.Accessory.Description,
+                        Image = order.ProductCustom.Accessory.Image,
+                        Status = order.ProductCustom.Accessory.Status,
+                        Feature = order.ProductCustom.Accessory.Feature,
+                    } : null,
+                    flowerCustomResponses = flowerCustoms
+                    .Where(a => a.ProductCustomId == order.ProductCustom.ProductCustomId)
+                                    .Select(a => new FlowerCustomResponse
+                                    {
+                                        FlowerCustomId = a.FlowerCustomId,
+                                        FlowerId = a.FlowerId,
+                                        Quantity = a.Quantity,
+                                        TotalPrice = a.Price,
+                                        CreateAt = a.CreateAt,
+                                        UpdateAt = a.UpdateAt,
+                                        Status = a.Status,
+                                        flowerResponse = a.Flower != null ? new FlowerResponse
+                                        {
+                                            FlowerId = a.Flower.FlowerId,
+                                            FlowerName = a.Flower.FlowerName,
+                                            Price = a.Flower.Price,
+                                            Color = a.Flower.Color,
+                                            Image = a.Flower.Image,
+                                            Quantity = a.Flower.Quantity,
+                                            CategoryName = a.Flower.Category?.CategoryName,
+                                            Description = a.Flower.Description,
+                                            Sold = a.Flower.Sold,
+                                            Feature = a.Flower.Feature,
+                                            Status = a.Flower.Status,
+                                        } : null
+                                    }).ToList()
+                } : null,
+                StaffId = order.StaffId,
+                PromotionId = order.PromotionId,
+                PromotionName = order.Promotion?.PromotionName,
+                PromotionDiscount = order.Promotion?.PromotionDiscount ?? 0,
+                DeliveryAddress = order.DeliveryAddress,
+                DeliveryDistrict = order.DeliveryDistrict,
+                DeliveryCity = order.DeliveryCity,
+                StoreId = order.StoreId,
+                Note = order.Note,
+                DeliveryDateTime = order.RecipientTime,
+                Phone = order.Phone,
+                Transfer = order.Transfer,
+                Refund = order.Refund,
+                CreateAt = order.CreateAt,
+                UpdateAt = order.UpdateAt,
+                Status = order.Status,
+                OrderDetails = order.OrderDetails?
+                    .Where(orderDetail => orderDetail.OrderId == order.OrderId)
+                    .Select(orderDetail => new OrderDetailsResponse
+                    {
+                        OrderDetailId = orderDetail.OrderDetailId,
+                        ProductId = orderDetail.ProductId,
+                        ProductName = orderDetail.Product?.ProductName,
+                        ProductImage = productImage
+                            .Where(pi => pi.ProductId == orderDetail.ProductId)
+                            .Select(pi => pi.ProductImage1)
+                            .FirstOrDefault(),
+                        Price = orderDetail.Product?.Price ?? 0,
+                        Discount = orderDetail.Product?.Discount ?? 0,
+                        ProductTotalPrice = orderDetail.ProductTotalPrice,
+                        Quantity = orderDetail.Quantity ?? 0,
+                        OrderId = orderDetail.OrderId,
+                        CreateAt = orderDetail.CreateAt,
+                        UpdateAt = orderDetail.UpdateAt,
+                        Status = orderDetail.Status
+                    })
+                    .ToList() ?? new List<OrderDetailsResponse>()
+            });
+
+            return orderResponse;
+        }
         public async Task<IEnumerable<OrderResponse>> GetOrderByCustomerId(Guid CustomerID)
         {
             var orders = await _unitOfWork.GetRepo<Order>().Entities
@@ -329,7 +504,8 @@ namespace Service.Implement
                     .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude( b => b.Category)
                     .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
                     .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
-                .Where(order => order.CustomerId == CustomerID)
+
+                .Where(order => order.CustomerId == CustomerID && order.Status !="hoàn thành" && order.Status != "Pending Payment")
                 .ToListAsync();
 
             var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
@@ -485,6 +661,8 @@ namespace Service.Implement
                                    .Include(fc => fc.Flower)
                                        .ThenInclude(f => f.Category)
                                    .ToListAsync();
+            var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(order.StoreId);
+
             if (order == null)
             {
                 throw new Exception($"Order with ID {OrderId} not found.");
@@ -585,6 +763,8 @@ namespace Service.Implement
                 DeliveryDistrict = order.DeliveryDistrict,
                 DeliveryCity = order.DeliveryCity,
                 StoreId = order.StoreId,
+                StoreName =  store.StoreName,
+                StoreAddress = store.Address +"," + store.District + "," + store.City,
                 Note = order.Note,
                 DeliveryDateTime = order.RecipientTime,
                 Phone = order.Phone,
@@ -985,6 +1165,7 @@ namespace Service.Implement
             _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
         }
+
         
     }
 }

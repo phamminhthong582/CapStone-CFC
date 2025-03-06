@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTO.Email;
 using BusinessObject.DTO.Payment;
 using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using Service.Interface;
 using System;
@@ -14,52 +15,63 @@ namespace Service.Implement
     public class PaymentService : IPaymentService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IEmailService _emailService;   
-       
+        private readonly IEmailService _emailService;
+
+        public PaymentService(IUnitOfWork unitOfWork, IEmailService emailService)
+        {
+            _unitOfWork = unitOfWork;
+            _emailService = emailService;
+        }
 
         public async Task CreatePayment(Guid OrderId)
         {
-            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(OrderId);
-            if (order == null) return;
+            var order = await _unitOfWork.Repository<Order>().Entities.Include(m => m.Customer).FirstOrDefaultAsync(n => n.OrderId == OrderId);
+          
 
-            Payment payment = null;
-
-            if (order.Transfer == true && order.Status == "Chờ thành toán")
+            if (order.Transfer == true && order.Status == "Pending Payment")
             {
-                payment = new Payment
+                var payment = new Payment
                 {
                     OrderId = order.OrderId,
                     Method = "Tiền tổng",
                     StoreId = order.StoreId,
                     TotalPrice = order.OrderPrice,
                     CreateAt = DateTime.Now,
-                    Status = "thanh toán thành công",
+                    Status = "Payment Successfully",
                 };
-                order.Status = "đặt hàng thành công";
+                order.Status = "Order Successfully";
+                await _unitOfWork.Repository<Payment>().AddAsync(payment);
+                _unitOfWork.Repository<Order>().Update(order);
+                await SendPaymentConfirmationEmail(order);
+
+                await _unitOfWork.CompleteAsync();
+
             }
-            else if (order.Transfer == false && order.Status == "Chờ thành toán")
+            else if (order.Transfer == false && order.Status == "Pending Payment")
             {
-                payment = new Payment()
+                var payment = new Payment
                 {
                     OrderId = order.OrderId,
                     Method = "Tiền cọc",
                     StoreId = order.StoreId,
                     TotalPrice = order.OrderPrice * 50 / 100,
                     CreateAt = DateTime.Now,
-                    Status = "thanh toán thành công",
+                    Status = "Payment Confirmed",
                 };
-                order.Status = "đặt hàng thành công";
-            }
-
-            if (payment != null)
-            {
+                order.Status = "Order Successfully";
                 await _unitOfWork.Repository<Payment>().AddAsync(payment);
                 _unitOfWork.Repository<Order>().Update(order);
+                await SendPaymentConfirmationEmail(order);
+
                 await _unitOfWork.CompleteAsync();
 
-                // Gửi email xác nhận thanh toán
-                await SendPaymentConfirmationEmail(order);
             }
+
+
+
+            // Gửi email xác nhận thanh toán
+
+
         }
         private async Task SendPaymentConfirmationEmail(Order order)
         {

@@ -32,6 +32,9 @@ namespace BusinessObject.DTO.Order
         public string? DeliveryAddress { get; set; }
 
         public Guid? StoreId { get; set; }
+        public string? StoreName { get; set; }
+        public string? StoreAddress { get; set; }
+
 
         public string? Note { get; set; }
 

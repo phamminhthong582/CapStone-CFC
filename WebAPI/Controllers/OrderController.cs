@@ -28,6 +28,15 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
+        [HttpGet("GetFailOrderByCustomer")]
+        public async Task<IActionResult> GetFailOrderByCustomer(Guid CusomterId)
+        {
+            var result = await orderService.GetFailOrderByCustomerId(CusomterId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
         [HttpGet("GetOrderByStore")]
         public async Task<IActionResult> GetOrderByStore(Guid StoreId)
         {

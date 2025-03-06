@@ -13,6 +13,9 @@ namespace Service.Interface
     {
         Task<OrderResponse> GetOrderById(Guid OrderId);
         Task<IEnumerable<OrderResponse>> GetOrderByCustomerId(Guid CustomerID);
+
+        Task<IEnumerable<OrderResponse>> GetFailOrderByCustomerId(Guid CustomerID);
+
         Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID);
         Task<Order> CreateOrder(OrderRequest orderRequest, Guid customerId);
         Task UpdateOrder(OrderRequest orderRequest, Guid orderId);  
@@ -25,6 +28,8 @@ namespace Service.Interface
         Task<Order> CreateOrderCustom(Guid Customer , OrderCustomRequest orderCustomRequest);
 
         Task AutoUpdateOrder();
+
         Task<IEnumerable<EmployeeResponse>> GetStaffForOrderId(Guid orderId);
+
     }
 }
