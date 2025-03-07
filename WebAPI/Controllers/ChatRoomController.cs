@@ -32,6 +32,20 @@ public class ChatRoomController : Controller
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         return Ok(result);
     }
+    [HttpGet("{chatRoomId}")]
+    public async Task<IActionResult> GetChatRoomDetailsById(Guid chatRoomId)
+    {
+        var result = await _chatRoomService.GetChatRoomDetailsById(chatRoomId);
+
+        if (result.ResultStatus == ResultStatus.Success.ToString())
+        {
+            // Trả về kết quả thành công
+            return Ok(result.Data);
+        }
+
+        // Nếu có lỗi, trả về lỗi
+        return NotFound(result.Messages);
+    }
     [HttpPost("create-chatroom")]
     public async Task<ActionResult<Result<ChatRoom>>> CreateChatRoom( [FromForm] CreateChatRoomRequest request)
     {

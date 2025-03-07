@@ -17,9 +17,6 @@ namespace BusinessObject.Entities
         public DateTime? UpdateAt { get; set; }
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();  
         public virtual Order? Order { get; set; }
-
-
-
-
+      
     }
 }

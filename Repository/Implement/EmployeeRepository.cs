@@ -45,11 +45,11 @@ public class EmployeeRepository : IEmployeeRepository
     public async Task<Employee?> GetEmployeeByEmail(string email)
     {
         return await _context.Employees
-            .Include(e => e.Role) 
+            .Include(e => e.Role)
             .FirstOrDefaultAsync(e => e.Email == email);
     }
 
-    public async Task<Employee?> GetEmployeesById(Guid id)
+public async Task<Employee?> GetEmployeesById(Guid id)
     {
         var employ = await _context.Employees.FirstOrDefaultAsync(x => x.EmployeeId == id);
         return employ;

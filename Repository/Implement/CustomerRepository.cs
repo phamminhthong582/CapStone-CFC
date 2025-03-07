@@ -20,12 +20,18 @@ public class CustomerRepository : ICustomerRepository
         return cus;
     }
 
+    public async Task<Customer?> GetCustomerByEmail(string email)
+    {
+        return await _context.Customers
+            .FirstOrDefaultAsync(e => e.Email == email);
+    }
+
     public async Task<Customer?> GetCustomerById(Guid id)
     {
         var customer = await _context.Customers.FirstOrDefaultAsync(x => x.CustomerId == id);
         return customer;
     }
-
+    
     public async Task<Customer?> RegisterCustomer(Customer customer)
     {
         var result = await _context.Customers.AddAsync(customer);
