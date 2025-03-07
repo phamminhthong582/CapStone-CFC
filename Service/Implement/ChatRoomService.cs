@@ -31,6 +31,48 @@ public class ChatRoomService : IChatRoomService
         var list = await _chatRoomRepository.GetAllChatRoom();
         return _mapper.Map<List<ChatRoomResponse>>(list);
     }
+    public async Task<Result<object>> GetChatRoomDetailsById(Guid chatroomId)
+    {
+        var response = new Result<object>();
+
+        
+        var chatRoom = await _chatRoomRepository.GetChatRoomById(chatroomId);
+    
+        if (chatRoom.OrderId.HasValue)
+        {
+            var order = await _orderRepository.GetOrderById(chatRoom.OrderId.Value); 
+            if (order == null)
+            {
+                response.Messages = new[] { "Order not found!" };
+                response.ResultStatus = ResultStatus.NotFound.ToString();
+            }
+            else
+            {
+              
+                var result = new
+                {
+                    customerid = chatRoom.CustomerId,
+                    employeeid = chatRoom.EmployeeId,
+                    chatRoomId = chatRoom.ChatRoomId,
+                    customerEmail = order.Customer.Email,
+                    employeeEmail = order.Staff.Email,
+                    orderId = order.OrderId
+                };
+
+                response.Data = result;
+                response.Messages = new[] { "Successfully!" };
+                response.ResultStatus = ResultStatus.Success.ToString();
+            }
+        }
+        else
+        {
+            response.Messages = new[] { "OrderId is null!" };
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+        }
+
+        return response;
+    }
+    
 
     public async Task<Result<ChatRoomResponse>> GetChatRoomById(Guid id)
     {
@@ -128,4 +170,6 @@ public class ChatRoomService : IChatRoomService
             Messages = new []{"ChatRoom deleted successfully."}
         };
     }
+
+  
 }

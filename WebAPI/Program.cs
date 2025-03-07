@@ -1,4 +1,5 @@
 using BusinessObject.Context;
+using BusinessObject.DTO.Notification;
 using Core.Middleware;
 using Hangfire;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -84,7 +85,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigins");
 app.UseCors("AllowAll");
-
+// app.MapHub<NotificationHub>("/notificationHub");
 app.UseAuthorization();
 
 app.MapControllers();

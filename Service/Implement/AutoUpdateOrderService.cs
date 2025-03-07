@@ -34,7 +34,7 @@ namespace Service.Implement
                         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                         var orders = (await unitOfWork.Repository<Order>().GetAllAsync())
-                            .Where(o => o.Status == "đặt hàng thành công" && o.StaffId == null)
+                            .Where(o => o.Status == "Order Successfully" && o.StaffId == null)
                             .ToList();
                         if (orders.Any())
                         {
