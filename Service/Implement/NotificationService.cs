@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Notification;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.SignalR;
 using Repository.Interface;
 using Service.Interface;
 
@@ -10,9 +11,10 @@ public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _notificationRepository;
 
-    public NotificationService(INotificationRepository notificationRepository)
+    public NotificationService(INotificationRepository notificationRepository )
     {
         _notificationRepository = notificationRepository;
+       
     }
     public async Task<Result<NotificationResponse>> CreateNotification(NotificationRequest request)
     {
@@ -49,8 +51,6 @@ public class NotificationService : INotificationService
     public async Task<Result<List<NotificationResponse>>> GetNotificationsByUserId(Guid userId)
     {
         var response = new Result<List<NotificationResponse>>();
-
-        // Lấy thông báo từ repository
         var notifications = await _notificationRepository.GetNotificationsByUserId(userId);
 
         if (notifications == null || !notifications.Any())
@@ -59,8 +59,6 @@ public class NotificationService : INotificationService
             response.ResultStatus = ResultStatus.NotFound.ToString();
             return response;
         }
-
-        // Chuyển đổi sang NotificationResponse
         var notificationResponses = notifications.Select(n => new NotificationResponse
         {
             NotificationId = n.NotificationId,
@@ -81,8 +79,6 @@ public class NotificationService : INotificationService
     public async Task<Result<NotificationResponse>> GetNotificationById(Guid notificationId)
     {
         var response = new Result<NotificationResponse>();
-
-        // Lấy thông báo từ repository
         var notification = await _notificationRepository.GetNotificationById(notificationId);
 
         if (notification == null)
@@ -91,8 +87,6 @@ public class NotificationService : INotificationService
             response.ResultStatus = ResultStatus.NotFound.ToString();
             return response;
         }
-
-        // Trả về thông báo theo NotificationResponse
         response.Data = new NotificationResponse
         {
             NotificationId = notification.NotificationId,
@@ -141,8 +135,6 @@ public class NotificationService : INotificationService
     public async Task<Result<NotificationResponse>> UpdateNotificationStatus(Guid notificationId, string status)
     {
         var response = new Result<NotificationResponse>();
-
-        // Lấy thông báo theo NotificationId
         var notification = await _notificationRepository.GetNotificationById(notificationId);
 
         if (notification == null)
@@ -151,12 +143,8 @@ public class NotificationService : INotificationService
             response.ResultStatus = ResultStatus.NotFound.ToString();
             return response;
         }
-
-        // Cập nhật trạng thái của thông báo
         notification.Status = status;
         notification.UpdateAt = DateTime.UtcNow;
-
-        // Lưu thông báo đã cập nhật
         await _notificationRepository.UpdateNotification(notification);
 
         response.Data = new NotificationResponse

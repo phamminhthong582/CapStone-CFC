@@ -20,7 +20,9 @@ namespace BusinessObject.DTO.Order
         public Guid? CustomerId { get; set; }
 
         public Guid? StaffId { get; set; }
-
+        public string? StaffFullName { get; set; }
+        public string? StaffEmail { get; set; }
+        public string? StaffPhone {  get; set; }
         public Guid? PromotionId { get; set; }
         public string? PromotionName { get; set; }
 
@@ -43,6 +45,12 @@ namespace BusinessObject.DTO.Order
         public string? Phone { get; set; }
 
         public bool? Transfer { get; set; }
+
+        public Guid PaymentId { get; set; }
+        public double? PaymentPrice { get; set; }
+        public string? PaymentStatus { get; set; }
+        public DateTime? PaymentCreateAt { get; set; }
+        public string? PaymentMethod {  get; set; }
 
         public bool? Refund { get; set; }
 

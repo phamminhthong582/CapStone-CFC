@@ -15,7 +15,10 @@ public class OrderRepository : IOrderRepository
     }
     public async Task<Order> GetOrderById(Guid orderId)
     {
-        var order = await _context.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+        var order = await _context.Orders
+            .Include(x => x.Customer)
+            .Include(x => x.Staff)
+            .FirstOrDefaultAsync(x => x.OrderId == orderId);
         return order;
     }
 }

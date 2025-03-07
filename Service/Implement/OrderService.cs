@@ -655,8 +655,9 @@ namespace Service.Implement
                  .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
                  .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
                  .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
+                 .Include(p => p.Staff)
                 .FirstOrDefaultAsync(o => o.OrderId == OrderId);
-
+            var payment = await _unitOfWork.GetRepo<Payment>().Entities.FirstOrDefaultAsync(m => m.OrderId == OrderId);
             var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
                                    .Include(fc => fc.Flower)
                                        .ThenInclude(f => f.Category)
@@ -680,6 +681,7 @@ namespace Service.Implement
                 {
                     ProductCustomId = order.ProductCustomId,
                     ProductName = order.ProductCustom.ProductName,
+                    Description = order.ProductCustom.Description,
                     Quantity = order.ProductCustom.Quantity,
                     TotalPrice = order.ProductCustom.TotalPrice,
                     CustomerId = order.ProductCustom.CustomerId,
@@ -756,6 +758,9 @@ namespace Service.Implement
                                    }).ToList()
                 } : null,
                 StaffId = order.StaffId,
+                StaffFullName = order.Staff?.FullName ?? "N/A",
+                StaffEmail = order.Staff?.Email ?? "N/A",
+                StaffPhone = order.Staff?.Phone ?? "N/A",   
                 PromotionId = order.PromotionId,
                 PromotionName = order.Promotion?.PromotionName,
                 PromotionDiscount = order.Promotion?.PromotionDiscount ?? 0,
@@ -769,6 +774,11 @@ namespace Service.Implement
                 DeliveryDateTime = order.RecipientTime,
                 Phone = order.Phone,
                 Transfer = order.Transfer,
+                PaymentId = payment.PaymentId ,
+                PaymentCreateAt = payment.CreateAt,
+                PaymentPrice = payment.TotalPrice,
+                PaymentStatus = payment.Status,
+                PaymentMethod = payment.Method,
                 Refund = order.Refund,
                 CreateAt = order.CreateAt,
                 UpdateAt = order.UpdateAt,
@@ -992,7 +1002,7 @@ namespace Service.Implement
                   .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
                   .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
                   .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
-              .Where(order => order.StoreId == StoreID && order.Status == "đặt hàng thành công")
+              .Where(order => order.StoreId == StoreID && order.Status != "Pending Payment")
               .ToListAsync();
 
             var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
@@ -1151,6 +1161,7 @@ namespace Service.Implement
             var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == orderId);
             order.StaffId = StaffId ;
             order.UpdateAt = DateTime.Now;
+            order.Status = "Arranging & Packing";
             _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
 

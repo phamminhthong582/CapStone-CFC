@@ -6,6 +6,7 @@ namespace Repository.Interface;
 public interface ICustomerRepository
 {
     Task<List<Customer?>> GetAllCustomer();
+    Task<Customer?> GetCustomerByEmail(string email);
     Task<Customer?> GetCustomerById(Guid id);
     Task<Customer?> RegisterCustomer(Customer customer);
     Task<Customer?> UpdateCustomer(Customer customer);
