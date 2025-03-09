@@ -3,6 +3,7 @@ using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.FlowerBasket;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.SignalR;
 using Repository.Interface;
 using Service.Interface;
 
@@ -15,16 +16,18 @@ public class ChatRoomService : IChatRoomService
     private readonly IEmployeeRepository _employeeRepository;
     private readonly ICustomerRepository _customerRepository;
     private readonly IOrderRepository _orderRepository;
+    private readonly IHubContext<ChatHub> _hubContext;
     
     
 
-    public ChatRoomService(IChatRoomRepository chatRoomRepository,IOrderRepository orderRepository,ICustomerRepository customerRepository,IEmployeeRepository employeeRepository, IMapper mapper)
+    public ChatRoomService(IHubContext<ChatHub> hubContext,IChatRoomRepository chatRoomRepository,IOrderRepository orderRepository,ICustomerRepository customerRepository,IEmployeeRepository employeeRepository, IMapper mapper)
     {
         _chatRoomRepository = chatRoomRepository;
         _mapper = mapper;
         _employeeRepository = employeeRepository;
         _customerRepository = customerRepository;
         _orderRepository = orderRepository;
+        _hubContext = hubContext;
     }
     public async Task<List<ChatRoomResponse>> GetAllChatRoom()
     {
@@ -72,7 +75,12 @@ public class ChatRoomService : IChatRoomService
 
         return response;
     }
-    
+
+    public async Task SendMessageToClients(string chatRoomId, string user, string message)
+    {
+        await _hubContext.Clients.Group(chatRoomId).SendAsync("ReceiveMessage", user, message);
+    }
+
 
     public async Task<Result<ChatRoomResponse>> GetChatRoomById(Guid id)
     {

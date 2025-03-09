@@ -1,7 +1,9 @@
-﻿using BusinessObject.DTO.Commons;
+﻿using BusinessObject.DTO.Chat;
+using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Message;
 
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.SignalR;
 using Repository.Interface;
 using Service.Interface;
 
@@ -9,12 +11,14 @@ namespace Service.Implement;
 
 public class MessageService : IMessageService
 {
+    private readonly IHubContext<ChatHub> _hubContext;
     private readonly IMessageRepository _messageRepository;
     private readonly IChatRoomRepository _chatRoomRepository;
 
-    public MessageService(IMessageRepository messageRepository, IChatRoomRepository chatRoomRepository)
+    public MessageService(IHubContext<ChatHub> hubContext,IMessageRepository messageRepository, IChatRoomRepository chatRoomRepository)
     {
         _messageRepository = messageRepository;
+        _hubContext = hubContext;
         _chatRoomRepository = chatRoomRepository;
     }
     public async Task<Result<MessageResponse>> SendMessage(CreateMessageRequest request)
@@ -24,7 +28,7 @@ public class MessageService : IMessageService
         {
             response.Messages = new[] { "Sender ID or Receiver ID is invalid." };
             response.ResultStatus = ResultStatus.Invalid.ToString();
-            return response;  
+            return response;
         }
         var message = new Message
         {
@@ -33,7 +37,7 @@ public class MessageService : IMessageService
             ReceiveId = request.ReceiveId,
             MessageType = request.MessageType,
             Content = request.Content,
-            Status = MessageStatus.Sent.ToString(),  
+            Status = MessageStatus.Sent.ToString(),
             CreateAt = DateTime.UtcNow
         };
         var createdMessage = await _messageRepository.CreateMessage(message);
@@ -42,9 +46,9 @@ public class MessageService : IMessageService
         {
             response.Messages = new[] { "Failed to create message." };
             response.ResultStatus = ResultStatus.Error.ToString();
-            return response;  
+            return response;
         }
-        response.Data = new MessageResponse()
+        response.Data = new MessageResponse
         {
             MessageId = createdMessage.MessageId,
             ChatRoomId = createdMessage.ChatRoomId,
@@ -55,8 +59,11 @@ public class MessageService : IMessageService
             Status = createdMessage.Status,
             CreateAt = createdMessage.CreateAt
         };
-        response.Messages = new[] { "Successfully!" };  
-        response.ResultStatus = ResultStatus.Success.ToString();  
+        await _hubContext.Clients.Group(request.ChatRoomId.ToString())
+            .SendAsync("ReceiveMessage", createdMessage.SenderId, createdMessage.Content);
+
+        response.Messages = new[] { "Successfully!" };
+        response.ResultStatus = ResultStatus.Success.ToString();
         return response;
     }
 

@@ -39,11 +39,8 @@ public class ChatRoomController : Controller
 
         if (result.ResultStatus == ResultStatus.Success.ToString())
         {
-            // Trả về kết quả thành công
             return Ok(result.Data);
         }
-
-        // Nếu có lỗi, trả về lỗi
         return NotFound(result.Messages);
     }
     [HttpPost("create-chatroom")]
