@@ -1,4 +1,5 @@
 using BusinessObject.Context;
+using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Notification;
 using Core.Middleware;
 using Hangfire;
@@ -17,6 +18,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<CustomFlowerChainContext>();
 //var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddHostedService<PromotionBackgroundService>();
 builder.Services.AddHostedService<AutoUpdateOrderService>();
@@ -24,6 +26,7 @@ builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddHangfire(x => x.UseSqlServerStorage("DBDefault"));
 // builder.Services.AddHangfireServer();
 //builder.Services.AddSwaggerGen();
+
 
 builder.Services.AddSwaggerGen(sw =>
 {
@@ -52,6 +55,7 @@ builder.Services.AddSwaggerGen(sw =>
         }
     });
 });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -85,9 +89,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigins");
 app.UseCors("AllowAll");
-// app.MapHub<NotificationHub>("/notificationHub");
+app.MapHub<ChatHub>("/chatHub");
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
