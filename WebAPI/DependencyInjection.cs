@@ -93,11 +93,12 @@ public static class DependencyInjection
 
         //Style
         services.AddScoped<IAccessoryService, AccessoryService>();
-
+        //check
+        services.AddScoped<ICheckService, CheckService>();
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
 
-      
+        
 
         // Hang
 

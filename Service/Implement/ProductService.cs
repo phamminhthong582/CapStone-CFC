@@ -28,7 +28,6 @@ namespace Service.Implement
             var product = new Product
             {
                 ProductName = productRequest.ProductName,
-                Quantity = productRequest.Quantity,
                 Price = productRequest.Price,
                 Size = productRequest.Size,
                 Discount = productRequest.Discount,
@@ -106,7 +105,6 @@ namespace Service.Implement
             var productResponse = new ProductResponse{
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
-                Quantity = product.Quantity,
                 Price = product.Price,
                 Weight = product.Weight,
                 CreateAt = DateTime.Now,
@@ -145,7 +143,6 @@ namespace Service.Implement
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 Price = product.Price,
-                Quantity = product.Quantity,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
                 Weight = product.Weight,
@@ -215,7 +212,6 @@ namespace Service.Implement
                 throw new KeyNotFoundException("Product not found");
             }
             product.ProductName = updateProductRequest.ProductName ?? product.ProductName; 
-            product.Quantity = updateProductRequest.Quantity?? product.Quantity;
             product.Description = updateProductRequest.Description ?? product.Description;
             product.Price= updateProductRequest.Price?? product.Price;
             product.Size = updateProductRequest.Size ?? product.Size;

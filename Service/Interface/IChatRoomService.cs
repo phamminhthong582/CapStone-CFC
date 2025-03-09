@@ -12,5 +12,6 @@ public interface IChatRoomService
     Task<Result<ChatRoomResponse>> UpdateStatusChatRoom(Guid chatRoomId , string newStatus);
     Task<Result<ChatRoom>> DeleteChatRoom(Guid id);
     Task<Result<object>> GetChatRoomDetailsById(Guid chatroomId);
+    Task SendMessageToClients(string chatRoomId, string user, string message);
 
 }

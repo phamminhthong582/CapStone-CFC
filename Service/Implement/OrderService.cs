@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO.Accessory;
+using BusinessObject.DTO.Check;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Employee;
 using BusinessObject.DTO.Flower;
@@ -13,6 +14,7 @@ using MailKit.Search;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using MimeKit.Cryptography;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.X509;
 using Repository.Implement;
 using Repository.Interface;
@@ -98,6 +100,7 @@ namespace Service.Implement
                 Transfer = orderRequest.Transfer,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
+                Delivery = orderRequest.Delivery,
                 Refund = false,
                 Status = "Pending Payment",
                 PromotionId = orderRequest.PromotionId,
@@ -146,6 +149,27 @@ namespace Service.Implement
                 {
                     totalPrice *= (1 - (promotion.PromotionDiscount / 100.0));
                 }
+            }
+            if (orderRequest.Delivery == true)
+            {
+                string deliveryAddress = $"{orderRequest.DeliveryAddress}, {orderRequest.DeliveryDistrict}, {orderRequest.DeliveryCity}";
+                var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(orderRequest.StoreId);
+                string StoreAddress = store.Address + "," + store.District + "," + store.City;
+                var storeLocation = await GetCoordinatesAsync(StoreAddress);
+                var deliveryLocation = await GetCoordinatesAsync(deliveryAddress);
+                double distance = CalculateDistance(storeLocation.Value.Latitude, storeLocation.Value.Longitude,
+                                 deliveryLocation.Value.Latitude, deliveryLocation.Value.Longitude);
+                double? shipperMoney = 0.0;
+                if (distance < 5)
+                {
+                    shipperMoney = 10000 + distance * 5000;
+                    totalPrice = shipperMoney + totalPrice;
+                }
+                else if (distance > 5)
+                {
+                    totalPrice = totalPrice;
+                }
+
             }
 
             order.OrderPrice = totalPrice;
@@ -221,8 +245,6 @@ namespace Service.Implement
                         ProductTotalPrice = orderDetailsRequest.Quantity * product.Price - (orderDetailsRequest.Quantity * product.Price * product.Discount)/100
                     };
                   
-
-
                 });
                 
                 // Await the tasks and gather the results into a list
@@ -241,6 +263,27 @@ namespace Service.Implement
                     {
                         totalPrice *= (1 - (promotion.PromotionDiscount / 100.0));
                     }
+                }
+                if (Delivery == true)
+                {
+                    string deliveryAddress = $"{DeliveryAddress}, {DeliveryDistrict}, {DeliveryCity}";
+                    var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(orderRequest.StoreId);
+                    string StoreAddress = store.Address + "," + store.District + "," + store.City;
+                    var storeLocation = await GetCoordinatesAsync(StoreAddress);
+                    var deliveryLocation = await GetCoordinatesAsync(deliveryAddress);
+                    double distance = CalculateDistance(storeLocation.Value.Latitude, storeLocation.Value.Longitude,
+                                     deliveryLocation.Value.Latitude, deliveryLocation.Value.Longitude);
+                    double? shipperMoney = 0.0;
+                    if (distance < 5)
+                    {
+                        shipperMoney = 10000 + distance * 5000;
+                        totalPrice = shipperMoney + totalPrice;
+                    }
+                    else if (distance > 5)
+                    {
+                        totalPrice = totalPrice;
+                    }
+
                 }
                 order.OrderPrice = totalPrice;
                 // Save the updated order with the total price
@@ -285,6 +328,7 @@ namespace Service.Implement
                 PromotionId = PromotionID,
                 Delivery = Delivery,
             };
+            
             await _unitOfWork.Repository<Order>().AddAsync(order);
             await _unitOfWork.CompleteAsync();
             var productCustom = await _unitOfWork.GetRepo<ProductCustom>().GetByIdAsync(orderCustomRequest.ProductCustomId);
@@ -297,14 +341,62 @@ namespace Service.Implement
                     totalPrice *= (1 - (promotion.PromotionDiscount / 100.0));
                 }
             }
+        /*    if (Delivery == true)
+            {
+                string deliveryAddress = $"{DeliveryAddress}, {DeliveryDistrict}, {DeliveryCity}";
+                var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(storeId);
+
+
+            }*/
             order.OrderPrice = totalPrice;
             _unitOfWork.Repository<Order>().Update(order);
+            await _unitOfWork.CompleteAsync();
+            return order;
+        }
+        public async Task<(double Latitude, double Longitude)?> GetCoordinatesAsync(string address)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                string url = $"https://nominatim.openstreetmap.org/search?format=json&q={Uri.EscapeDataString(address)}";
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "TripPlanner/1.0 (trinhbloc2003@email.com)");
 
-           await _unitOfWork.CompleteAsync();
-            
-            return order; 
+                var response = await httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var results = JsonConvert.DeserializeObject<List<NominatimResponse>>(content);
+
+                    if (results != null && results.Count > 0)
+                    {
+                        return (results[0].Lat, results[0].Lon);
+                    }
+                }
+            }
+            return null;
+        }
+        public double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double R = 6371; // Bán kính Trái Đất (km)
+            double dLat = ToRadians(lat2 - lat1);
+            double dLon = ToRadians(lon2 - lon1);
+
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                       Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            return R * c; // Khoảng cách tính bằng km
         }
 
+        private double ToRadians(double angle)
+        {
+            return Math.PI * angle / 180.0;
+        }
+        public class NominatimResponse
+        {
+            public double Lat { get; set; }
+            public double Lon { get; set; }
+        }
         public async Task DeleteOrder(Guid orderID)
         {
             var order = await _unitOfWork.Repository<Order>().Entities.Include(m => m.ProductCustom)
@@ -375,6 +467,7 @@ namespace Service.Implement
                 OrderPrice = order.OrderPrice,
                 CustomerId = CustomerID,
                 ProductCustomId = order.ProductCustomId,
+                Delivery = order.Delivery,
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
                     ProductCustomId = order.ProductCustomId,
@@ -385,6 +478,7 @@ namespace Service.Implement
                     CreateAt = order.ProductCustom.CreateAt,
                     UpdateAt = order.ProductCustom.UpdateAt,
                     Status = order.ProductCustom.Status,
+                   
                     flowerBasketResponse = order.ProductCustom.FlowerBasket != null ? new FlowerBasketResponse
                     {
                         FlowerBasketId = order.ProductCustom.FlowerBasket.FlowerBasketId,
@@ -522,6 +616,7 @@ namespace Service.Implement
                 OrderPrice = order.OrderPrice,
                 CustomerId = CustomerID,
                 ProductCustomId = order.ProductCustomId,
+                Delivery = order.Delivery,
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
                     ProductCustomId = order.ProductCustomId,
@@ -677,6 +772,8 @@ namespace Service.Implement
                 OrderPrice = order.OrderPrice,
                 CustomerId = order.CustomerId,
                 ProductCustomId = order.ProductCustomId,
+                Delivery = order.Delivery,
+
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
                     ProductCustomId = order.ProductCustomId,
@@ -774,11 +871,11 @@ namespace Service.Implement
                 DeliveryDateTime = order.RecipientTime,
                 Phone = order.Phone,
                 Transfer = order.Transfer,
-                PaymentId = payment.PaymentId ,
-                PaymentCreateAt = payment.CreateAt,
-                PaymentPrice = payment.TotalPrice,
-                PaymentStatus = payment.Status,
-                PaymentMethod = payment.Method,
+                PaymentId = payment?.PaymentId ,
+                PaymentCreateAt = payment?.CreateAt,
+                PaymentPrice = payment?.TotalPrice,
+                PaymentStatus = payment?.Status,
+                PaymentMethod = payment?.Method,
                 Refund = order.Refund,
                 CreateAt = order.CreateAt,
                 UpdateAt = order.UpdateAt,
@@ -835,6 +932,8 @@ namespace Service.Implement
                 OrderPrice = order.OrderPrice,
                 CustomerId = order.CustomerId,
                 ProductCustomId = order.ProductCustomId,
+                Delivery = order.Delivery,
+
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
                     ProductCustomId = order.ProductCustomId,
@@ -1017,6 +1116,8 @@ namespace Service.Implement
                 OrderPrice = order.OrderPrice,
                 CustomerId = order.CustomerId,
                 ProductCustomId = order.ProductCustomId,
+                Delivery = order.Delivery,
+
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
                     ProductCustomId = order.ProductCustomId,

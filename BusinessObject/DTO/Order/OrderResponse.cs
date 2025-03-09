@@ -45,8 +45,8 @@ namespace BusinessObject.DTO.Order
         public string? Phone { get; set; }
 
         public bool? Transfer { get; set; }
-
-        public Guid PaymentId { get; set; }
+        public bool? Delivery { get; set; }
+        public Guid? PaymentId { get; set; }
         public double? PaymentPrice { get; set; }
         public string? PaymentStatus { get; set; }
         public DateTime? PaymentCreateAt { get; set; }
