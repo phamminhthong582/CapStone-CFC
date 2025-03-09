@@ -56,7 +56,5 @@ public partial class Order
 
     public virtual ICollection<Refund> Refunds { get; set; } = new List<Refund>();
     public virtual ICollection<ChatRoom> ChatRooms { get; set; } = new List<ChatRoom>();
-
-
     public virtual Employee? Staff { get; set; }
 }

@@ -36,7 +36,6 @@ public partial class Customer
 
     public string? Otp { get; set; }
 
-    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 

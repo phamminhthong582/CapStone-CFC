@@ -32,20 +32,63 @@ namespace Service.Implement
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(order.CustomerId);
             var wallet = (await _unitOfWork.Repository<Wallet>().GetAllAsync()).FirstOrDefault(n => n.CustomerId == customer.CustomerId);
 
-            if (order.Transfer == false&& order.Status == "đã cọc")
+            if (order.Transfer == false )
             {
-                order.Status = "Hủy thành công";
-                _unitOfWork.Repository<Order>().Update(order);
-                payment.Status = "Đã mất cọc";
-                _unitOfWork.Repository<Payment>().Update(payment);
-                await _unitOfWork.CompleteAsync();
+                if (order.Status != "Received")
+                {
+                    order.Status = "Cancel successfull";
+                    _unitOfWork.Repository<Order>().Update(order);
+                    payment.Status = "Cancel deposit";
+                    _unitOfWork.Repository<Payment>().Update(payment);
+                    await _unitOfWork.CompleteAsync();
+                }else if(order.Status == "Order Successfully")
+                {
+                    var refund = new Refund
+                    {
+                        OrderId = order.OrderId,
+                        WallerId = wallet.WalletId,
+                        Price = order.OrderPrice,
+                        CreateAt = DateTime.Now
+                    };
+                    await _unitOfWork.Repository<Refund>().AddAsync(refund);
+                    order.Status = "Cancel successfull";
+                    order.Refund = true;
+                    _unitOfWork.Repository<Order>().Update(order);
+                    payment.Status = "refund";
+                    _unitOfWork.Repository<Payment>().Update(payment);
+                    wallet.TotalPrice += order.OrderPrice;
+                    _unitOfWork.Repository<Wallet>().Update(wallet);
+                    await _unitOfWork.CompleteAsync();
+                }
             }
-            else if (order.Transfer == true && order.Status == "đã thanh toán" )
+           
+            else if (order.Transfer == true && order.Status != "Received")
             {
                 TimeSpan timeUntilDelivery = order.RecipientTime.Value - DateTime.Now; // Tính khoảng cách thời gian
 
-                if (timeUntilDelivery.TotalHours > 24 && order.Status == "đã thanh toán")
+                if (order.Status == "Order Successfully")
                 {
+                    double? refundPrice = order.OrderPrice;
+                    var refund = new Refund
+                    {
+                        OrderId = order.OrderId,
+                        WallerId = wallet.WalletId,
+                        Price = refundPrice,
+                        CreateAt = DateTime.Now
+                    };
+                    await _unitOfWork.Repository<Refund>().AddAsync(refund);
+                    order.Status = "Hủy thành công";
+                    order.Refund = true;
+                    _unitOfWork.Repository<Order>().Update(order);
+                    payment.Status = "refund";
+                    _unitOfWork.Repository<Payment>().Update(payment);
+                    wallet.TotalPrice += refundPrice;
+                    _unitOfWork.Repository<Wallet>().Update(wallet);
+                    await _unitOfWork.CompleteAsync();
+                }
+                if (timeUntilDelivery.TotalHours > 24 && order.Status != "Received")
+                {
+
                     double? refundPrice = order.OrderPrice * 70 / 100;
                     var refund = new Refund
                     {
@@ -65,7 +108,7 @@ namespace Service.Implement
                     _unitOfWork.Repository<Wallet>().Update(wallet);
                     await _unitOfWork.CompleteAsync();
                 }
-                else if (timeUntilDelivery.TotalHours <= 24 && order.Status == "đã thanh toán")
+                else if (timeUntilDelivery.TotalHours <= 24 && order.Status != "Received")
                 {
                     double? refundPrice = order.OrderPrice * 50 / 100;
                     var refund = new Refund
@@ -85,6 +128,28 @@ namespace Service.Implement
                     wallet.TotalPrice += refundPrice;
                     _unitOfWork.Repository<Wallet>().Update(wallet);
 
+                    await _unitOfWork.CompleteAsync();
+                }
+                if (timeUntilDelivery.TotalHours < 3 && order.Status != "Received")
+                {
+
+                    double? refundPrice = order.OrderPrice * 30 / 100;
+                    var refund = new Refund
+                    {
+                        OrderId = order.OrderId,
+                        WallerId = wallet.WalletId,
+                        Price = refundPrice,
+                        CreateAt = DateTime.Now
+                    };
+
+                    await _unitOfWork.Repository<Refund>().AddAsync(refund);
+                    order.Status = "Hủy thành công";
+                    order.Refund = true;
+                    _unitOfWork.Repository<Order>().Update(order);
+                    payment.Status = "refund";
+                    _unitOfWork.Repository<Payment>().Update(payment);
+                    wallet.TotalPrice += refundPrice;
+                    _unitOfWork.Repository<Wallet>().Update(wallet);
                     await _unitOfWork.CompleteAsync();
                 }
             }

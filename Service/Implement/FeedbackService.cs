@@ -10,59 +10,71 @@ namespace Service.Implement;
 
 public class FeedbackService : IFeedbackService
 {
-    private readonly IFeedbackRepository _feedbackRepository;
     private IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ICustomerRepository _customerRepository;
+    private readonly CloudinaryService _cloudinaryService;
 
-    public FeedbackService(IFeedbackRepository feedbackRepository, IMapper mapper, IUnitOfWork unitOfWork , ICustomerRepository customerRepository)
+    public FeedbackService(IMapper mapper, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
     {
-        _feedbackRepository = feedbackRepository;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
-        _customerRepository = customerRepository;
+        _cloudinaryService = cloudinaryService;
     }
 
-    public async Task<List<FeedbackResponse>> GetAllFeedback()
+    public Task<List<FeedbackResponse>> GetAllFeedback()
     {
-        var list = await _feedbackRepository.GetAllFeedback();
-        return _mapper.Map<List<FeedbackResponse>>(list);
+        throw new NotImplementedException();
     }
 
-    public async Task<Result<FeedbackResponse>> CreateFeedback(CreateFeedbackRequest request)
+    public async Task CreateFeedbackByCustomer(Guid customerId, Guid orderId, CreateFeedbackRequest request)
     {
-        var order = await _unitOfWork.Repository<Order>().GetByIdAsync(request.OrderId);
-        if (order is null)
+        var order = await _unitOfWork.GetRepo<Order>().GetByIdAsync(orderId);
+        var customer = await _unitOfWork.GetRepo<Customer>().GetByIdAsync(customerId);
+        if (order == null)
         {
-            throw new OrderNotFoundException();
+            throw new ArgumentException("order name cannot be null or whitespace");
         }
-
-        if (order.Status != OrderStatus.Completed.ToString())
+        if (customer == null)
         {
-            throw new OrderNotAvailableToFeedback("This order is not completed");
+            throw new ArgumentException("customer cannot be null or whitespace");
         }
-        var feedback = new Feedback()
+        var folderName = $"flowerBasket/{request.FeedBackImageByCustomer}";
+        var FeedBackImageUrl = request.FeedBackImageByCustomer != null
+? await _cloudinaryService.UploadImageAsync(request.FeedBackImageByCustomer.OpenReadStream(), $"{folderName}")
+: null;
+        var newFeedBackByCustomer = new Feedback
         {
-            Descripstion = request.Descripstion,
+            CustomerId = customerId,
+            OrderId = orderId,
+            FeedbackByCustomer = request.FeedbackByCustomer ,
+            FeedBackImageByCustomer = FeedBackImageUrl,
+            RequestRefundByCustomer = request.RequestRefundByCustomer ,
             Rating = request.Rating,
-            OrderId = request.OrderId
+            Status = "Send By Customer",
+            CreateAt = DateTime.Now,
+            UpdateAt = DateTime.Now,
+
         };
-        await _feedbackRepository.CreateFeedback(feedback);
-        return new Result<FeedbackResponse>()
-        {
-            Data = new FeedbackResponse()
-            {
-                FeedbackId = feedback.FeedbackId,
-                OrderId = feedback.OrderId,
-                CustomerId = feedback.CustomerId,
-                Descripstion = feedback.Descripstion,
-                Rating = feedback.Rating,
-                CreateAt = DateTime.UtcNow,
-                
-            },
-            Messages = new[] { "Successfully" },
-            ResultStatus = ResultStatus.Success.ToString()
-        };
+
     }
 
+    public async Task UpdateFeedbackByStoreID(Guid storeID, Guid feedbackId, CreateFeedbackByStoreRequest request)
+    {
+        var feedback = await _unitOfWork.GetRepo<Feedback>().GetByIdAsync(feedbackId);
+        if (feedback == null)
+        {
+            throw new ArgumentException("order name cannot be null or whitespace");
+        }
+        feedback.UpdateAt = DateTime.Now;
+        feedback.StoreId = storeID;
+        feedback.ResponseFeedBackStore = request.ResponseFeedBackStore;
+        feedback.ResponseFeedImageByStore = request.ResponseFeedImageByStore;
+        _unitOfWork.GetRepo<Feedback>().Update(feedback);
+        await _unitOfWork.CompleteAsync();
+    }
+
+    public Task<FeedbackResponse> GetFeedBackByOrderId(Guid OrderId)
+    {
+        throw new NotImplementedException();
+    }
 }

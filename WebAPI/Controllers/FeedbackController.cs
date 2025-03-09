@@ -17,20 +17,20 @@ public class FeedbackController : Controller
     {
         _feedbackService = feedbackService;
     }
-    [HttpGet]
+    /*[HttpGet]
     public async Task<IActionResult> GetFeedbacks()
     {
         var result = await _feedbackService.GetAllFeedback();
         return Ok(result);
-    }
-    [HttpPost("create-feedback")]
-    public async Task<ActionResult<Result<Feedback>>> CreateFeedback( [FromBody] CreateFeedbackRequest request)
-    {
-        var result = await _feedbackService.CreateFeedback(request);
-        if (result.ResultStatus != ResultStatus.Success.ToString())
-        {
-            return StatusCode((int)HttpStatusCode.InternalServerError, result);
-        }
-        return Ok(result);
-    }
+    }*/
+    //[HttpPost("create-feedback")]
+    //public async Task<ActionResult<Result<Feedback>>> CreateFeedback( [FromBody] CreateFeedbackRequest request)
+    //{
+    //    var result = await _feedbackService.CreateFeedback(request);
+    //    if (result.ResultStatus != ResultStatus.Success.ToString())
+    //    {
+    //        return StatusCode((int)HttpStatusCode.InternalServerError, result);
+    //    }
+    //    return Ok(result);
+    //}
 }
