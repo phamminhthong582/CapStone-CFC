@@ -46,6 +46,18 @@ namespace BusinessObject.DTO.Order
 
         public bool? Transfer { get; set; }
         public bool? Delivery { get; set; }
+
+        public Guid? DeliveryId { get; set; }
+        public Guid? ShipperId { get; set; }
+        public string? ShipperName { get; set; }
+        public string? ShipperEmail { get; set; }
+        public string? ShipperPhone { get; set; }
+
+        public string? NumberMoto { get; set; }
+
+        public string? ColorMoto { get; set; }
+
+        public string? MotoType { get; set; }
         public Guid? PaymentId { get; set; }
         public double? PaymentPrice { get; set; }
         public string? PaymentStatus { get; set; }

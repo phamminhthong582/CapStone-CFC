@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -12,6 +13,14 @@ namespace BusinessObject.DTO.Delivery
         public Guid DeliveryId { get; set; }
         public Guid? OrderId { get; set; }
         public Guid? ShipperId { get; set; }
+        public string? ShipperName {  get; set; }
+        public string? ShipperEmail { get; set; }
+        public string? NumberMoto { get; set; }
+
+        public string? ColorMoto { get; set; }
+
+        public string? MotoType { get; set; }
+        public string? ShipperPhone {  get; set; }
         public bool? FreeShip { get; set; }
         public double? Fee { get; set; }
         public string? Note { get; set; }

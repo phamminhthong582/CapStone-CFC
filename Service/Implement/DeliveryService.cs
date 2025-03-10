@@ -53,9 +53,10 @@ namespace Service.Implement
                 CustomerPhone = order.Customer.Phone,
                 DeliveryLocation = string.Join(", ", order.DeliveryAddress, order.DeliveryDistrict, order.DeliveryCity),
                 DeliveryTime = order.RecipientTime,
-                Status = "Bắt đầu giao",
+                Status = "Start",
             };
-
+            order.Status = "Delivery";
+            _unitOfWork.Repository<Order>().Update(order);
             // Lưu vào database
             await _unitOfWork.Repository<Delivery>().AddAsync(delivery);
             await _unitOfWork.CompleteAsync();
@@ -89,6 +90,50 @@ namespace Service.Implement
             };
             return deliveryResponse;
 
+        }
+
+        public async Task<DeliveryResponse> GetDeliveryByOrderId(Guid OrderId)
+        {
+            var order = await _unitOfWork.Repository<Order>()
+                                       .Entities
+                                       .Include(o => o.Customer) // Bao gồm thông tin Customer
+                                       .FirstOrDefaultAsync(o => o.OrderId == OrderId);
+            var delivery = await _unitOfWork.Repository<Delivery>().Entities.Include(n => n.Shipper).FirstOrDefaultAsync(n => n.OrderId == OrderId);
+
+            if (order == null)
+            {
+                throw new Exception($"Order with ID {OrderId} not found.");
+            }
+
+            // Kiểm tra thông tin khách hàng
+            if (order.Customer == null)
+            {
+                throw new Exception("Customer information is missing for this order.");
+            }
+            var deliveryResponse = new DeliveryResponse
+            {
+                DeliveryId = delivery.DeliveryId,
+                ShipperId = delivery.ShipperId,
+                ShipperName = delivery.Shipper.FullName,
+                ShipperEmail= delivery.Shipper.Email,
+                ShipperPhone= delivery.Shipper.Phone,
+                NumberMoto = delivery.Shipper.NumberMoto,
+                ColorMoto = delivery.Shipper.ColorMoto,
+                MotoType = delivery.Shipper.MotoType,    
+                FreeShip = delivery.FreeShip,
+                Fee = delivery.Fee,
+                Note = delivery.note,
+                PickupLocation = delivery.PickupLocation,
+                CustomerName = delivery.CustomerName,
+                CustomerPhone = delivery.CustomerPhone,
+                DeliveryLocation = delivery.DeliveryLocation,
+                DeliveryTime = delivery.DeliveryTime,
+                TimeDone = delivery.TimeDone,
+                DeliveryImage = delivery.DeliveryImage,
+                Status = delivery.Status,
+
+            };
+            return deliveryResponse;
         }
 
         public async Task<IEnumerable<DeliveryResponse>> GetDeliveryByShipperId(Guid shipperId)

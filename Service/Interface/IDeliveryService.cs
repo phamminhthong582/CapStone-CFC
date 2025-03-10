@@ -11,6 +11,7 @@ namespace Service.Interface
     {
         Task CreateDelivery(DeliveryRequest deliveryRequest, Guid OrderId );
         Task<IEnumerable<DeliveryResponse>> GetDeliveryByShipperId( Guid shipperId );
+        Task<DeliveryResponse> GetDeliveryByOrderId(Guid OrderId);
         Task<DeliveryResponse> GetDeliveryById(Guid DeliveryId);
         Task UpdateDeliveryByShipperId(UpdateDeliveryByShipperResponse updateDeliveryByShipperResponse,Guid DeliveryId);
         Task UpdateDeliveryByStaffId(DeliveryRequest deliveryRequest, Guid DeliveryId);

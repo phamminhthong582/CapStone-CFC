@@ -752,6 +752,7 @@ namespace Service.Implement
                  .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
                  .Include(p => p.Staff)
                 .FirstOrDefaultAsync(o => o.OrderId == OrderId);
+            var delivery = await _unitOfWork.GetRepo<Delivery>().Entities.Include(m => m.Shipper).Where(n => n.OrderId == OrderId).ToListAsync();
             var payment = await _unitOfWork.GetRepo<Payment>().Entities.FirstOrDefaultAsync(m => m.OrderId == OrderId);
             var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
                                    .Include(fc => fc.Flower)
@@ -773,6 +774,14 @@ namespace Service.Implement
                 CustomerId = order.CustomerId,
                 ProductCustomId = order.ProductCustomId,
                 Delivery = order.Delivery,
+                DeliveryId = delivery.FirstOrDefault()?.DeliveryId, // Hiển thị DeliveryId
+                ShipperId =delivery.FirstOrDefault()?.Shipper.EmployeeId,
+                ShipperName = delivery.FirstOrDefault()?.Shipper.FullName,
+                ShipperEmail = delivery.FirstOrDefault()?.Shipper.Email,
+                ShipperPhone = delivery.FirstOrDefault()?.Shipper.Phone,
+                NumberMoto =delivery.FirstOrDefault()?.Shipper.NumberMoto,
+                ColorMoto = delivery.FirstOrDefault()?.Shipper.ColorMoto,
+                MotoType = delivery.FirstOrDefault()?.Shipper.MotoType,
 
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
@@ -1056,19 +1065,28 @@ namespace Service.Implement
         }
         public async Task<IEnumerable<EmployeeResponse>> GetStaffForOrderId(Guid orderId)
         {
-            // Lấy danh sách nhân viên có Role là "florist" và có trạng thái hoạt động
+            // Lấy thông tin đơn hàng dựa vào orderId
+            var order = await _unitOfWork.GetRepo<Order>().Entities
+                .Where(o => o.OrderId == orderId)
+                .Select(o => new { o.StoreId })
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+                return new List<EmployeeResponse>();
+
+            // Lấy danh sách nhân viên của cửa hàng thuộc đơn hàng đó
             var employees = await _unitOfWork.GetRepo<Employee>().Entities
                 .Include(n => n.Role)
-                .Where(m => m.Role.RoleName == "florist" && m.Status == true)
+                .Where(m => m.Role.RoleName == "florist" && m.Status == true && m.StoreId == order.StoreId)
                 .ToListAsync();
 
             var availableEmployees = new List<EmployeeResponse>();
 
             foreach (var employee in employees)
             {
-                // Lấy danh sách đơn hàng thuộc về cửa hàng của nhân viên
+                // Lấy danh sách đơn hàng thuộc về cửa hàng của nhân viên đó
                 var orders = await _unitOfWork.GetRepo<Order>().Entities
-                    .Where(a => a.StoreId == employee.StoreId && a.StaffId == employee.EmployeeId && a.RecipientTime != null && a.Status == "đặt hàng thành công")
+                    .Where(a => a.StoreId == employee.StoreId && a.StaffId == employee.EmployeeId && a.RecipientTime != null && a.Status != "Received")
                     .ToListAsync();
 
                 // Nhóm các đơn hàng theo thời gian nhận hàng
@@ -1090,6 +1108,52 @@ namespace Service.Implement
             }
 
             return availableEmployees;
+        }
+
+        public async Task<IEnumerable<EmployeeResponse>> GetDeliveryForOrderId(Guid orderId)
+        {
+            var order = await _unitOfWork.GetRepo<Order>().Entities
+              .Where(o => o.OrderId == orderId)
+              .Select(o => new { o.StoreId })
+              .FirstOrDefaultAsync();
+
+            if (order == null)
+                return new List<EmployeeResponse>();
+
+            // Lấy danh sách nhân viên của cửa hàng thuộc đơn hàng đó
+            var employees = await _unitOfWork.GetRepo<Employee>().Entities
+                .Include(n => n.Role)
+                .Where(m => m.Role.RoleName == "Courier" && m.Status == true && m.StoreId == order.StoreId)
+                .ToListAsync();
+
+            var availableEmployees = new List<EmployeeResponse>();
+
+            foreach (var employee in employees)
+            {
+                // Lấy danh sách đơn hàng thuộc về cửa hàng của nhân viên đó
+                var orders = await _unitOfWork.GetRepo<Order>().Entities
+                    .Where(a => a.StoreId == employee.StoreId && a.StaffId == employee.EmployeeId && a.RecipientTime != null && a.Status != "Received")
+                    .ToListAsync();
+
+                // Nhóm các đơn hàng theo thời gian nhận hàng
+                var groupedOrders = orders.GroupBy(o => o.RecipientTime.Value)
+                                          .Where(g => g.Count() > 10) // Kiểm tra nếu có hơn 10 đơn trong cùng một khoảng thời gian
+                                          .ToList();
+
+                if (groupedOrders.Count == 0) // Chỉ lấy nhân viên chưa bị quá tải
+                {
+                    availableEmployees.Add(new EmployeeResponse
+                    {
+                        EmployeeId = employee.EmployeeId,
+                        FullName = employee.FullName,
+                        Address = employee.Address,
+                        Email = employee.Email,
+                        Phone = employee.Phone
+                    });
+                }
+            }
+            return availableEmployees;
+
         }
         public async Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID)
         {
@@ -1278,6 +1342,6 @@ namespace Service.Implement
             await _unitOfWork.CompleteAsync();
         }
 
-        
+       
     }
 }

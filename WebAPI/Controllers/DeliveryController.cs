@@ -35,6 +35,15 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
+        [HttpGet("GetDeliveryByOrderId")]
+        public async Task<IActionResult> GetDeliveryByOrderId(Guid OrderId)
+        {
+            var result = await deliveryService.GetDeliveryByOrderId(OrderId);
+            return Ok(new BaseResponseModel<DeliveryResponse>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
         [HttpPost("CreateDelivery")]
         public async Task<IActionResult> CreateOrder(DeliveryRequest deliveryRequest, Guid OrderId)
         {
