@@ -30,6 +30,7 @@ namespace Service.Interface
         Task AutoUpdateOrder();
 
         Task<IEnumerable<EmployeeResponse>> GetStaffForOrderId(Guid orderId);
+        Task<IEnumerable<EmployeeResponse>> GetDeliveryForOrderId(Guid orderId);
 
     }
 }
