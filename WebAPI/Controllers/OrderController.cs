@@ -37,6 +37,15 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
+        [HttpGet("GetCancelOrderByCustomer")]
+        public async Task<IActionResult> GetCancelOrderByCustomer(Guid CusomterId)
+        {
+            var result = await orderService.GetCanelOrderByCustomerId(CusomterId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
         [HttpGet("GetOrderByStore")]
         public async Task<IActionResult> GetOrderByStore(Guid StoreId)
         {

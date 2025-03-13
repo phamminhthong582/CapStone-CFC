@@ -78,6 +78,9 @@ public static class DependencyInjection
         //IWithdrawMoney
 
         services.AddScoped<IWithdrawMoneyService, WithdrawMoneyService>();
+      
+        //DepositMoney
+        services.AddScoped<IIncomWalletService, IncomWalletService>();
 
         //Refund 
         services.AddScoped<IRefundService, RefundService>();

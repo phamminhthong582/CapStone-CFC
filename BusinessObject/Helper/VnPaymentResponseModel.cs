@@ -18,6 +18,19 @@ namespace BusinessObject.Helper
         public string Token { get; set; }
         public string VnPayResponseCode { get; set; }
     }
+    public class VnPaymentWalletResponseModel
+    {
+        public bool Success { get; set; }
+        public string PaymentMethod { get; set; }
+        public string OrderDescription { get; set; }
+        public string WalletId { get; set; }
+        public string TotalPrice { get; set; }
+        public string OrderRealId { get; set; }
+        public string PaymentId { get; set; }
+        public string TransactionId { get; set; }
+        public string Token { get; set; }
+        public string VnPayResponseCode { get; set; }
+    }
     public class VnPaymentRequestModel
 
     {

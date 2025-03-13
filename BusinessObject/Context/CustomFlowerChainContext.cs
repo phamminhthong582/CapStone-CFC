@@ -64,6 +64,7 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; }
 
     public virtual DbSet<WithdrawMoney> WithdrawMoneys { get; set; }
+    public virtual DbSet<IncomeWallet> IncomeWallets { get; set; }
 
     public virtual DbSet<Style> Styles { get; set; }
 
@@ -459,7 +460,20 @@ public partial class CustomFlowerChainContext : DbContext
 
             entity.HasOne(d => d.Wallet).WithMany(p => p.WithdrawMoneys)
                 .HasForeignKey(d => d.WalletId)
-                .HasConstraintName("FK_WithdrawMoney_Refund");
+                .HasConstraintName("FK_WithdrawMoney_Wallet");
+        });
+        modelBuilder.Entity<IncomeWallet>(entity =>
+        {
+            entity.ToTable("IncomeWallet");
+
+            entity.Property(e => e.IncomeWalletID).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+
+            entity.HasOne(d => d.Wallet).WithMany(p => p.IncomeWallets)
+                .HasForeignKey(d => d.WalletID)
+                .HasConstraintName("FK_IncomeWallet_Wallet");
         });
         modelBuilder.Entity<ChatRoom>(entity =>
         {

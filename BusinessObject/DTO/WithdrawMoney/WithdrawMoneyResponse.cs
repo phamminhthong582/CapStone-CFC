@@ -20,5 +20,6 @@ namespace BusinessObject.DTO.WithdrawMoney
 
         public string? BankNumber { get; set; }
         public string? Reason { get; set; }
+        public string? Status { get; set; }
     }
 }

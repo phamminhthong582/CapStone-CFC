@@ -19,9 +19,9 @@ namespace WebAPI.Controllers
             this.withdrawMoneyService = withdrawMoneyService;
         }
         [HttpGet("GetWithDrawMoneyWithWalletId")]
-        public async Task<IActionResult> GetWithDrawMoneyWithWalletId(Guid WithDrawMoney)
+        public async Task<IActionResult> GetWithDrawMoneyWithWalletId(Guid WalletId)
         {
-            var result = await withdrawMoneyService.GetWithDrawMoneyByWalletId(WithDrawMoney);
+            var result = await withdrawMoneyService.GetWithDrawMoneyByWalletId(WalletId);
             return Ok(new BaseResponseModel<IEnumerable<WithdrawMoneyResponse>>(
               statusCode: StatusCodes.Status200OK,
               code: ResponseCodeConstants.SUCCESS,
@@ -30,12 +30,13 @@ namespace WebAPI.Controllers
         [HttpPost("CreateWithDrawMoney")]
         public async Task<IActionResult> CreateWithDrawMoney(Guid WalletId, WithdrawMoneyRequest withdrawMoneyRequest)
         {
-            await withdrawMoneyService.CreateWithdrawMoney(WalletId, withdrawMoneyRequest);
-            return Ok(new BaseResponseModel<string>(
+            var withdrawMoneyId = await withdrawMoneyService.CreateWithdrawMoney(WalletId, withdrawMoneyRequest);
+            return Ok(new BaseResponseModel<Guid>(
                        statusCode: StatusCodes.Status200OK,
                        code: ResponseCodeConstants.SUCCESS,
-                       data: "Thêm yêu cau rut tiền thành công"));
+                       data: withdrawMoneyId));
         }
+
         [HttpPut("UpdateWithdrawMoneyId")]
         public async Task<IActionResult> UpdateStatusWithdrawMoney(Guid WithdrawMoneyId, string status)
         {

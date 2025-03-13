@@ -86,6 +86,61 @@ namespace Service.Implement
                 VnPayResponseCode = vnpay.GetResponseData("vnp_ResponseCode")
             };
         }
+
+        public async Task<string> CreateDepositWallet(Guid walletId, double price)
+        {
+            var Wallet = await _unitOfWork.Repository<Wallet>().GetByIdAsync(walletId);
+            return CreatePaymenWallettUrl(walletId, (decimal)price);
+        }
+        private string CreatePaymenWallettUrl(Guid walletId, decimal amount)
+        {
+            var vnpay = new VnPayLibrary();
+            var walletIdStr = walletId.ToString("N"); // Format không có dấu gạch
+            var amountStr = ((amount * 100)).ToString();
+
+            string uniqueTxnRef = $"{walletIdStr}_{DateTime.UtcNow:yyyyMMddHHmmss}"; // Tạo mã giao dịch duy nhất
+
+            vnpay.AddRequestData("vnp_Version", _config["VnPay:Version"]);
+            vnpay.AddRequestData("vnp_Command", _config["VnPay:Command"]);
+            vnpay.AddRequestData("vnp_TmnCode", _config["VnPay:TmnCode"]);
+            vnpay.AddRequestData("vnp_Amount", amountStr);
+            vnpay.AddRequestData("vnp_CreateDate", DateTime.UtcNow.ToString("yyyyMMddHHmmss"));
+            vnpay.AddRequestData("vnp_CurrCode", _config["VnPay:CurrCode"]);
+            vnpay.AddRequestData("vnp_IpAddr", "127.0.0.1");
+            vnpay.AddRequestData("vnp_Locale", _config["VnPay:Locale"]);
+            vnpay.AddRequestData("vnp_OrderInfo", walletIdStr);
+            vnpay.AddRequestData("vnp_OrderType", "other");
+            vnpay.AddRequestData("vnp_ReturnUrl", _config["VnPay:PaymentDepositBackReturnUrl"]);
+            vnpay.AddRequestData("vnp_TxnRef", uniqueTxnRef); // Mã giao dịch mới mỗi lần nạp
+
+            return vnpay.CreateRequestUrl(_config["VnPay:BaseUrl"], _config["VnPay:HashSecret"]);
+        }
+
+        public VnPaymentWalletResponseModel PaymentDepositExecute(IQueryCollection collections)
+        {
+            var vnpay = new VnPayLibrary();
+            foreach (var (key, value) in collections)
+            {
+                if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_"))
+                    vnpay.AddResponseData(key, value.ToString());
+            }
+
+            bool isValidSignature = vnpay.ValidateSignature(collections["vnp_SecureHash"], _config["VnPay:HashSecret"]);
+            if (!isValidSignature)
+                return new VnPaymentWalletResponseModel { Success = false };
+
+            return new VnPaymentWalletResponseModel
+            {
+                Success = true,
+                PaymentId = "VnPay",
+                OrderDescription = vnpay.GetResponseData("vnp_OrderInfo"),
+                WalletId = vnpay.GetResponseData("vnp_TxnRef"),
+                TotalPrice = vnpay.GetResponseData("vnp_Amount"),
+                TransactionId = vnpay.GetResponseData("vnp_TransactionNo"),
+                Token = collections["vnp_SecureHash"],
+                VnPayResponseCode = vnpay.GetResponseData("vnp_ResponseCode")
+            };
+        }
     }
 }
 
