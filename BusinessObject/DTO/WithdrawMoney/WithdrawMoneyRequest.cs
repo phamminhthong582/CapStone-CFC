@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,5 +14,6 @@ namespace BusinessObject.DTO.WithdrawMoney
         public string? BankName { get; set; }
         public string? BankNumber { get; set; }
         public string? Reason { get; set; }
+        public string? PasswordWallet {  get; set; }
     }
 }

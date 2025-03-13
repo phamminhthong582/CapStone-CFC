@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250313090132_UpdateWallet")]
+    partial class UpdateWallet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -569,38 +572,6 @@ namespace BusinessObject.Migrations
                     b.HasIndex("ProductCustomId");
 
                     b.ToTable("FlowerCustom", (string)null);
-                });
-
-            modelBuilder.Entity("BusinessObject.Entities.IncomeWallet", b =>
-                {
-                    b.Property<Guid?>("IncomeWalletID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("(newid())");
-
-                    b.Property<DateTime?>("CreateAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<double?>("IncomePrice")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Method")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdateAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<Guid?>("WalletID")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("IncomeWalletID");
-
-                    b.HasIndex("WalletID");
-
-                    b.ToTable("IncomeWallet", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Message", b =>
@@ -1369,16 +1340,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("ProductCustom");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.IncomeWallet", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Wallet", "Wallet")
-                        .WithMany("IncomeWallets")
-                        .HasForeignKey("WalletID")
-                        .HasConstraintName("FK_IncomeWallet_Wallet");
-
-                    b.Navigation("Wallet");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Message", b =>
                 {
                     b.HasOne("BusinessObject.Entities.ChatRoom", "ChatRoom")
@@ -1557,7 +1518,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("BusinessObject.Entities.Wallet", "Wallet")
                         .WithMany("WithdrawMoneys")
                         .HasForeignKey("WalletId")
-                        .HasConstraintName("FK_WithdrawMoney_Wallet");
+                        .HasConstraintName("FK_WithdrawMoney_Refund");
 
                     b.Navigation("Wallet");
                 });
@@ -1677,8 +1638,6 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Wallet", b =>
                 {
-                    b.Navigation("IncomeWallets");
-
                     b.Navigation("Refunds");
 
                     b.Navigation("WithdrawMoneys");

@@ -15,6 +15,7 @@ namespace Service.Interface
         Task<IEnumerable<OrderResponse>> GetOrderByCustomerId(Guid CustomerID);
 
         Task<IEnumerable<OrderResponse>> GetFailOrderByCustomerId(Guid CustomerID);
+        Task<IEnumerable<OrderResponse>> GetCanelOrderByCustomerId(Guid CustomerID);
 
         Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID);
         Task<Order> CreateOrder(OrderRequest orderRequest, Guid customerId);
@@ -31,6 +32,9 @@ namespace Service.Interface
 
         Task<IEnumerable<EmployeeResponse>> GetStaffForOrderId(Guid orderId);
         Task<IEnumerable<EmployeeResponse>> GetDeliveryForOrderId(Guid orderId);
+
+
+
 
     }
 }

@@ -27,10 +27,20 @@ namespace WebAPI.Controllers
                 data: result));
 
         }
-        [HttpPost("CreateWallet")]
-        public async Task<IActionResult> CreateWallet(Guid CusomterId)
+        [HttpGet("CheckWallet")]
+        public async Task<IActionResult> CheckWallet(Guid CustomerId)
         {
-            await walletService.CreateWallet(CusomterId);
+            var result = await walletService.CheckWallet(CustomerId);
+            return Ok(new BaseResponseModel<bool>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+
+        }
+        [HttpPost("CreateWallet")]
+        public async Task<IActionResult> CreateWallet(Guid CusomterId, string PasswordWallet)
+        {
+            await walletService.CreateWallet(CusomterId, PasswordWallet);
             return Ok(new BaseResponseModel<string>(
                       statusCode: StatusCodes.Status200OK,
                       code: ResponseCodeConstants.SUCCESS,
