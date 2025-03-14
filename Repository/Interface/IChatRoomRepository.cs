@@ -9,4 +9,6 @@ public interface IChatRoomRepository
     Task CreateChatRoom(ChatRoom chatRoom);
     Task<ChatRoom> DeleteChatRoom(Guid id);
     Task<ChatRoom> UpdateStatusChatRoom(Guid chatRoomId, string newStatus);
+    Task<ChatRoom> GetAllChatRoomByEmployeeId(Guid employId);
+    Task<ChatRoom> GetAllChatRoomByCustomerId(Guid customerId);
 }

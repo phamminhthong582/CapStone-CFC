@@ -18,6 +18,17 @@ public class ChatRoomRepository : IChatRoomRepository
         var list = await _context.ChatRooms.ToListAsync();
         return list;    
     }
+    public async Task<ChatRoom> GetAllChatRoomByEmployeeId(Guid employId)
+    {
+        var eChatRoom = await _context.ChatRooms.FirstOrDefaultAsync(x => x.EmployeeId == employId);
+        return eChatRoom;
+    }
+
+    public async Task<ChatRoom> GetAllChatRoomByCustomerId(Guid customerId)
+    {
+        var room = await _context.ChatRooms.FirstOrDefaultAsync(x => x.CustomerId == customerId);
+        return room;
+    }
 
     public async Task<ChatRoom> GetChatRoomById(Guid id)
     {
@@ -55,4 +66,6 @@ public class ChatRoomRepository : IChatRoomRepository
         await _context.SaveChangesAsync();
         return chatRoom;
     }
+
+   
 }

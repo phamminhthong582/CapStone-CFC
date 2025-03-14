@@ -101,6 +101,44 @@ public class ChatRoomService : IChatRoomService
         }
     }
 
+    public async Task<Result<ChatRoomResponse>> GetChatRoomByEmployeeId(Guid employeeId)
+    {
+        var response = new Result<ChatRoomResponse>();
+        var employee = await _chatRoomRepository.GetAllChatRoomByEmployeeId(employeeId);
+        if (employee == null)
+        {
+            response.Messages = ["No chat rooms found for this employee!"];
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        else
+        {
+            response.Data = _mapper.Map<ChatRoomResponse>(employee);
+            response.Messages = ["Successfully!"];
+            response.ResultStatus = ResultStatus.Success.ToString();
+            return response;
+        }
+    }
+
+    public async Task<Result<ChatRoomResponse>> GetChatRoomByCustomerId(Guid customerId)
+    {
+        var response = new Result<ChatRoomResponse>();
+        var customer = await _chatRoomRepository.GetAllChatRoomByCustomerId(customerId);
+        if (customer == null)
+        {
+            response.Messages = ["No chat rooms found for this customer!"];
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        else
+        {
+            response.Data = _mapper.Map<ChatRoomResponse>(customer);
+            response.Messages = ["Successfully!"];
+            response.ResultStatus = ResultStatus.Success.ToString();
+            return response;
+        }
+    }
+
     public async Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request)
     {
         var response = new Result<ChatRoom>();
