@@ -155,6 +155,7 @@ public class ChatRoomService : IChatRoomService
         
         var chatRoom = new ChatRoom
         {
+            OrderId = request.OrderId,
             CustomerId = customerId,  
             EmployeeId = employeeId,  
             Status = ChatRoomStatus.Active.ToString(),
