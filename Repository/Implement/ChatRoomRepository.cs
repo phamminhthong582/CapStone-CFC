@@ -26,10 +26,12 @@ public class ChatRoomRepository : IChatRoomRepository
             .ToListAsync();  
     }
 
-    public async Task<ChatRoom> GetAllChatRoomByCustomerId(Guid customerId)
+    public async Task<List<ChatRoom>> GetAllChatRoomByCustomerId(Guid customerId)
     {
-        var room = await _context.ChatRooms.FirstOrDefaultAsync(x => x.CustomerId == customerId);
-        return room;
+        return await _context.ChatRooms
+            .Where(m => m.CustomerId == customerId) 
+            .OrderBy(m => m.CreateAt)  
+            .ToListAsync();  
     }
 
     public async Task<ChatRoom> GetChatRoomById(Guid id)
