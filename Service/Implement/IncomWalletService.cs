@@ -29,7 +29,8 @@ namespace Service.Implement
 
             var incomes = await _unitOfWork.GetRepo<IncomeWallet>().Entities
                                           .Where(n => n.WalletID == walletId)
-                                          .ToListAsync(); // Lấy tất cả thu nhập liên quan đến walletId
+                                          .OrderByDescending(n => n.CreateAt) // Sắp xếp theo thời gian giảm dần
+                                          .ToListAsync();
 
             return incomes.Select(income => new IncomeWalletResponse
             {
@@ -38,6 +39,7 @@ namespace Service.Implement
                 IncomePrice = income.IncomePrice,
                 Method = income.Method,
                 Status = income.Status,
+                OrderId = income.OrderId,
                 CreateAt = income.CreateAt,
                 UpdateAt = income.UpdateAt,
             }).ToList();

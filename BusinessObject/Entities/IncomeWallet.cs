@@ -16,6 +16,7 @@ namespace BusinessObject.Entities
         public string? Status { get; set; }
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
+        public Guid? OrderId { get; set; }
         public virtual Wallet? Wallet { get; set; }
 
     }

@@ -89,6 +89,7 @@ namespace Service.Implement
             // Tạo đơn hàng
             var order = new Order
             {
+                RecipientName = orderRequest.RecipientName,
                 CustomerId = customerId,
                 StoreId = orderRequest.StoreId,
                 DeliveryDistrict = orderRequest.DeliveryDistrict,
@@ -104,6 +105,8 @@ namespace Service.Implement
                 Refund = false,
                 Status = "Pending Payment",
                 PromotionId = orderRequest.PromotionId,
+                Wallet = orderRequest.Wallet,
+
             };
 
             await _unitOfWork.Repository<Order>().AddAsync(order);
@@ -216,6 +219,7 @@ namespace Service.Implement
                 Status = "Pending Payment",
                 PromotionId = PromotionID,
                 Delivery = Delivery,
+                Wallet = orderRequest.Wallet,
             };
             
             // Add order to database
@@ -327,6 +331,8 @@ namespace Service.Implement
                 Status = "Pending Payment",
                 PromotionId = PromotionID,
                 Delivery = Delivery,
+                Wallet = orderCustomRequest.Wallet,
+
             };
             
             await _unitOfWork.Repository<Order>().AddAsync(order);

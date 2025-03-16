@@ -38,7 +38,7 @@ public partial class Order
 
     public DateTime? UpdateAt { get; set; }
     public bool? Delivery { get; set; }
-
+    public bool? Wallet { get; set; }
     public string? Status { get; set; }
     public virtual Customer? Customer { get; set; }
 

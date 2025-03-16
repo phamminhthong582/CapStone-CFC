@@ -14,5 +14,7 @@ namespace Service.Interface
         Task CreateWallet(Guid CustomerId, string PasswordWallet);
         Task DepositWallet(Guid WalletId, double price);
         Task<bool> CheckWallet(Guid CustomerId);
+        Task PaymentByWallet(Guid OrderId, string passwordWallet);
+        
     }
 }
