@@ -17,10 +17,12 @@ namespace Service.Implement
     public class WalletService : IWalletService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPaymentService _paymentService;
 
-        public WalletService(IUnitOfWork unitOfWork)
+        public WalletService(IUnitOfWork unitOfWork, IPaymentService paymentService)
         {
             _unitOfWork = unitOfWork;
+            _paymentService = paymentService;
         }
 
         public async Task<bool> CheckWallet(Guid CustomerId)
@@ -88,6 +90,70 @@ namespace Service.Implement
             };
 
             return walletResponse;
+        }
+
+        public async Task PaymentByWallet(Guid OrderId, string passwordWallet)
+        {
+            var order = await _unitOfWork.GetRepo<Order>().GetByIdAsync(OrderId);
+            var wallet = await _unitOfWork.GetRepo<Wallet>().Entities.Where(n => n.CustomerId == order.CustomerId).FirstOrDefaultAsync();
+            if (passwordWallet == wallet.PasswordWallet)
+            {
+                if (order.Transfer == false) {
+                    if (wallet.TotalPrice > order.OrderPrice/2) {
+                        await _paymentService.CreatePayment(OrderId);
+                        wallet.TotalPrice -= order.OrderPrice / 2;
+                         _unitOfWork.GetRepo<Wallet>().Update(wallet);
+                        var incomeWallet = new IncomeWallet
+                        {
+                            WalletID = wallet.WalletId,
+                            IncomePrice = -wallet.TotalPrice,
+                            Method = "Payment",
+                            Status = "Successfull",
+                            CreateAt = DateTime.Now,
+                            UpdateAt = DateTime.Now,
+                            OrderId = OrderId,
+                        };
+                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+                        await _unitOfWork.CompleteAsync();
+                    }else
+                    {
+                        throw new Exception("Wallet not found for this customer.");
+
+                    }
+                }
+                else if (order.Transfer == true)
+                {
+                    if (wallet.TotalPrice > order.OrderPrice )
+                    {
+                        await _paymentService.CreatePayment(OrderId);
+                        wallet.TotalPrice -= order.OrderPrice;
+                        var incomeWallet = new IncomeWallet
+                        {
+                            WalletID = wallet.WalletId,
+                            IncomePrice = -wallet.TotalPrice,
+                            Method = "Payment",
+                            Status = "Successfull",
+                            OrderId = OrderId,
+                            CreateAt = DateTime.Now,
+                            UpdateAt = DateTime.Now,
+                        };
+                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+                        _unitOfWork.GetRepo<Wallet>().Update(wallet);
+                        await _unitOfWork.CompleteAsync();
+                    }
+                }
+                else
+                {
+                    throw new Exception("Wallet not found for this customer.");
+
+                }
+            }
+
+            else
+            {
+                throw new Exception("Wallet not found for this customer.");
+
+            }
         }
     }
 }

@@ -32,6 +32,25 @@ public class ChatRoomController : Controller
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         return Ok(result);
     }
+
+    [HttpGet("employeeId")]
+    public async Task<IActionResult> GetChatRoomByEmployeeId(Guid employeeId)
+    {
+        var result = await _chatRoomService.GetChatRoomByEmployeeId(employeeId);
+
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+        return Ok(result);
+    }
+    [HttpGet("customerId")]
+    public async Task<IActionResult> GetChatRoomByCustomerId(Guid customerId)
+    {
+        var result = await _chatRoomService.GetChatRoomByCustomerId(customerId);
+
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+        return Ok(result);
+    }
     [HttpGet("{chatRoomId}")]
     public async Task<IActionResult> GetChatRoomDetailsById(Guid chatRoomId)
     {

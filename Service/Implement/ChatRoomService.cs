@@ -101,6 +101,52 @@ public class ChatRoomService : IChatRoomService
         }
     }
 
+    public async Task<Result<List<ChatRoomResponse>>> GetChatRoomByEmployeeId(Guid employeeId)
+    {
+        var response = new Result<List<ChatRoomResponse>>();
+        
+        var messages = await _chatRoomRepository.GetAllChatRoomByEmployeeId(employeeId);
+
+        if (!messages.Any())
+        {
+            response.Messages = new[] { "No messages found in this chat room." };
+            response.ResultStatus = ResultStatus.NotFound.ToString(); 
+            return response;
+        }
+        var messageResponses = messages.Select(m => new ChatRoomResponse
+        {
+            EmployeeId = m.EmployeeId ?? Guid.Empty,  
+            ChatRoomId = m.ChatRoomId ?? Guid.Empty,  
+            OrderId = m.OrderId ?? Guid.Empty,        
+            CustomerId = m.CustomerId ?? Guid.Empty,  
+            Status = m.Status,
+        }).ToList();
+        response.Data = messageResponses;
+        response.Messages = new[] { "Messages retrieved successfully!" };
+        response.ResultStatus = ResultStatus.Success.ToString();
+
+        return response;
+    }
+
+    public async Task<Result<ChatRoomResponse>> GetChatRoomByCustomerId(Guid customerId)
+    {
+        var response = new Result<ChatRoomResponse>();
+        var customer = await _chatRoomRepository.GetAllChatRoomByCustomerId(customerId);
+        if (customer == null)
+        {
+            response.Messages = ["No chat rooms found for this customer!"];
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        else
+        {
+            response.Data = _mapper.Map<ChatRoomResponse>(customer);
+            response.Messages = ["Successfully!"];
+            response.ResultStatus = ResultStatus.Success.ToString();
+            return response;
+        }
+    }
+
     public async Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request)
     {
         var response = new Result<ChatRoom>();
@@ -117,7 +163,7 @@ public class ChatRoomService : IChatRoomService
         
         var chatRoom = new ChatRoom
         {
-            
+            OrderId = request.OrderId,
             CustomerId = customerId,  
             EmployeeId = employeeId,  
             Status = ChatRoomStatus.Active.ToString(),

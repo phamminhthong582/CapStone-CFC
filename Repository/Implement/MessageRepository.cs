@@ -5,7 +5,7 @@ using Repository.Interface;
 
 namespace Repository.Implement;
 
-public class MessageRepository : IMessageRepository
+public class MessageRepository : IMessageRepository 
 {
     private readonly CustomFlowerChainContext _context;
 
@@ -17,6 +17,22 @@ public class MessageRepository : IMessageRepository
     {
         return await _context.Messages
             .Where(m => m.ChatRoomId == chatroomId) 
+            .OrderBy(m => m.CreateAt)  
+            .ToListAsync();  
+    }
+
+    public async Task<List<Message>> GetMessageById(Guid orderId ,  Guid customerId , Guid employeeId)
+    {
+        var chatRoom = await _context.ChatRooms
+            .Where(c => c.OrderId == orderId && c.CustomerId == customerId && c.EmployeeId == employeeId)
+            .FirstOrDefaultAsync();
+
+        if (chatRoom == null)
+        {
+            return new List<Message>(); 
+        }
+        return await _context.Messages
+            .Where(m => m.ChatRoomId == chatRoom.ChatRoomId) 
             .OrderBy(m => m.CreateAt)  
             .ToListAsync();  
     }

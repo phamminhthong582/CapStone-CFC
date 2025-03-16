@@ -13,6 +13,8 @@ namespace BusinessObject.DTO.IncomeWallet
         public double? IncomePrice { get; set; }
         public string? Method { get; set; }
         public string? Status { get; set; }
+        public Guid? OrderId { get; set; }
+
         public DateTime? CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
     }

@@ -47,5 +47,15 @@ namespace WebAPI.Controllers
                       data: "Thêm wallet mới thành công"));
         }
 
-     }
+        [HttpPost("PaymentByWallet")]
+        public async Task<IActionResult> PaymentByWallet(Guid OrderId, string PasswordWallet)
+        {
+            await walletService.PaymentByWallet(OrderId, PasswordWallet);
+            return Ok(new BaseResponseModel<string>(
+                      statusCode: StatusCodes.Status200OK,
+                      code: ResponseCodeConstants.SUCCESS,
+                      data: "Thêm wallet mới thành công"));
+        }
+
+    }
 }
