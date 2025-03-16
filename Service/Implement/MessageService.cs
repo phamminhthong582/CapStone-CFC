@@ -97,6 +97,33 @@ public class MessageService : IMessageService
         return response;
     }
 
+    public async Task<Result<List<MessageResponse>>> GetMessagesByChatRoom(Guid orderId, Guid customerId, Guid employeeId)
+    {
+        var response = new Result<List<MessageResponse>>();
+        var messages = await _messageRepository.GetMessageById(orderId, customerId, employeeId);
+        if (!messages.Any())
+        {
+            response.Messages = new[] { "No messages found for the specified criteria." };
+            response.ResultStatus = ResultStatus.NotFound.ToString();
+            return response;
+        }
+        var messageResponses = messages.Select(m => new MessageResponse
+        {
+            MessageId = m.MessageId,
+            ChatRoomId = m.ChatRoomId,
+            SenderId = m.SenderId,
+            ReceiveId = m.ReceiveId,
+            MessageType = m.MessageType,
+            Content = m.Content,
+            Status = m.Status,
+            CreateAt = m.CreateAt
+        }).ToList();
+        response.Data = messageResponses;
+        response.Messages = new[] { "Messages retrieved successfully!" };
+        response.ResultStatus = ResultStatus.Success.ToString();
+        return response;
+    }
+
     public async Task<Result<MessageResponse>> UpdateMessageStatus(Guid messageId, string newStatus)
     {
         var response = new Result<MessageResponse>();

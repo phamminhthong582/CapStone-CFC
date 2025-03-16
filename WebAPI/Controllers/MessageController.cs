@@ -26,6 +26,17 @@ public class MessageController : Controller
         }
         return NotFound(result.Messages);  
     }
+    [HttpGet("messages/{orderId}/{customerId}/{employeeId}")]
+    public async Task<IActionResult> GetMessagesByChatRoom(Guid orderId, Guid customerId, Guid employeeId)
+    {
+        var result = await _messageService.GetMessagesByChatRoom(orderId, customerId, employeeId);
+
+        if (result.ResultStatus == ResultStatus.NotFound.ToString())
+        {
+            return NotFound(new { Message = result.Messages });
+        }
+        return Ok(new { Messages = result.Messages, Data = result.Data });
+    }
     [HttpPost("create-message")]
     public async Task<IActionResult> CreateMessage([FromBody] CreateMessageRequest request)
     {
