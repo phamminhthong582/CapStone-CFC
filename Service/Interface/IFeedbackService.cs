@@ -9,5 +9,6 @@ public interface IFeedbackService
     Task CreateFeedbackByCustomer(Guid customerId,Guid orderId,CreateFeedbackRequest request);
     Task UpdateFeedbackByStoreID(Guid storeID, Guid feedbackId, CreateFeedbackByStoreRequest request);
     Task<FeedbackResponse> GetFeedBackByOrderId(Guid OrderId);
+    Task<bool> CheckFeedBack(Guid OrderId);
 
 }

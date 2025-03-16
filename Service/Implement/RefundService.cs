@@ -64,6 +64,7 @@ namespace Service.Implement
                         Status = "Successfull",
                         CreateAt = DateTime.Now,
                         UpdateAt = DateTime.Now,
+                        OrderId = order.OrderId,
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
@@ -94,6 +95,7 @@ namespace Service.Implement
                         CreateAt = DateTime.Now,
                         Status = "Refund Successfull",
                         StoreId = order.StoreId,
+
                     };
                     await _unitOfWork.Repository<Refund>().AddAsync(refund);
                     var inComWallet = new IncomeWallet
@@ -104,6 +106,8 @@ namespace Service.Implement
                         Status = "Successfull",
                         CreateAt = DateTime.Now,
                         UpdateAt = DateTime.Now,
+                        OrderId = order.OrderId,
+
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
@@ -128,6 +132,7 @@ namespace Service.Implement
                         CreateAt = DateTime.Now,
                         Status = "Refund Successfull",
                         StoreId = order.StoreId,
+
                     };
 
                     await _unitOfWork.Repository<Refund>().AddAsync(refund);
@@ -139,6 +144,7 @@ namespace Service.Implement
                         Status = "Successfull",
                         CreateAt = DateTime.Now,
                         UpdateAt = DateTime.Now,
+                        OrderId = order.OrderId,
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
@@ -171,6 +177,7 @@ namespace Service.Implement
                         Status = "Successfull",
                         CreateAt = DateTime.Now,
                         UpdateAt = DateTime.Now,
+                        OrderId = order.OrderId,
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
@@ -205,6 +212,7 @@ namespace Service.Implement
                         Status = "Successfull",
                         CreateAt = DateTime.Now,
                         UpdateAt = DateTime.Now,
+                        OrderId = order.OrderId,
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
