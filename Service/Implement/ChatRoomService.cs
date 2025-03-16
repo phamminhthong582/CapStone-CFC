@@ -101,23 +101,31 @@ public class ChatRoomService : IChatRoomService
         }
     }
 
-    public async Task<Result<ChatRoomResponse>> GetChatRoomByEmployeeId(Guid employeeId)
+    public async Task<Result<List<ChatRoomResponse>>> GetChatRoomByEmployeeId(Guid employeeId)
     {
-        var response = new Result<ChatRoomResponse>();
-        var employee = await _chatRoomRepository.GetAllChatRoomByEmployeeId(employeeId);
-        if (employee == null)
+        var response = new Result<List<ChatRoomResponse>>();
+        
+        var messages = await _chatRoomRepository.GetAllChatRoomByEmployeeId(employeeId);
+
+        if (!messages.Any())
         {
-            response.Messages = ["No chat rooms found for this employee!"];
-            response.ResultStatus = ResultStatus.NotFound.ToString();
+            response.Messages = new[] { "No messages found in this chat room." };
+            response.ResultStatus = ResultStatus.NotFound.ToString(); 
             return response;
         }
-        else
+        var messageResponses = messages.Select(m => new ChatRoomResponse
         {
-            response.Data = _mapper.Map<ChatRoomResponse>(employee);
-            response.Messages = ["Successfully!"];
-            response.ResultStatus = ResultStatus.Success.ToString();
-            return response;
-        }
+            EmployeeId = m.EmployeeId ?? Guid.Empty,  
+            ChatRoomId = m.ChatRoomId ?? Guid.Empty,  
+            OrderId = m.OrderId ?? Guid.Empty,        
+            CustomerId = m.CustomerId ?? Guid.Empty,  
+            Status = m.Status,
+        }).ToList();
+        response.Data = messageResponses;
+        response.Messages = new[] { "Messages retrieved successfully!" };
+        response.ResultStatus = ResultStatus.Success.ToString();
+
+        return response;
     }
 
     public async Task<Result<ChatRoomResponse>> GetChatRoomByCustomerId(Guid customerId)
