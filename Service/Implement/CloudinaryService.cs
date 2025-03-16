@@ -47,6 +47,22 @@ namespace Service.Implement
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
             return uploadResult.SecureUrl.ToString();
         }
+        public async Task<string?> UploadVideoAsync(Stream videoStream, string fileName)
+        {
+            var uploadParams = new VideoUploadParams()
+            {
+                File = new FileDescription(fileName, videoStream),
+                PublicId = $"flowerBasket/videos/{fileName}",
+                Folder = "flowerBasket/videos",
+                UseFilename = true,
+                UniqueFilename = false,
+                Overwrite = true
+            };
+
+            var uploadResult = await _cloudinary.UploadLargeAsync(uploadParams);
+
+            return uploadResult.SecureUrl?.ToString();
+        }
 
     }
 }

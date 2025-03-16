@@ -10,9 +10,8 @@ public partial class Feedback
     public Guid? OrderId { get; set; }
     public Guid? StoreId { get; set; }
     public string? FeedbackByCustomer { get; set; }
-    public string? FeedBackImageByCustomer { get; set; }
+    public string? FeedBackVideoByCustomer { get; set; }
     public string? ResponseFeedBackStore { get; set; }
-    public string? ResponseFeedImageByStore { get; set; }
     public bool? RequestRefundByCustomer {  get; set; }
     public int? Rating { get; set; }
     public DateTime? CreateAt { get; set; }

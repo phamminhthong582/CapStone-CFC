@@ -9,7 +9,7 @@ public interface IChatRoomService
     Task<List<ChatRoomResponse>> GetAllChatRoom();
     Task<Result<ChatRoomResponse>> GetChatRoomById(Guid id);
     Task<Result<List<ChatRoomResponse>>> GetChatRoomByEmployeeId(Guid employeeId);
-    Task<Result<ChatRoomResponse>> GetChatRoomByCustomerId(Guid customerId);
+    Task<Result<List<ChatRoomResponse>>> GetChatRoomByCustomerId(Guid customerId);
     Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request);
     Task<Result<ChatRoomResponse>> UpdateStatusChatRoom(Guid chatRoomId , string newStatus);
     Task<Result<ChatRoom>> DeleteChatRoom(Guid id);

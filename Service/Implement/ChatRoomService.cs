@@ -118,7 +118,7 @@ public class ChatRoomService : IChatRoomService
             EmployeeId = m.EmployeeId ?? Guid.Empty,  
             ChatRoomId = m.ChatRoomId ?? Guid.Empty,  
             OrderId = m.OrderId ?? Guid.Empty,        
-            CustomerId = m.CustomerId ?? Guid.Empty,  
+            CustomerId = m.CustomerId ?? Guid.Empty, 
             Status = m.Status,
         }).ToList();
         response.Data = messageResponses;
@@ -128,23 +128,31 @@ public class ChatRoomService : IChatRoomService
         return response;
     }
 
-    public async Task<Result<ChatRoomResponse>> GetChatRoomByCustomerId(Guid customerId)
+    public async Task<Result<List<ChatRoomResponse>>> GetChatRoomByCustomerId(Guid customerId)
     {
-        var response = new Result<ChatRoomResponse>();
-        var customer = await _chatRoomRepository.GetAllChatRoomByCustomerId(customerId);
-        if (customer == null)
+        var response = new Result<List<ChatRoomResponse>>();
+        
+        var messages = await _chatRoomRepository.GetAllChatRoomByCustomerId(customerId);
+
+        if (!messages.Any())
         {
-            response.Messages = ["No chat rooms found for this customer!"];
-            response.ResultStatus = ResultStatus.NotFound.ToString();
+            response.Messages = new[] { "No messages found in this chat room." };
+            response.ResultStatus = ResultStatus.NotFound.ToString(); 
             return response;
         }
-        else
+        var messageResponses = messages.Select(m => new ChatRoomResponse
         {
-            response.Data = _mapper.Map<ChatRoomResponse>(customer);
-            response.Messages = ["Successfully!"];
-            response.ResultStatus = ResultStatus.Success.ToString();
-            return response;
-        }
+            EmployeeId = m.EmployeeId ?? Guid.Empty,  
+            ChatRoomId = m.ChatRoomId ?? Guid.Empty,  
+            OrderId = m.OrderId ?? Guid.Empty,        
+            CustomerId = m.CustomerId ?? Guid.Empty, 
+            Status = m.Status,
+        }).ToList();
+        response.Data = messageResponses;
+        response.Messages = new[] { "Messages retrieved successfully!" };
+        response.ResultStatus = ResultStatus.Success.ToString();
+
+        return response;
     }
 
     public async Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request)
