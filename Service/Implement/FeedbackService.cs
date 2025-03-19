@@ -9,6 +9,8 @@ using Repository.Interface;
 using Service.Interface;
 using Microsoft.EntityFrameworkCore;
 using MailKit.Search;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Service.Implement;
 
@@ -70,6 +72,12 @@ public class FeedbackService : IFeedbackService
             FeedBackVideoByCustomer = feedBackVideoUrl // Lưu URL video vào database
             
         };
+        if(request.RequestRefundByCustomer == true)
+        {
+            order.Status = "Request refund";
+            _unitOfWork.GetRepo<Order>().Update(order);
+        }
+       
 
         await _unitOfWork.GetRepo<Feedback>().AddAsync(newFeedback);
         await _unitOfWork.CompleteAsync();
@@ -77,20 +85,64 @@ public class FeedbackService : IFeedbackService
 
 
 
-    public async Task UpdateFeedbackByStoreID(Guid storeID, Guid feedbackId, CreateFeedbackByStoreRequest request)
+    public async Task UpdateFeedbackByStoreID(Guid feedbackId, CreateFeedbackByStoreRequest request)
     {
-        var feedback = await _unitOfWork.GetRepo<Feedback>().GetByIdAsync(feedbackId);
-        if (feedback == null)
+        try
         {
-            throw new ArgumentException("order name cannot be null or whitespace");
+            var feedback = await _unitOfWork.Repository<Feedback>().GetByIdAsync(feedbackId);
+            if (feedback == null)
+            {
+                throw new ArgumentException("Feedback not found");
+            }
+            feedback.UpdateAt = DateTime.Now;
+            feedback.ResponseFeedBackStore = request.ResponseFeedBackStore;
+            feedback.Status = "Reply by store";
+            _unitOfWork.Repository<Feedback>().Update(feedback);
+            await _unitOfWork.CompleteAsync();
         }
-        feedback.UpdateAt = DateTime.Now;
-        feedback.StoreId = storeID;
-        feedback.ResponseFeedBackStore = request.ResponseFeedBackStore;
-        _unitOfWork.GetRepo<Feedback>().Update(feedback);
-        await _unitOfWork.CompleteAsync();
+        catch (Exception ex)
+        {
+            throw new Exception($"Error updating feedback: {ex.Message}", ex);
+        }
     }
 
+    public async Task UpdateStatusFeedback(Guid OrderId, string status)
+    {
+        var Order = await _unitOfWork.GetRepo<Order>().Entities.FirstOrDefaultAsync(n => n.OrderId == OrderId);
+        var wallet = await _unitOfWork.GetRepo<Wallet>().Entities.FirstOrDefaultAsync(n => n.CustomerId == Order.CustomerId);
+        Order.Status = status;
+        _unitOfWork.Repository<Order>().Update(Order);
+
+        if (status == "Accept refund")
+        {
+            wallet.TotalPrice += Order.OrderPrice;
+            _unitOfWork.Repository<Wallet>().Update(wallet);
+
+            var refund = new Refund
+            {
+                OrderId = Order.OrderId,
+                StoreId = Order.StoreId,
+                Price = Order.OrderPrice,
+                WallerId = wallet.WalletId,
+                CreateAt = DateTime.Now,
+                UpdateAt = DateTime.Now,
+                Status = "Refund Order",
+            };
+             await _unitOfWork.Repository<Refund>().AddAsync(refund);
+            var incomeWallet = new IncomeWallet
+            {
+                WalletID = wallet.WalletId,
+                IncomePrice = Order.OrderPrice,
+                Method = "Refund",
+                Status = "Successfull",
+                CreateAt =DateTime.Now,
+                UpdateAt =DateTime.Now,
+                OrderId = Order.OrderId,
+            };
+            await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomeWallet);
+        }
+        await _unitOfWork.CompleteAsync();
+    }
     public async Task<FeedbackResponse> GetFeedBackByOrderId(Guid orderId)
     {
         var order = await _unitOfWork.GetRepo<Order>().GetByIdAsync(orderId);
@@ -143,4 +195,6 @@ public class FeedbackService : IFeedbackService
         }
         return false;
     }
+
+ 
 }

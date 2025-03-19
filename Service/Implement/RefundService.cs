@@ -216,7 +216,7 @@ namespace Service.Implement
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
-                    order.Status = "Cancel successfull";
+                    order.Status = "Cancel";
                     order.Refund = true;
                     _unitOfWork.Repository<Order>().Update(order);
                     payment.Status = "refund";

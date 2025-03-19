@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTO.Wallet;
 using BusinessObject.DTO.WithdrawMoney;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using Service.Interface;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Service.Implement
 {
@@ -117,7 +119,26 @@ namespace Service.Implement
             return withdrawMoney.WithdrawMoneyId; // Trả về ID của yêu cầu rút tiền
         }
 
+          public async Task<IEnumerable<WithdrawMoneyResponse>> GetWithDrawMoney()
+        {
+            var withdraws = (await _unitOfWork.Repository<WithdrawMoney>().GetAllAsync()).Where(w =>  w.Status != "Waiting OTP");
 
+
+            var withdrawResponses = withdraws.Select(w => new WithdrawMoneyResponse
+            {
+                WalletId = w.WalletId,
+                WithdrawMoneyId = w.WithdrawMoneyId,
+                Price = w.Price,
+                BankAccountName = w.BankAccountName,
+                BankName = w.BankName,
+                BankNumber = w.BankNumber,
+                Reason = w.Reason,
+                Status = w.Status,
+
+            });
+
+            return withdrawResponses;
+        }
         public async Task<IEnumerable<WithdrawMoneyResponse>> GetWithDrawMoneyByWalletId(Guid WalletId)
         {
             var withdraws = (await _unitOfWork.Repository<WithdrawMoney>().GetAllAsync()).Where(w => w.WalletId == WalletId && w.Status != "Waiting OTP");
@@ -160,11 +181,45 @@ namespace Service.Implement
         public async Task UpdateStatusWithdrawMoney(Guid WithdrawMoneyId, string status)
         {
             var withdrawMoney = await _unitOfWork.Repository<WithdrawMoney>().GetByIdAsync(WithdrawMoneyId);
-            withdrawMoney.Status = status; ;
+            var wallet = await _unitOfWork.Repository<Wallet>().Entities.FirstOrDefaultAsync(m => m.WalletId == withdrawMoney.WalletId);
+
+            withdrawMoney.Status = status;
+            if (status == "Successfull")
+            {
+                var incomWallet = new IncomeWallet
+                {
+                    WalletID = withdrawMoney.WalletId,
+                    IncomePrice = -(withdrawMoney.Price),
+                    Method = "Withdraw Money successfull",
+                    Status = "Successfull",
+                    CreateAt = withdrawMoney.CreateAt,
+                    UpdateAt = DateTime.Now,
+
+                };
+                await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomWallet);
+
+            }
+            if (status == "Failure")
+            {
+                wallet.TotalPrice += withdrawMoney.Price;
+                wallet.UpdateAt = DateTime.Now;
+                 _unitOfWork.Repository<Wallet>().Update(wallet);
+                var incomWallet = new IncomeWallet
+                {
+                    WalletID = withdrawMoney.WalletId,
+                    IncomePrice = (withdrawMoney.Price),
+                    Method = "Withdraw Money failure",
+                    Status = "Successfull",
+                    CreateAt = withdrawMoney.CreateAt,
+                    UpdateAt = DateTime.Now,
+
+                };
+                await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomWallet);
+            }
             _unitOfWork.Repository<WithdrawMoney>().Update(withdrawMoney);  
             await _unitOfWork.CompleteAsync();  
         }
 
-       
+      
     }
 }

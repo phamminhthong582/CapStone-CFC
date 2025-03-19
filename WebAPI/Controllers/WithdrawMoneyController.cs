@@ -27,6 +27,15 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
+        [HttpGet("GetWithDrawMoney")]
+        public async Task<IActionResult> GetWithDrawMoney()
+        {
+            var result = await withdrawMoneyService.GetWithDrawMoney();
+            return Ok(new BaseResponseModel<IEnumerable<WithdrawMoneyResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
         [HttpPost("CreateWithDrawMoney")]
         public async Task<IActionResult> CreateWithDrawMoney(Guid WalletId, WithdrawMoneyRequest withdrawMoneyRequest)
         {
@@ -46,6 +55,7 @@ namespace WebAPI.Controllers
                          code: ResponseCodeConstants.SUCCESS,
                          data: "cập nhật sẩn phẩm thành công"));
         }
+      
         [HttpGet("GetWithDrawMoneyWitWithdrawMoneyId")]
         public async Task<IActionResult> GetWithDrawMoneyByWithdrawMoneyId(Guid WithdrawMoneyId)
         {

@@ -46,10 +46,37 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
-        [HttpGet("GetOrderByStore")]
+            [HttpGet("GetRefundOrderByCustomer")]
+            public async Task<IActionResult> GetRefundOrderByCustomer(Guid CusomterId)
+            {
+                var result = await orderService.GetRefundOrderByCustomerId(CusomterId);
+                return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+                  statusCode: StatusCodes.Status200OK,
+                  code: ResponseCodeConstants.SUCCESS,
+                  data: result));
+            }
+            [HttpGet("GetOrderByStore")]
         public async Task<IActionResult> GetOrderByStore(Guid StoreId)
         {
             var result = await orderService.GetOrderByStoreID(StoreId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+        [HttpGet("GetRefundOrderByStore")]
+        public async Task<IActionResult> GetRefundOrderByStore(Guid StoreId)
+        {
+            var result = await orderService.GetRefundOrderByStoreID(StoreId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+        [HttpGet("GetRailOrderByStore")]
+        public async Task<IActionResult> GetFailOrderByStore(Guid StoreId)
+        {
+            var result = await orderService.GetRefundOrderByStoreID(StoreId);
             return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
               statusCode: StatusCodes.Status200OK,
               code: ResponseCodeConstants.SUCCESS,
