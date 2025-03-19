@@ -9,7 +9,6 @@ namespace BusinessObject.DTO.FeedBack
     public class CreateFeedbackByStoreRequest
     {
         public string? ResponseFeedBackStore { get; set; }
-        public string? ResponseFeedImageByStore { get; set; }
 
     }
 }

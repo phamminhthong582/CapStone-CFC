@@ -106,7 +106,7 @@ namespace Service.Implement
                         var incomeWallet = new IncomeWallet
                         {
                             WalletID = wallet.WalletId,
-                            IncomePrice = -wallet.TotalPrice,
+                            IncomePrice = -(order.OrderPrice / 2),
                             Method = "Payment",
                             Status = "Successfull",
                             CreateAt = DateTime.Now,
@@ -130,7 +130,7 @@ namespace Service.Implement
                         var incomeWallet = new IncomeWallet
                         {
                             WalletID = wallet.WalletId,
-                            IncomePrice = -wallet.TotalPrice,
+                            IncomePrice = -(order.OrderPrice),
                             Method = "Payment",
                             Status = "Successfull",
                             OrderId = OrderId,

@@ -17,7 +17,13 @@ namespace Service.Interface
         Task<IEnumerable<OrderResponse>> GetFailOrderByCustomerId(Guid CustomerID);
         Task<IEnumerable<OrderResponse>> GetCanelOrderByCustomerId(Guid CustomerID);
 
+
+        Task<IEnumerable<OrderResponse>> GetRefundOrderByCustomerId(Guid CustomerID);
+
         Task<IEnumerable<OrderResponse>> GetOrderByStoreID(Guid StoreID);
+        Task<IEnumerable<OrderResponse>> GetRefundOrderByStoreID(Guid StoreID);
+        Task<IEnumerable<OrderResponse>> GetFailOrderByStoreID(Guid StoreID);
+
         Task<Order> CreateOrder(OrderRequest orderRequest, Guid customerId);
         Task UpdateOrder(OrderRequest orderRequest, Guid orderId);  
         Task DeleteOrder(Guid OrderID);

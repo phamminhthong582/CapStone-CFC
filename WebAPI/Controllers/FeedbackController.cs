@@ -49,4 +49,24 @@ public class FeedbackController : Controller
         var result = await _feedbackService.CheckFeedBack(OrderId);
         return Ok(result);
     }
+    [HttpPut("UpdateFeedBackByStoreId")]
+
+    public async Task<IActionResult> UpdateFeedBackByStoreId(Guid feedbackId, CreateFeedbackByStoreRequest request)
+    {
+        await _feedbackService.UpdateFeedbackByStoreID(feedbackId, request);
+        return Ok(new BaseResponseModel<string>(
+                                 statusCode: StatusCodes.Status200OK,
+                                 code: ResponseCodeConstants.SUCCESS,
+                                 data: "cập nhật sẩn phẩm thành công"));
+    }
+    [HttpPut("UpdateStatusFeedback")]
+
+    public async Task<IActionResult> UpdateStatusFeedback(Guid OrderId, string status)
+    {
+        await _feedbackService.UpdateStatusFeedback(OrderId, status);
+        return Ok(new BaseResponseModel<string>(
+                                 statusCode: StatusCodes.Status200OK,
+                                 code: ResponseCodeConstants.SUCCESS,
+                                 data: "cập nhật sẩn phẩm thành công"));
+    }
 }
