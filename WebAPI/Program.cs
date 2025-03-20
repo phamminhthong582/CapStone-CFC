@@ -10,10 +10,19 @@ using Service.Implement;
 using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins", builder =>
+    {
+        builder.WithOrigins("https://localhost:5243") // Chỉ cho phép yêu cầu từ localhost:5243
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 // Add services to the container.
 
 builder.Services.AddInfra(builder.Configuration);
+builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<CustomFlowerChainContext>();
 //var configuration = builder.Configuration.Get<AppConfiguration>();
@@ -22,6 +31,8 @@ builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddHostedService<PromotionBackgroundService>();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSingleton<ChatGptService>();
 // builder.Services.AddHangfire(x => x.UseSqlServerStorage("DBDefault"));
 // builder.Services.AddHangfireServer();
 //builder.Services.AddSwaggerGen();
@@ -85,6 +96,15 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 //app.UseRouting();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();  // Kích hoạt HTTP Strict Transport Security (HSTS)
+}
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigins");
 app.UseCors("AllowAll");

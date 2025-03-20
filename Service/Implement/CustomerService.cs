@@ -2,6 +2,7 @@
 using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Customer;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -99,13 +100,23 @@ public class CustomerService : ICustomerService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during customer registration");
-            throw; // Let the middleware handle the exception
+            throw; 
         }
     }
-    public async Task<List<CustomerResponse>> GetAllCustomer()
+    public async Task<PaginationResponse<CustomerResponse>> GetAllCustomer(int pageNumber, int pageSize)
     {
-        var list = await _customerRepository.GetAllCustomer();
-        return _mapper.Map<List<CustomerResponse>>(list);
+        var totalCount = await _customerRepository.CountCustomersAsync();  
+        var customers = await _customerRepository.GetCustomersPaginatedAsync(pageNumber, pageSize); 
+        var customerResponses = _mapper.Map<List<CustomerResponse>>(customers);
+        var paginationResponse = new PaginationResponse<CustomerResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = customerResponses
+        };
+        return paginationResponse;
     }
 
     public async Task<Result<CustomerResponse>> GetCustomerById(Guid id)

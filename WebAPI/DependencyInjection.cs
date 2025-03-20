@@ -99,7 +99,8 @@ public static class DependencyInjection
 
       
 
-        // Hang
+        // ChatGpt
+        services.AddHttpClient<IChatgptService, ChatGptService>();
 
         //Revenue
         services.AddScoped<IRevenueService, RevenueService>();

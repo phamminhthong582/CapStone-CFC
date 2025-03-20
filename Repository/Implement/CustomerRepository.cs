@@ -84,4 +84,17 @@ public class CustomerRepository : ICustomerRepository
         var result = await _context.Customers.FirstOrDefaultAsync(predicate);
         return result;
     }
+
+    public async Task<int> CountCustomersAsync()
+    {
+        return await _context.Customers.CountAsync();
+    }
+
+    public async Task<List<Customer>> GetCustomersPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.Customers
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
 }

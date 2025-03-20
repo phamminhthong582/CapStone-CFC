@@ -18,9 +18,9 @@ public class CustomerController : Controller
    }
   
    [HttpGet]
-   public async Task<IActionResult> GetCustomer()
+   public async Task<IActionResult> GetCustomer([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
    {
-      var result = await _customerService.GetAllCustomer();
+      var result = await _customerService.GetAllCustomer(pageNumber, pageSize);
       return Ok(result);
    }
    [HttpGet("Id")]

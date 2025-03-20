@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="ChatGPT.Net" Version="2.0.0" />
       <PackageReference Include="Hangfire" Version="1.8.18" />
       <PackageReference Include="LinqKit.Core" Version="1.2.7" />
       <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="8.1.7" />
@@ -24,6 +25,7 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+      <PackageReference Include="OpenAI.API" Version="1.0.0" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     </ItemGroup>
 

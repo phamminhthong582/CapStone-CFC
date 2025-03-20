@@ -14,11 +14,13 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="13.0.1" />
+      <PackageReference Include="ChatGPT.Net" Version="2.0.0" />
       <PackageReference Include="CloudinaryDotNet" Version="1.27.4" />
       <PackageReference Include="Hangfire" Version="1.8.18" />
       <PackageReference Include="MailKit" Version="4.9.0" />
       <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
+      <PackageReference Include="OpenAI.API" Version="1.0.0" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
     </ItemGroup>
 	<ItemGroup>
