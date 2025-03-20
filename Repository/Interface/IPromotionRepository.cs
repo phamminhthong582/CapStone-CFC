@@ -10,4 +10,6 @@ public interface IPromotionRepository
     Task<Promotion> AddPromotion(Promotion promotion);
     Task<Promotion> UpdatePromotion(Promotion promotion);
     Task<Promotion> DeletePromotion(Guid id);
+    Task<int> CountPromotionsAsync();
+    Task<List<Promotion>> GetPromotionPaginatedAsync(int pageNumber, int pageSize);
 }

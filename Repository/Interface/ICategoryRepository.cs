@@ -10,8 +10,7 @@ public interface ICategoryRepository
     Task<List<Category>> GetAllCategoryByBasketType();
     Task<List<Category>> GetCategoryByStyleType();
     Task<List<Category>> GetCategoryByAccessoryType();
-
-
+    
     Task<Category> GetCategoryById(Guid id);
     Task<Category> AddCategory(Category category);
     Task<Category> UpdateCategory(Category category);

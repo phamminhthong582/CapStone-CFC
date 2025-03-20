@@ -96,11 +96,9 @@ public static class DependencyInjection
 
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
-
-      
-
-        // ChatGpt
-        services.AddHttpClient<IChatgptService, ChatGptService>();
+        //OpenAI
+        services.AddHttpClient<GeminiService>(); // Đăng ký HttpClient
+        services.AddSingleton<GeminiService>();
 
         //Revenue
         services.AddScoped<IRevenueService, RevenueService>();

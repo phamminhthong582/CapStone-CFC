@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.DTO.Promotion;
 using BusinessObject.Entities;
 using CloudinaryDotNet.Actions;
@@ -24,10 +25,20 @@ public class PromotionService : IPromotionService
         _cloudinaryService = cloudinaryService;
     }
 
-    public async Task<List<PromotionResponse>> GetAllPromotion()
+    public async Task<PaginationResponse<PromotionResponse>> GetAllPromotion(int pageNumber, int pageSize)
     {
-        var list = await _promotionRepository.GetAllPromotion();
-        return _mapper.Map<List<PromotionResponse>>(list);
+        var totalCount = await _promotionRepository.CountPromotionsAsync();  
+        var customers = await _promotionRepository.GetPromotionPaginatedAsync(pageNumber, pageSize); 
+        var customerResponses = _mapper.Map<List<PromotionResponse>>(customers);
+        var paginationResponse = new PaginationResponse<PromotionResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = customerResponses
+        };
+        return paginationResponse;
     }
     public async Task<Result<Promotion>> CreatePromotion(CreatePromotionRequest request)
     {
