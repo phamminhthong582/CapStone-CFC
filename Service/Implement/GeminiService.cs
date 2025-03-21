@@ -20,11 +20,13 @@ namespace Service.Implement
             _apiKey = configuration["GoogleAI:ApiKey"];
         }
 
-        public async Task<string> GenerateTextAsync(string prompt)
+        public async Task<string> GenerateTextAsync(string userMessage)
         {
+            string prompt = $"You are a chatbot assisting with a flower ordering system. The user asks: '{userMessage}'";
+
             var requestBody = new
             {
-                contents = new[]
+                contents = new[] 
                 {
                     new { parts = new[] { new { text = prompt } } }
                 }

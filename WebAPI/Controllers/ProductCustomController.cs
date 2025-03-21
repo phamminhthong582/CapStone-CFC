@@ -23,6 +23,12 @@ public class ProductCustomController : Controller
         var result = await _productCustomService.GetAllProductCustom();
         return Ok(result);
     }
+    [HttpGet("getProductcustom-pagination")]
+    public async Task<IActionResult> GetProductcustomPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _productCustomService.GetAllProductCustomPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
     //[HttpGet("Id")]
     //public async Task<IActionResult> GetProductCustomById(Guid id)
     //{
