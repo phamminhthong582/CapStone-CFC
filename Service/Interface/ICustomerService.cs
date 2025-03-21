@@ -7,7 +7,8 @@ namespace Service.Interface;
 
 public interface ICustomerService
 {
-    Task<PaginationResponse<CustomerResponse>> GetAllCustomer(int pageNumber, int pageSize);
+    Task<List<CustomerResponse>> GetAllCustomer();
+    Task<PaginationResponse<CustomerResponse>> GetAllCustomerPagination(int pageNumber, int pageSize);
     Task<Result<CustomerResponse>> GetCustomerById(Guid id);
     Task<Result<CustomerResponse>> UpdateCustomer(Guid id, UpdateCustomerRequest request);
     Task<Result<Customer>> DeleteCustomer(Guid id);

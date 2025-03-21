@@ -18,9 +18,15 @@ public class PromotionController : Controller
         _promotionService = promotionService;
     }
     [HttpGet]
-    public async Task<IActionResult> GetPromotion([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPromotion()
     {
-        var result = await _promotionService.GetAllPromotion(pageNumber, pageSize);
+        var result = await _promotionService.GetAllPromotion();
+        return Ok(result);
+    }
+    [HttpGet("getPromotion-pagination")]
+    public async Task<IActionResult> GetPromotionPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _promotionService.GetAllPromotionPagination(pageNumber, pageSize);
         return Ok(result);
     }
 

@@ -7,7 +7,8 @@ namespace Service.Interface;
 
 public interface IPromotionService
 {
-    Task<PaginationResponse<PromotionResponse>>GetAllPromotion(int pageNumber, int pageSize);
+    Task<List<PromotionResponse>> GetAllPromotion();
+    Task<PaginationResponse<PromotionResponse>>GetAllPromotionPagination(int pageNumber, int pageSize);
     Task<Result<Promotion>> CreatePromotion(CreatePromotionRequest request);
     Task<Result<PromotionResponse>> UpdatePromotion(Guid id , UpdatePromotionRequest request);
     Task<Result<Promotion>> DeletePromotion(Guid id);

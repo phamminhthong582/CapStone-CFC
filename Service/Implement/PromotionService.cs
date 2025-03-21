@@ -25,7 +25,13 @@ public class PromotionService : IPromotionService
         _cloudinaryService = cloudinaryService;
     }
 
-    public async Task<PaginationResponse<PromotionResponse>> GetAllPromotion(int pageNumber, int pageSize)
+    public async Task<List<PromotionResponse>> GetAllPromotion()
+    {
+        var list = await _promotionRepository.GetAllPromotion();
+        return _mapper.Map<List<PromotionResponse>>(list);
+    }
+
+    public async Task<PaginationResponse<PromotionResponse>> GetAllPromotionPagination(int pageNumber, int pageSize)
     {
         var totalCount = await _promotionRepository.CountPromotionsAsync();  
         var customers = await _promotionRepository.GetPromotionPaginatedAsync(pageNumber, pageSize); 

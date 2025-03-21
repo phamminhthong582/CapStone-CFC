@@ -103,7 +103,14 @@ public class CustomerService : ICustomerService
             throw; 
         }
     }
-    public async Task<PaginationResponse<CustomerResponse>> GetAllCustomer(int pageNumber, int pageSize)
+
+    public async Task<List<CustomerResponse>> GetAllCustomer()
+    {
+        var list = await _customerRepository.GetAllCustomer();
+        return _mapper.Map<List<CustomerResponse>>(list);
+    }
+
+    public async Task<PaginationResponse<CustomerResponse>> GetAllCustomerPagination(int pageNumber, int pageSize)
     {
         var totalCount = await _customerRepository.CountCustomersAsync();  
         var customers = await _customerRepository.GetCustomersPaginatedAsync(pageNumber, pageSize); 

@@ -23,6 +23,12 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.GetAllCategory();
         return Ok(result);
     }
+    [HttpGet ("getCategory-pagination")]
+    public async Task<IActionResult> GetCategoryPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _categoryService.GetAllCategoryPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
     [HttpGet("getCartegoryByProductType")]
     public async Task<IActionResult> GetCategoryByProductType()
     {

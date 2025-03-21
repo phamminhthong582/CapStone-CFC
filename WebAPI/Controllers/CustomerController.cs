@@ -16,11 +16,16 @@ public class CustomerController : Controller
    {
       _customerService = customerService;
    }
-  
    [HttpGet]
-   public async Task<IActionResult> GetCustomer([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+   public async Task<IActionResult> GetCustomer()
    {
-      var result = await _customerService.GetAllCustomer(pageNumber, pageSize);
+      var result = await _customerService.GetAllCustomer();
+      return Ok(result);
+   }
+   [HttpGet("getCustomer-pagination")]
+   public async Task<IActionResult> GetCustomerPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+   {
+      var result = await _customerService.GetAllCustomerPagination(pageNumber, pageSize);
       return Ok(result);
    }
    [HttpGet("Id")]
