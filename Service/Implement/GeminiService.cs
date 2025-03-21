@@ -7,54 +7,66 @@ using System.Threading.Tasks;
 
 namespace Service.Implement
 {
-    public class GeminiService
+   public class GeminiService
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
+
+    private const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"; // Điều chỉnh URL API
+
+    private readonly List<string> _validQuestions = new List<string>
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        "Khi tôi muốn làm một giỏ hoa theo kiểu nào đó, tôi nên làm như thế nào?",
+        "Tôi muốn thiết kế một giỏ hoa, bạn có thể giúp tôi được không?"
+    };
 
-        private const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"; // Điều chỉnh URL API
+    public GeminiService(HttpClient httpClient, IConfiguration configuration)
+    {
+        _httpClient = httpClient;
+        _apiKey = configuration["GoogleAI:ApiKey"];
+    }
 
-        public GeminiService(HttpClient httpClient, IConfiguration configuration)
+    public async Task<string> GenerateTextAsync(string prompt)
+    {
+        // Kiểm tra xem câu hỏi có hợp lệ không
+        if (!_validQuestions.Contains(prompt))
         {
-            _httpClient = httpClient;
-            _apiKey = configuration["GoogleAI:ApiKey"];
+            return "Câu hỏi không hợp lệ. Vui lòng hỏi một trong các câu hỏi sau: 'Khi tôi muốn làm một giỏ hoa theo kiểu nào đó, tôi nên làm như thế nào?' hoặc 'Tôi muốn thiết kế một giỏ hoa, bạn có thể giúp tôi được không?'";
         }
 
-        public async Task<string> GenerateTextAsync(string prompt)
+        var requestBody = new
         {
-            var requestBody = new
+            contents = new[] 
             {
-                contents = new[]
-                {
-                    new { parts = new[] { new { text = prompt } } }
-                }
-            };
-
-            var requestContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync($"{GeminiUrl}?key={_apiKey}", requestContent);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return $"Lỗi khi gọi Gemini API: {response.StatusCode}";
+                new { parts = new[] { new { text = prompt } } }
             }
+        };
 
-            var responseString = await response.Content.ReadAsStringAsync();
-            try
-            {
-                var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseString);
-                var textResponse = jsonResponse.GetProperty("candidates")[0]
-                    .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text")
-                    .GetString();
+        var requestContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-                return textResponse;
-            }
-            catch (Exception ex)
-            {
-                return $"Lỗi xử lý JSON: {ex.Message}";
-            }
+        var response = await _httpClient.PostAsync($"{GeminiUrl}?key={_apiKey}", requestContent);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return $"Lỗi khi gọi Gemini API: {response.StatusCode}";
+        }
+
+        var responseString = await response.Content.ReadAsStringAsync();
+        try
+        {
+            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseString);
+            var textResponse = jsonResponse.GetProperty("candidates")[0]
+                .GetProperty("content")
+                .GetProperty("parts")[0]
+                .GetProperty("text")
+                .GetString();
+
+            return textResponse;
+        }
+        catch (Exception ex)
+        {
+            return $"Lỗi xử lý JSON: {ex.Message}";
         }
     }
+}
 }

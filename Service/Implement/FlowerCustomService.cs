@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.FlowerCustom;
+using BusinessObject.DTO.Pagination;
+using BusinessObject.DTO.Promotion;
 using BusinessObject.Entities;
 using Repository.Interface;
 using Service.Interface;
@@ -17,10 +19,20 @@ public class FlowerCustomService : IFlowerCustomService
         _flowerCustomRepository = flowerCustomRepository;
         _mapper = mapper;
     }
-    public async Task<List<FlowerCustomResponse>> GetAllFlowerCustom()
+    public async Task<PaginationResponse<FlowerCustomResponse>> GetAllFlowerCustom(int pageNumber, int pageSize)
     {
-        var list = await _flowerCustomRepository.GetAllFlowerCustom();
-        return _mapper.Map<List<FlowerCustomResponse>>(list);
+        var totalCount = await _flowerCustomRepository.CountFlowersCustomAsync();  
+        var flowerCustom = await _flowerCustomRepository.GetFlowerCustomPaginatedAsync(pageNumber, pageSize); 
+        var flowerCustomResponses = _mapper.Map<List<FlowerCustomResponse>>(flowerCustom);
+        var paginationResponse = new PaginationResponse<FlowerCustomResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = flowerCustomResponses
+        };
+        return paginationResponse;
     }
 
     public async Task<Result<FlowerCustom>> CreateFlowerCustom(CreateFlowerCustomRequest request)

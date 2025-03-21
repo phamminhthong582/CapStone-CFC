@@ -51,7 +51,20 @@ public class FlowerCustomRepository : IFlowerCustomRepository
         return flowerCustom;
     }
 
-   
+    public async Task<int> CountFlowersCustomAsync()
+    {
+        return await _context.FlowerCustoms.CountAsync();
+    }
+
+    public async Task<List<FlowerCustom>> GetFlowerCustomPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.FlowerCustoms
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
+
+
     public async Task<bool> ExistsFlowers(List<Guid> flowerIds)
     {
         return await _context.Flowers.AnyAsync(f => flowerIds.Contains(f.FlowerId));
