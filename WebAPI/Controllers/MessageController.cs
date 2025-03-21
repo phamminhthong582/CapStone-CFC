@@ -1,8 +1,10 @@
 ﻿using System.Net;
+using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Message;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Service.Interface;
 
 namespace WebAPI.Controllers;
@@ -11,10 +13,12 @@ namespace WebAPI.Controllers;
 public class MessageController : Controller
 {
     private readonly IMessageService _messageService;
+    private readonly IHubContext<ChatHub> _hubContext;
 
-    public MessageController(IMessageService messageService)
+    public MessageController(IMessageService messageService , IHubContext<ChatHub> hubContext)
     {
         _messageService = messageService;
+        _hubContext = _hubContext;
     }
     [HttpGet("chatrooms/{chatRoomId}/messages")]
     public async Task<IActionResult> GetMessagesByChatRoomId(Guid chatRoomId)
@@ -44,6 +48,8 @@ public class MessageController : Controller
 
         if (result.ResultStatus == ResultStatus.Success.ToString())
         {
+            await _hubContext.Clients.Group(request.ChatRoomId.ToString())
+                .SendAsync("ReceiveMessage", result.Data);
             return Ok(result.Data);
         }
 
