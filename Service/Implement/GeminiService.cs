@@ -20,8 +20,10 @@ namespace Service.Implement
             _apiKey = configuration["GoogleAI:ApiKey"];
         }
 
-        public async Task<string> GenerateTextAsync(string prompt)
+        public async Task<string> GenerateTextAsync(string userMessage)
         {
+            string prompt = $"You are a chatbot assisting with a flower ordering system. The user asks: '{userMessage}'";
+
             var requestBody = new
             {
                 contents = new[]
@@ -43,8 +45,6 @@ namespace Service.Implement
             try
             {
                 var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseString);
-
-                // Trích xuất văn bản từ phản hồi JSON
                 var textResponse = jsonResponse.GetProperty("candidates")[0]
                     .GetProperty("content")
                     .GetProperty("parts")[0]

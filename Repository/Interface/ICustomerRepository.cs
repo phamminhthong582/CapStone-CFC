@@ -15,4 +15,6 @@ public interface ICustomerRepository
     Task<Customer?> FindCustomerByPhone(string phone);
     Task<Customer?> FindCustomerByEmail(string email);
     Task<Customer?> FindOne(Expression<Func<Customer, bool>> predicate);
+    Task<int> CountCustomersAsync();
+    Task<List<Customer>> GetCustomersPaginatedAsync(int pageNumber, int pageSize);
 }

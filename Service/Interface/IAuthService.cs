@@ -7,7 +7,7 @@ namespace Service.Interface;
 
 public interface IAuthService
 {
-    //Task<Result<LoginResponse>> Login(string email, string password);
+    Task<Result<LoginResponse>> Login(string email, string password);
     Task ForgotPasswordForCustomer(string email);
     Task ForgotPasswordForEmployee(string email);
 

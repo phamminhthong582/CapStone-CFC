@@ -47,6 +47,20 @@ public class CategoryRepository : ICategoryRepository
         var list = await _context.Categories.Where(n => n.Type == "Accessory").ToListAsync();
         return list;
     }
+
+    public async Task<int> CountCategoriesAsync()
+    {
+        return await _context.Categories.CountAsync();
+    }
+
+    public async Task<List<Category>> GetCategoryPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.Categories
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
+
     public async Task<Category> GetCategoryById(Guid id)
     {
         var cate = await _context.Categories.FirstOrDefaultAsync(x => x.CategoryId == id);

@@ -9,4 +9,6 @@ public interface IFlowerBasketRepository
     Task<FlowerBasket> UpdateFlowerBasket(FlowerBasket flowerBasket);
     Task<FlowerBasket> DeleteFlowerBasket(Guid id);
     Task<FlowerBasket> GetFlowerBasketById(Guid id);
+    Task<int> CountFlowerBasketAsync();
+    Task<List<FlowerBasket>> GetFlowerBasketPaginatedAsync(int pageNumber, int pageSize);
 }

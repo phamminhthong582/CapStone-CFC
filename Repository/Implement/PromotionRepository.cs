@@ -58,4 +58,17 @@ public class PromotionRepository : IPromotionRepository
         await _context.SaveChangesAsync();
         return promo;
     }
+
+    public async Task<int> CountPromotionsAsync()
+    {
+        return await _context.Promotions.CountAsync();
+    }
+
+    public async Task<List<Promotion>> GetPromotionPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.Promotions
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
 }

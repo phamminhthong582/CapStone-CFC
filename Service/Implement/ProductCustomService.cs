@@ -14,6 +14,7 @@ using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
 using System.Drawing;
+using BusinessObject.DTO.Pagination;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -131,6 +132,23 @@ public class ProductCustomService : IProductCustomService
 
         return productCustomResponse;
     }
+
+    public async Task<PaginationResponse<ProductCustomResponse>> GetAllProductCustomPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _productCustomRepository.CountProductCustomsAsync();  
+        var productCustoms = await _productCustomRepository.GetProductCustomsPaginatedAsync(pageNumber, pageSize); 
+        var productCustomResponses = _mapper.Map<List<ProductCustomResponse>>(productCustoms);
+        var paginationResponse = new PaginationResponse<ProductCustomResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = productCustomResponses
+        };
+        return paginationResponse;
+    }
+
     public async Task<ProductCustomResponse> GetProductCustomById(Guid id)
     {
         var productCustom = await _unitOfWork.Repository<ProductCustom>().Entities

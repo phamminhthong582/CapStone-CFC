@@ -25,4 +25,17 @@ public class FeedbackRepository : IFeedbackRepository
         await _context.SaveChangesAsync();
         return feedback;
     }
+
+    public async Task<int> CountFeedbacksAsync()
+    {
+        return await _context.Feedbacks.CountAsync();
+    }
+
+    public async Task<List<Feedback>> GetFeedbackPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.Feedbacks
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
 }

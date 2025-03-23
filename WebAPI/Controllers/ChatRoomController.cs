@@ -32,6 +32,7 @@ public class ChatRoomController : Controller
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         return Ok(result);
     }
+    
 
     [HttpGet("employeeId")]
     public async Task<IActionResult> GetChatRoomByEmployeeId(Guid employeeId)

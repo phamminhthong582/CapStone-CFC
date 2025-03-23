@@ -19,16 +19,22 @@ public class FeedbackController : Controller
     {
         _feedbackService = feedbackService;
     }
-    [HttpGet]
-    public async Task<IActionResult> GetFeedbacks()
+    //[HttpGet]
+    //public async Task<IActionResult> GetFeedbacks()
+    //{
+    //    var result = await _feedbackService.GetAllFeedback();
+    //    return Ok(result);
+    //}
+    [HttpGet("getFeedback-pagination")]
+    public async Task<IActionResult> GetFeedbackPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _feedbackService.GetAllFeedback();
+        var result = await _feedbackService.GetAllFeedbackPagination(pageNumber, pageSize);
         return Ok(result);
     }
     [HttpPost("create-feedback")]
     public async Task<ActionResult<Result<Feedback>>> CreateFeedback(Guid customerId, Guid orderId, [FromForm] CreateFeedbackRequest request)
     {
-        await _feedbackService.CreateFeedbackByCustomer(customerId, orderId,request);
+        await _feedbackService.CreateFeedbackByCustomer(customerId, orderId, request);
         return Ok(new BaseResponseModel<string>(
                  statusCode: StatusCodes.Status200OK,
                  code: ResponseCodeConstants.SUCCESS,

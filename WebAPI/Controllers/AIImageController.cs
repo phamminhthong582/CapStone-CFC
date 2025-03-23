@@ -1,61 +1,42 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Service.Implement;
+﻿//using Microsoft.AspNetCore.Mvc;
+//using Service.Implement;
 
-namespace WebAPI.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AIImageController : Controller
-    {
+//namespace WebAPI.Controllers
+//{
+//    [Route("api/[controller]")]
+//    [ApiController]
+//    public class AIImageController : Controller
+//    {
 
-        /*    private readonly OpenAIService _openAIService;
+               
+//        private readonly GeminiService _geminiService;
+//        private readonly ImageService _imageService;
 
-            public AIImageController(OpenAIService openAIService)
-            {
-                _openAIService = openAIService;
-            }*/
-        /*
-                  [HttpPost("generate")]
-        public async Task<IActionResult> GenerateImage([FromBody] ImageRequest request)
-        {
-            try
-            {
-                var imageUrl = await _openAIService.GenerateImageAsync(request.Prompt);
-                return Ok(new { imageUrl });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = $"Lỗi khi gọi OpenAI: {ex.Message}" });
-            }
-        }
-                }
+//        public AIImageController(GeminiService geminiService, ImageService imageService)
+//        {
+//            _geminiService = geminiService;
+//            _imageService = imageService;
+//        }
 
-                public class ImageRequest
-                {
-                    public string Prompt { get; set; }
-                }*/
-        private readonly GeminiService _geminiService;
-        private readonly ImageService _imageService;
+//        [HttpPost("generate-image")]
+//        public async Task<IActionResult> GenerateImages([FromBody] ImageRequest request)
+//        {
+//            var description = await _geminiService.GenerateTextAsync(request.Prompt);
+//            var imageUrl = await _imageService.GenerateImageAsync(request.Prompt);
 
-        public AIImageController(GeminiService geminiService, ImageService imageService)
-        {
-            _geminiService = geminiService;
-            _imageService = imageService;
-        }
+//            return Ok(new { imageUrl });
+//        }
+//        [HttpPost("chat-box")]
+//        public async Task<IActionResult> Chatbot([FromBody] ImageRequest request)
+//        {
+//            var description = await _geminiService.GenerateTextAsync(request.Prompt);
+//            return Ok(new { description });
+//        }
+//    }
 
-        [HttpPost("generate")]
-        public async Task<IActionResult> GenerateImage([FromBody] ImageRequest request)
-        {
-            var description = await _geminiService.GenerateTextAsync(request.Prompt);
-            var imageUrl = await _imageService.GenerateImageAsync(request.Prompt);
+//    public class ImageRequest
+//    {
+//        public string Prompt { get; set; }
+//    }
 
-            return Ok(new { imageUrl });
-        }
-    }
-
-    public class ImageRequest
-    {
-        public string Prompt { get; set; }
-    }
-
-}
+//}

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.FlowerBasket;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 using CloudinaryDotNet.Actions;
 using Repository.Interface;
@@ -25,6 +26,22 @@ public class FlowerBasketService : IFlowerBasketService
     {
         var list = await _flowerBasketRepository.GetAllFlowerBasket();
         return _mapper.Map<List<FlowerBasketResponse>>(list);
+    }
+
+    public async Task<PaginationResponse<FlowerBasketResponse>> GetAllFlowerBasketPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _flowerBasketRepository.CountFlowerBasketAsync();  
+        var flowerBasket = await _flowerBasketRepository.GetFlowerBasketPaginatedAsync(pageNumber, pageSize); 
+        var flowerBasketResponses = _mapper.Map<List<FlowerBasketResponse>>(flowerBasket);
+        var paginationResponse = new PaginationResponse<FlowerBasketResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = flowerBasketResponses
+        };
+        return paginationResponse;
     }
 
     public async Task<Result<FlowerBasket>> CreateFlowerBasket(CreateFlowerBasketRequest request)

@@ -10,10 +10,19 @@ using Service.Implement;
 using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins", builder =>
+    {
+        builder.WithOrigins("https://localhost:5243") // Chỉ cho phép yêu cầu từ localhost:5243
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 // Add services to the container.
 
 builder.Services.AddInfra(builder.Configuration);
+builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<CustomFlowerChainContext>();
 //var configuration = builder.Configuration.Get<AppConfiguration>();
@@ -61,12 +70,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+            policy.WithOrigins("http://localhost:3000","http://localhost:5173")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
         });
 });
-
 
 
 var app = builder.Build();
@@ -86,8 +95,16 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 //app.UseRouting();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();  // Kích hoạt HTTP Strict Transport Security (HSTS)
+}
 app.UseHttpsRedirection();
-app.UseCors("AllowSpecificOrigins");
 app.UseCors("AllowAll");
 app.MapHub<ChatHub>("/chatHub");
 app.UseAuthorization();

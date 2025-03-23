@@ -25,17 +25,17 @@ public class AuthController : ControllerBase
         _customerService = customerService;
     }
 
-    //[HttpPost("login")]
-    //public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
-    //{
-    //    var result = await _authService.Login(loginRequest.Email, loginRequest.Password);
-    //    if (result.ResultStatus != ResultStatus.Success.ToString())
-    //    {
-    //        return StatusCode((int)HttpStatusCode.InternalServerError, result);
-    //    }
+    [HttpPost("login")]
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
+    {
+        var result = await _authService.Login(loginRequest.Email, loginRequest.Password);
+        if (result.ResultStatus != ResultStatus.Success.ToString())
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, result);
+        }
 
-    //    return Ok(result);
-    //}
+        return Ok(result);
+    }
     [HttpPost("register-Florist-account")]
     public async Task<ActionResult<Result<EmployeeResponse>>> Register(Guid storeId, [FromForm] RegisterRequest registerRequest)
     {

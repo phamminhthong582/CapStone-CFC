@@ -30,6 +30,21 @@ public class ProductCustomController : Controller
         var result = await _productCustomService.GetProductCustomById(id);
         return Ok(result);
     }
+    [HttpGet("getProductcustom-pagination")]
+    public async Task<IActionResult> GetProductcustomPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _productCustomService.GetAllProductCustomPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
+    //[HttpGet("Id")]
+    //public async Task<IActionResult> GetProductCustomById(Guid id)
+    //{
+    //    var result = await _productCustomService.GetProductCustomById(id);
+
+    //    if (result.ResultStatus != ResultStatus.Success.ToString())
+    //        return StatusCode((int)HttpStatusCode.InternalServerError, result);
+    //    return Ok(result);
+    //}
     [HttpPost("create-productcustom")]
     public async Task<ActionResult<Result<FlowerBasket>>> CreateProductCustom(Guid CustomerId, [FromBody] CreateProductCustomRequest request)
     {

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Comment;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 using Repository.Interface;
 using Service.Interface;
@@ -21,6 +22,22 @@ public class CommentService : ICommentService
     {
         var list = await _commentRepository.GetAllComment();
         return _mapper.Map<List<CommentResponse>>(list);
+    }
+
+    public async Task<PaginationResponse<CommentResponse>> GetAllCommentPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _commentRepository.CountCommentsAsync();  
+        var comments = await _commentRepository.GetCommentPaginatedAsync(pageNumber, pageSize); 
+        var commentsResponses = _mapper.Map<List<CommentResponse>>(comments);
+        var paginationResponse = new PaginationResponse<CommentResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = commentsResponses
+        };
+        return paginationResponse;
     }
 
     public async Task<Result<CommentResponse>> CreateComment(CreateCommentRequest request)
