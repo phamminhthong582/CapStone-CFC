@@ -25,38 +25,38 @@ public class AuthController : ControllerBase
         _customerService = customerService;
     }
 
-    [HttpPost("login")]
-    public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
-    {
-        var result = await _authService.Login(loginRequest.Email, loginRequest.Password);
-        if (result.ResultStatus != ResultStatus.Success.ToString())
-        {
-            return StatusCode((int)HttpStatusCode.InternalServerError, result);
-        }
+    //[HttpPost("login")]
+    //public async Task<ActionResult<LoginResponse>> Login(LoginRequest loginRequest)
+    //{
+    //    var result = await _authService.Login(loginRequest.Email, loginRequest.Password);
+    //    if (result.ResultStatus != ResultStatus.Success.ToString())
+    //    {
+    //        return StatusCode((int)HttpStatusCode.InternalServerError, result);
+    //    }
 
-        return Ok(result);
-    }
+    //    return Ok(result);
+    //}
     [HttpPost("register-Florist-account")]
-    public async Task<ActionResult<Result<EmployeeResponse>>> Register(Guid storeId,[FromForm] RegisterRequest registerRequest)
+    public async Task<ActionResult<Result<EmployeeResponse>>> Register(Guid storeId, [FromForm] RegisterRequest registerRequest)
     {
         try
         {
-            var result = await _authService.RegisterFlorist(storeId,registerRequest);
+            var result = await _authService.RegisterFlorist(storeId, registerRequest);
 
-            
+
             if (result.ResultStatus == ResultStatus.Duplicated.ToString())
             {
-                return Conflict(result); 
+                return Conflict(result);
             }
             if (result.ResultStatus == ResultStatus.Failed.ToString())
             {
                 return BadRequest(result);
             }
-            return Ok(result); 
+            return Ok(result);
         }
         catch (Exception ex)
         {
-           
+
             return StatusCode((int)HttpStatusCode.InternalServerError, new
             {
                 Message = "An unexpected error occurred. Please try again later.",
@@ -66,9 +66,9 @@ public class AuthController : ControllerBase
     }
     [HttpPost("register-courier-account")]
     public async Task<ActionResult<Result<EmployeeResponse>>> CreateCourierAccount(
-        Guid storeId,[FromForm] CreateCourierRequest registerRequest)
+        Guid storeId, [FromForm] CreateCourierRequest registerRequest)
     {
-        var result = await _authService.CreateCourierAccount(storeId,registerRequest);
+        var result = await _authService.CreateCourierAccount(storeId, registerRequest);
 
         if (result.ResultStatus != ResultStatus.Success.ToString())
         {
@@ -90,24 +90,24 @@ public class AuthController : ControllerBase
 
         return result;
     }
-    [HttpPut("changedPasswordByCustomer")]
-    public async Task<IActionResult> changedPasswordByCustomer(Guid customerId, string newPassword)
-    {
-        await _authService.ChangedPaswordForCustomer(customerId, newPassword);
-        return Ok(new BaseResponseModel<string>(
-                  statusCode: StatusCodes.Status200OK,
-                  code: ResponseCodeConstants.SUCCESS,
-                  data: "cập nhật sẩn phẩm thành công"));
-    }
+    //[HttpPut("changedPasswordByCustomer")]
+    //public async Task<IActionResult> changedPasswordByCustomer(Guid customerId, string newPassword)
+    //{
+    //    await _authService.ChangedPaswordForCustomer(customerId, newPassword);
+    //    return Ok(new BaseResponseModel<string>(
+    //              statusCode: StatusCodes.Status200OK,
+    //              code: ResponseCodeConstants.SUCCESS,
+    //              data: "cập nhật sẩn phẩm thành công"));
+    //}
     [HttpPut("changedPasswordByEmployee")]
-    public async Task<IActionResult> changedPasswordByEmployee(Guid employeeId, string newPassword)
-    {
-        await _authService.ChangedPaswordForEmployee(employeeId, newPassword);
-        return Ok(new BaseResponseModel<string>(
-                  statusCode: StatusCodes.Status200OK,
-                  code: ResponseCodeConstants.SUCCESS,
-                  data: "cập nhật sẩn phẩm thành công"));
-    }
+    //public async Task<IActionResult> changedPasswordByEmployee(Guid employeeId, string newPassword)
+    //{
+    //    await _authService.ChangedPaswordForEmployee(employeeId, newPassword);
+    //    return Ok(new BaseResponseModel<string>(
+    //              statusCode: StatusCodes.Status200OK,
+    //              code: ResponseCodeConstants.SUCCESS,
+    //              data: "cập nhật sẩn phẩm thành công"));
+    //}
     [HttpGet("confirm-email")]
     public async Task<IActionResult> VerifyEmail(Guid id, string token)
     {
@@ -117,24 +117,11 @@ public class AuthController : ControllerBase
 
         return Redirect($"https://giveawayproject.jettonetto.org/verify-email?verificationstatus=failed");
     }
-    /* [Authorize(Roles = "Admin")]
-     [HttpPost("create-storemanager-account")]
-     public async Task<ActionResult<UserResponse>> CreateStoreManagerAccount(
-       [FromBody] CreateStoreManagerRequest registerRequest)
-     {
-         var result = await _authService.CreateStoreManagerAccount(registerRequest);
-
-         if (result.ResultStatus != ResultStatus.Success.ToString())
-         {
-             return StatusCode((int)HttpStatusCode.InternalServerError, result);
-         }
-
-         return Ok(result);
-     }*/
+   
     [HttpPost("forgot-password-by-customer")]
     public async Task<IActionResult> ForgotPassword(string email)
     {
-         await  _authService.ForgotPasswordForCustomer(email);
+        await _authService.ForgotPasswordForCustomer(email);
         return Ok(new BaseResponseModel<string>(
                         statusCode: StatusCodes.Status200OK,
                         code: ResponseCodeConstants.SUCCESS,
@@ -149,15 +136,15 @@ public class AuthController : ControllerBase
                         code: ResponseCodeConstants.SUCCESS,
                         data: "Thêm sản phẩm mới thành công"));
     }
-    [HttpPost("set-password-by-customer")]
-    public async Task<IActionResult> SetPasswordForCustomer(string email, string NewPassword, string token)
-    {
-        await _authService.SetPasswordForCustomer(email, NewPassword, token);
-        return Ok(new BaseResponseModel<string>(
-                        statusCode: StatusCodes.Status200OK,
-                        code: ResponseCodeConstants.SUCCESS,
-                        data: "Thêm sản phẩm mới thành công"));
-    }
+    //[HttpPost("set-password-by-customer")]
+    //public async Task<IActionResult> SetPasswordForCustomer(string email, string NewPassword, string token)
+    //{
+    //    await _authService.SetPasswordForCustomer(email, NewPassword, token);
+    //    return Ok(new BaseResponseModel<string>(
+    //                    statusCode: StatusCodes.Status200OK,
+    //                    code: ResponseCodeConstants.SUCCESS,
+    //                    data: "Thêm sản phẩm mới thành công"));
+    //}
     [HttpPost("set-password-by-employee")]
     public async Task<IActionResult> SetPasswordForEmployee(string email, string NewPassword, string token)
     {

@@ -67,6 +67,7 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<IncomeWallet> IncomeWallets { get; set; }
 
     public virtual DbSet<Style> Styles { get; set; }
+    public virtual DbSet<User> Users{ get; set; }
 
     public virtual DbSet<Accessory> Accessories { get; set; }
 
@@ -119,7 +120,6 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.FullName)
                 .HasMaxLength(255)
                 .HasColumnName("Full Name");
-            entity.Property(e => e.Password).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasColumnType("nvarchar").HasMaxLength(20);
@@ -160,15 +160,32 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Role).WithMany(p => p.Employees)
-                .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK_Employee_Role");
-
             entity.HasOne(d => d.Store).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.StoreId)
                 .HasConstraintName("FK_Employee_Store");
+          
         });
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("User");
 
+            entity.Property(e => e.UserId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.Users)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK_User_Role");
+            entity.HasOne(d => d.Employee)
+                  .WithOne(p => p.User)
+                  .HasForeignKey<Employee>(p => p.UserId) // Chỉ định khóa ngoại
+                  .HasConstraintName("FK_User_Employee");
+            entity.HasOne(d => d.Customer)
+                  .WithOne(p => p.User)
+                  .HasForeignKey<Customer>(p => p.UserId) // Chỉ định khóa ngoại
+                  .HasConstraintName("FK_User_Customer");
+
+        });
         modelBuilder.Entity<Feedback>(entity =>
         {
             entity.ToTable("Feedback");
@@ -281,9 +298,15 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.CustomerId)
                 .HasConstraintName("FK_Order_Customer");
 
-            entity.HasOne(d => d.ProductCustom).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.ProductCustomId)
-                .HasConstraintName("FK_Order_ProductCustom1");
+            /* entity.HasOne(d => d.ProductCustom).WithMany(p => p.Orders)
+                 .HasForeignKey(d => d.ProductCustomId)
+                 .HasConstraintName("FK_Order_ProductCustom1");*/
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.ProductCustom)
+                .WithOne(pc => pc.Order)
+                .HasForeignKey<ProductCustom>(pc => pc.OrderId)
+                .OnDelete(DeleteBehavior.Cascade) // Khi xóa Order, ProductCustom cũng bị xóa
+                .HasConstraintName("FK_Order_ProductCustom");
 
             entity.HasOne(d => d.Promotion).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.PromotionId)

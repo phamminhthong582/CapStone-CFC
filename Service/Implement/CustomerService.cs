@@ -3,11 +3,13 @@ using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Customer;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Repository.Interface;
 using Service.Interface;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Service.Implement;
 
@@ -18,27 +20,30 @@ public class CustomerService : ICustomerService
     private readonly IRoleRepository _roleRepository;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
-    private readonly string tempdata = "tempdatakey";
     private readonly IEmailService _emailService;
-    private readonly ILogger<CustomerService> _logger; // Thay đổi kiểu logger
+    private readonly ILogger<CustomerService> _logger;
+    private readonly IUnitOfWork _unitOfWork;
+
+    private readonly string tempdata = "tempdatakey"; // Không cần truyền vào constructor nữa
 
     public CustomerService(
         ICustomerRepository customerRepository,
         IMapper mapper,
         IRoleRepository roleRepository,
+        IMemoryCache cache,
         IEmailService emailService,
-        IMemoryCache memoryCache,
-        IConfiguration configuration,
-        ILogger<CustomerService> logger) // Thêm parameter logger
+        ILogger<CustomerService> logger,
+        IUnitOfWork unitOfWork)
     {
         _customerRepository = customerRepository;
         _mapper = mapper;
-        _cache = memoryCache;
         _roleRepository = roleRepository;
+        _cache = cache;
         _emailService = emailService;
-        _configuration = configuration;
-        _logger = logger; // Gán logger
+        _logger = logger;
+        _unitOfWork = unitOfWork;
     }
+
     public async Task<Result<CustomerResponse>> RegisterCustomer(CreateCustomerRequest request)
     {
         try
@@ -58,16 +63,38 @@ public class CustomerService : ICustomerService
             }
 
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-            Customer customer = new Customer
+            var roleToAssign = RoleName.Customer.ToString();
+            var roleId = await _roleRepository.GetRoleIdByName(roleToAssign);
+            if (roleId == null)
+            {
+                response.Messages = new[] { $"Role '{roleToAssign}' not found. Please contact admin." };
+                response.ResultStatus = ResultStatus.Failed.ToString();
+                return response;
+            }
+            var User = new User
             {
                 Email = request.Email,
                 Password = Convert.ToBase64String(passwordHash),
+                Status = false,
+                CreateAt = DateTime.Now,
+                UpdateAt = DateTime.Now,
+                RoleId = roleId,
+            };
+            await _unitOfWork.GetRepo<User>().AddAsync(User);
+            await _unitOfWork.CompleteAsync();  
+            var customer = new Customer
+            {
+                UserId  = User.UserId,
+                Email = request.Email,
                 Status = CustomerStatus.NotVerified.ToString(),
             };
-
+            
             _logger.LogInformation("Attempting to register customer in database");
             var user = await _customerRepository.RegisterCustomer(customer);
+            User.CustomerId = customer.CustomerId;
+
+             _unitOfWork.GetRepo<User>().Update(User);
+            await _unitOfWork.CompleteAsync();
 
             var token = _customerRepository.CreateRandomToken();
             var cacheEntryOption = new MemoryCacheEntryOptions()

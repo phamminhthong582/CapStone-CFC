@@ -20,12 +20,12 @@ public class EmployeeController : ControllerBase
    {
       _employeeService = employeeService;
    }
-   [HttpGet]
-   public async Task<IActionResult> GetEmployee()
-   {
-      var result = await _employeeService.GetAllEmployee();
-      return Ok(result);
-   }
+    [HttpGet]
+    public async Task<IActionResult> GetEmployee()
+    {
+        var result = await _employeeService.GetAllEmployee();
+        return Ok(result);
+    }
     [HttpGet("AllEmployeeWithStoreId")]
     public async Task<IActionResult> GetAllEmployeeByStoreId(Guid StoreId)
     {
@@ -46,7 +46,7 @@ public class EmployeeController : ControllerBase
 
 
     }
-  
+
     [HttpPost("ApproveEmployee")]
     public async Task<IActionResult> ApproveEmployee(Guid employeeId)
     {
@@ -57,7 +57,7 @@ public class EmployeeController : ControllerBase
                    data: "Thêm sản phẩm mới thành công"));
     }
     [HttpPost("RejectEmployee")]
-    public async Task<IActionResult> RejectEmployee(Guid employeeId,string reason)
+    public async Task<IActionResult> RejectEmployee(Guid employeeId, string reason)
     {
         await _employeeService.Reject(employeeId, reason);
         return Ok(new BaseResponseModel<string>(
@@ -86,64 +86,64 @@ public class EmployeeController : ControllerBase
                data: result));
     }
     [HttpGet("storeId-florist-status-false")]
-   public async Task<IActionResult> GetFloristWithStoreId(Guid storeid)
-   {
-      var result = await _employeeService.GetFloristWithStoreIdWithStatusFalse(storeid);
+    public async Task<IActionResult> GetFloristWithStoreId(Guid storeid)
+    {
+        var result = await _employeeService.GetFloristWithStoreIdWithStatusFalse(storeid);
         return Ok(new BaseResponseModel<IEnumerable<EmployeeResponse>>(
              statusCode: StatusCodes.Status200OK,
              code: ResponseCodeConstants.SUCCESS,
              data: result));
 
     }
-   [HttpGet("storeId-courier-status-false")]
-   public async Task<IActionResult> GetCourierWithStoreId(Guid storeid)
-   {
-      var result = await _employeeService.GetCourierWithStoreIdWithStatusFalse(storeid);
+    [HttpGet("storeId-courier-status-false")]
+    public async Task<IActionResult> GetCourierWithStoreId(Guid storeid)
+    {
+        var result = await _employeeService.GetCourierWithStoreIdWithStatusFalse(storeid);
 
         return Ok(new BaseResponseModel<IEnumerable<CourierResponse>>(
                statusCode: StatusCodes.Status200OK,
                code: ResponseCodeConstants.SUCCESS,
                data: result));
     }
- 
-   [HttpPut("{employeeId}")]
-   public async Task<IActionResult> UpdateEmployee([FromRoute] Guid employeeId,
-      [FromBody] UpdateEmployeeRequest request)
-   {
-      var result = await _employeeService.UpdateEmployee(employeeId, request);
 
-      if (result.ResultStatus != ResultStatus.Success.ToString())
-         return StatusCode((int)HttpStatusCode.InternalServerError, result);
+    //[HttpPut("{employeeId}")]
+    //public async Task<IActionResult> UpdateEmployee([FromRoute] Guid employeeId,
+    //   [FromBody] UpdateEmployeeRequest request)
+    //{
+    //   var result = await _employeeService.UpdateEmployee(employeeId, request);
 
-      return Ok(result);
-   }
-    [HttpPut("updateEmployeeStatus")]
-    public async Task<IActionResult> updateEmployeeStatus(Guid employeeId,bool Status)
-    {
-        await _employeeService.UpdateStatusEmloyee(employeeId, Status);
-        return Ok(new BaseResponseModel<string>(
-                  statusCode: StatusCodes.Status200OK,
-                  code: ResponseCodeConstants.SUCCESS,
-                  data: "Thêm sản phẩm mới thành công"));
-    }
-    [HttpDelete("delete-employee")]
-   public async Task<ActionResult<Result<Employee>>> DeleteEmployee(Guid id)
-   {
-      var result = await _employeeService.DeleteEmployee(id);
-      if (result.ResultStatus != ResultStatus.Success.ToString())
-      {
-         return StatusCode((int)HttpStatusCode.InternalServerError, result);
-      }
-      return Ok(result);
-   }
-    [HttpPost("CreateManagerStore")]
-    public async Task<IActionResult> CreateManagerStore(Guid storeid,[FromForm] CreateManagerStoreRequest createManagerStoreRequest)
-    {
-        await _employeeService.CreateManagerStore(storeid , createManagerStoreRequest);
-        return Ok(new BaseResponseModel<string>(
-                   statusCode: StatusCodes.Status200OK,
-                   code: ResponseCodeConstants.SUCCESS,
-                   data: "Thêm sản phẩm mới thành công"));
-    }
+    //   if (result.ResultStatus != ResultStatus.Success.ToString())
+    //      return StatusCode((int)HttpStatusCode.InternalServerError, result);
+
+    //   return Ok(result);
+    //}
+    // [HttpPut("updateEmployeeStatus")]
+    // public async Task<IActionResult> updateEmployeeStatus(Guid employeeId,bool Status)
+    // {
+    //     await _employeeService.UpdateStatusEmloyee(employeeId, Status);
+    //     return Ok(new BaseResponseModel<string>(
+    //               statusCode: StatusCodes.Status200OK,
+    //               code: ResponseCodeConstants.SUCCESS,
+    //               data: "Thêm sản phẩm mới thành công"));
+    // }
+    // [HttpDelete("delete-employee")]
+    //public async Task<ActionResult<Result<Employee>>> DeleteEmployee(Guid id)
+    //{
+    //   var result = await _employeeService.DeleteEmployee(id);
+    //   if (result.ResultStatus != ResultStatus.Success.ToString())
+    //   {
+    //      return StatusCode((int)HttpStatusCode.InternalServerError, result);
+    //   }
+    //   return Ok(result);
+    //}
+    // [HttpPost("CreateManagerStore")]
+    // public async Task<IActionResult> CreateManagerStore(Guid storeid,[FromForm] CreateManagerStoreRequest createManagerStoreRequest)
+    // {
+    //     await _employeeService.CreateManagerStore(storeid , createManagerStoreRequest);
+    //     return Ok(new BaseResponseModel<string>(
+    //                statusCode: StatusCodes.Status200OK,
+    //                code: ResponseCodeConstants.SUCCESS,
+    //                data: "Thêm sản phẩm mới thành công"));
+    // }
 
 }

@@ -101,7 +101,12 @@ public static class DependencyInjection
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
 
-        
+        //OpenAI
+        services.AddHttpClient<OpenAIService>(); // Đăng ký HttpClient
+        services.AddSingleton<OpenAIService>();
+        services.AddHttpClient<GeminiService>(); // Đăng ký HttpClient
+        services.AddSingleton<GeminiService>();
+        services.AddHttpClient<ImageService>(); // Đăng ký HttpClient
 
         // Hang
 

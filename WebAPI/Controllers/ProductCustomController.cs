@@ -4,6 +4,7 @@ using BusinessObject.DTO.FlowerBasket;
 using BusinessObject.DTO.ProductCustom;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implement;
 using Service.Interface;
 
 namespace WebAPI.Controllers;
@@ -63,5 +64,11 @@ public class ProductCustomController : Controller
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         }
         return Ok(result);
+    }
+    [HttpPost("CreateImageProductCustom")]
+    public async Task<IActionResult> CreateImageProductCustom(Guid ProductCustomId)
+    {
+        var imageUrl = await _productCustomService.CreateImageProductCustom(ProductCustomId);
+        return Ok(new { imageUrl });
     }
 }
