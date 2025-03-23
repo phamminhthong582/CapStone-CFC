@@ -9,4 +9,5 @@ public interface IMessageRepository
     Task<Message> CreateMessage(Message message);
     Task<Message> UpdateStatusMessage(Guid messageId, string newStatus);
     Task<Message> DeleteMessage(Guid messageId);
+    
 }

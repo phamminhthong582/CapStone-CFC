@@ -41,6 +41,7 @@ public class MessageController : Controller
         }
         return Ok(new { Messages = result.Messages, Data = result.Data });
     }
+    
     [HttpPost("create-message")]
     public async Task<IActionResult> CreateMessage([FromBody] CreateMessageRequest request)
     {
