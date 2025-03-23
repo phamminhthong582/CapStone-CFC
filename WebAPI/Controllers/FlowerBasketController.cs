@@ -35,7 +35,7 @@ public class FlowerBasketController : Controller
         return Ok(result);
     }
     [HttpPost("create-flowerbasket")]
-    public async Task<ActionResult<Result<FlowerBasket>>> CreateFlowerBasket( [FromForm] CreateFlowerBasketRequest request)
+    public async Task<ActionResult<Result<FlowerBasket>>> CreateFlowerBasket([FromForm] CreateFlowerBasketRequest request)
     {
         var result = await _flowerBasketService.CreateFlowerBasket(request);
         if (result.ResultStatus != ResultStatus.Success.ToString())
@@ -49,7 +49,7 @@ public class FlowerBasketController : Controller
     public async Task<IActionResult> UpdateFlowerBasket([FromRoute] Guid flowerbasketId, [FromForm] UpdateFlowerBasketRequest request)
     {
         var result = await _flowerBasketService.UpdateFlowerBasket(flowerbasketId, request);
-        return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
+        return result.ResultStatus != ResultStatus.Success.ToString() ? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
     }
 
     [HttpDelete("delete-flowerbasket")]
@@ -60,6 +60,12 @@ public class FlowerBasketController : Controller
         {
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         }
+        return Ok(result);
+    }
+    [HttpGet("getFlowerBasket-pagination")]
+    public async Task<IActionResult> GetFlowerBasketPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _flowerBasketService.GetAllFlowerBasketPagination(pageNumber, pageSize);
         return Ok(result);
     }
 }

@@ -1385,8 +1385,8 @@ namespace Service.Implement
 
             // Lấy danh sách nhân viên của cửa hàng thuộc đơn hàng đó
             var employees = await _unitOfWork.GetRepo<Employee>().Entities
-                .Include(n => n.Role)
-                .Where(m => m.Role.RoleName == "florist" && m.Status == true && m.StoreId == order.StoreId)
+                .Include(n => n.User.Role)
+                .Where(m => m.User.Role.RoleName == "florist" && m.Status == true && m.StoreId == order.StoreId)
                 .ToListAsync();
 
             var availableEmployees = new List<EmployeeResponse>();
@@ -1431,8 +1431,8 @@ namespace Service.Implement
 
             // Lấy danh sách nhân viên của cửa hàng thuộc đơn hàng đó
             var employees = await _unitOfWork.GetRepo<Employee>().Entities
-                .Include(n => n.Role)
-                .Where(m => m.Role.RoleName == "Courier" && m.Status == true && m.StoreId == order.StoreId)
+                .Include(n => n.User.Role)
+                .Where(m => m.User.Role.RoleName == "Courier" && m.Status == true && m.StoreId == order.StoreId)
                 .ToListAsync();
 
             var availableEmployees = new List<EmployeeResponse>();

@@ -34,4 +34,17 @@ public class CommentRepository : ICommentRepository
             .Include(c => c.Customer) 
             .ToListAsync();
     }
+
+    public async Task<int> CountCommentsAsync()
+    {
+        return await _context.Comments.CountAsync();
+    }
+
+    public async Task<List<Comment>> GetCommentPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.Comments
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
 }

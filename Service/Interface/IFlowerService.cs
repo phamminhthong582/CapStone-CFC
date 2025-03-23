@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Flower;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 
 namespace Service.Interface
@@ -12,6 +13,7 @@ namespace Service.Interface
     public interface IFlowerService
     {
         Task<List<FlowerResponse>> GetAllFlower();
+        Task<PaginationResponse<FlowerResponse>>GetAllFlowerPagination(int pageNumber, int pageSize);
         Task<Result<Flower>> CreateFlower(CreateFlowerRequest request);
         Task<Result<FlowerResponse>> UpdateFlower(Guid id, UpdateFlowerRequest request);
         Task<Result<Flower>> DeleteFlower(Guid id);

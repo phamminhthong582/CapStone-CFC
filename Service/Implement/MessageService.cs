@@ -59,9 +59,6 @@ public class MessageService : IMessageService
             Status = createdMessage.Status,
             CreateAt = createdMessage.CreateAt
         };
-        await _hubContext.Clients.Group(request.ChatRoomId.ToString())
-            .SendAsync("ReceiveMessage", createdMessage.SenderId, createdMessage.Content);
-
         response.Messages = new[] { "Successfully!" };
         response.ResultStatus = ResultStatus.Success.ToString();
         return response;

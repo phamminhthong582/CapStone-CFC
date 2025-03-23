@@ -50,4 +50,17 @@ public class ProductCustomRepository : IProductCustomRepository
         var productCustom = await _context.ProductCustoms.FirstOrDefaultAsync(x => x.ProductCustomId == id);
         return productCustom;
     }
+
+    public async Task<int> CountProductCustomsAsync()
+    {
+        return await _context.ProductCustoms.CountAsync();
+    }
+
+    public async Task<List<ProductCustom>> GetProductCustomsPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.ProductCustoms
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
 }

@@ -4,6 +4,7 @@ using BusinessObject.DTO.FlowerBasket;
 using BusinessObject.DTO.ProductCustom;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Service.Implement;
 using Service.Interface;
 
 namespace WebAPI.Controllers;
@@ -29,6 +30,21 @@ public class ProductCustomController : Controller
         var result = await _productCustomService.GetProductCustomById(id);
         return Ok(result);
     }
+    [HttpGet("getProductcustom-pagination")]
+    public async Task<IActionResult> GetProductcustomPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _productCustomService.GetAllProductCustomPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
+    //[HttpGet("Id")]
+    //public async Task<IActionResult> GetProductCustomById(Guid id)
+    //{
+    //    var result = await _productCustomService.GetProductCustomById(id);
+
+    //    if (result.ResultStatus != ResultStatus.Success.ToString())
+    //        return StatusCode((int)HttpStatusCode.InternalServerError, result);
+    //    return Ok(result);
+    //}
     [HttpPost("create-productcustom")]
     public async Task<ActionResult<Result<FlowerBasket>>> CreateProductCustom(Guid CustomerId, [FromBody] CreateProductCustomRequest request)
     {
@@ -63,5 +79,11 @@ public class ProductCustomController : Controller
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         }
         return Ok(result);
+    }
+    [HttpPost("CreateImageProductCustom")]
+    public async Task<IActionResult> CreateImageProductCustom(Guid ProductCustomId)
+    {
+        var imageUrl = await _productCustomService.CreateImageProductCustom(ProductCustomId);
+        return Ok(new { imageUrl });
     }
 }

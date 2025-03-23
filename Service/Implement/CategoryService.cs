@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Category;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 using Core.Infrastructures;
 using Repository.Implement;
@@ -52,6 +53,23 @@ public class CategoryService : ICategoryService
         var list = await _categoryRepository.GetCategoryByAccessoryType();
         return _mapper.Map<List<CategoryResponse>>(list);
     }
+
+    public async Task<PaginationResponse<CategoryResponse>> GetAllCategoryPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _categoryRepository.CountCategoriesAsync();  
+        var customers = await _categoryRepository.GetCategoryPaginatedAsync(pageNumber, pageSize); 
+        var customerResponses = _mapper.Map<List<CategoryResponse>>(customers);
+        var paginationResponse = new PaginationResponse<CategoryResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = customerResponses
+        };
+        return paginationResponse;
+    }
+
     public async Task<Result<Category>> CreateCategory( CreateCategoryRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name))

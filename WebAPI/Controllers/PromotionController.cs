@@ -23,6 +23,12 @@ public class PromotionController : Controller
         var result = await _promotionService.GetAllPromotion();
         return Ok(result);
     }
+    [HttpGet("getPromotion-pagination")]
+    public async Task<IActionResult> GetPromotionPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _promotionService.GetAllPromotionPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
 
     [HttpGet("Id")]
     public async Task<IActionResult> GetPromotionById(Guid id)
@@ -35,7 +41,7 @@ public class PromotionController : Controller
         return Ok(result);
     }
     [HttpPost("create-promotion")]
-    public async Task<ActionResult<Result<Promotion>>> CreatePromotion( [FromForm] CreatePromotionRequest request)
+    public async Task<ActionResult<Result<Promotion>>> CreatePromotion([FromForm] CreatePromotionRequest request)
     {
         var result = await _promotionService.CreatePromotion(request);
         if (result.ResultStatus != ResultStatus.Success.ToString())
@@ -56,10 +62,10 @@ public class PromotionController : Controller
         return Ok(expiredPromotions);
     }
     [HttpPut("{promotionId}")]
-    public async Task<IActionResult> UpdatePromotion( Guid promotionId, [FromForm] UpdatePromotionRequest request)
+    public async Task<IActionResult> UpdatePromotion(Guid promotionId, [FromForm] UpdatePromotionRequest request)
     {
-        var result = await _promotionService.UpdatePromotion(promotionId ,request);
-        return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
+        var result = await _promotionService.UpdatePromotion(promotionId, request);
+        return result.ResultStatus != ResultStatus.Success.ToString() ? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
     }
 
     [HttpDelete("delete-promotion")]

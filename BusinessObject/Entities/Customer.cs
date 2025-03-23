@@ -7,8 +7,6 @@ public partial class Customer
 {
     public Guid CustomerId { get; set; }
 
-    public string? Password { get; set; }
-
     public string? FullName { get; set; }
 
     public string? City { get; set; }
@@ -36,6 +34,7 @@ public partial class Customer
 
     public string? Otp { get; set; }
 
+    public Guid? UserId { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
@@ -44,5 +43,7 @@ public partial class Customer
     public virtual ICollection<Wallet> Wallets { get; set; } = new List<Wallet>();
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+    public virtual User? User { get; set; }
+
 
 }

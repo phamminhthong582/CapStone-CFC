@@ -14,6 +14,7 @@ using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
 using System.Drawing;
+using BusinessObject.DTO.Pagination;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -24,12 +25,14 @@ public class ProductCustomService : IProductCustomService
     private readonly IProductCustomRepository _productCustomRepository;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ImageService _imageService;
 
-    public ProductCustomService(IProductCustomRepository productCustomRepository, IMapper mapper, IUnitOfWork unitOfWork)
+    public ProductCustomService(IProductCustomRepository productCustomRepository, IMapper mapper, IUnitOfWork unitOfWork, ImageService imageService)
     {
         _productCustomRepository = productCustomRepository;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
+        _imageService = imageService;
     }
 
     public async Task<IEnumerable<ProductCustomResponse>> GetAllProductCustom()
@@ -129,6 +132,23 @@ public class ProductCustomService : IProductCustomService
 
         return productCustomResponse;
     }
+
+    public async Task<PaginationResponse<ProductCustomResponse>> GetAllProductCustomPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _productCustomRepository.CountProductCustomsAsync();  
+        var productCustoms = await _productCustomRepository.GetProductCustomsPaginatedAsync(pageNumber, pageSize); 
+        var productCustomResponses = _mapper.Map<List<ProductCustomResponse>>(productCustoms);
+        var paginationResponse = new PaginationResponse<ProductCustomResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = productCustomResponses
+        };
+        return paginationResponse;
+    }
+
     public async Task<ProductCustomResponse> GetProductCustomById(Guid id)
     {
         var productCustom = await _unitOfWork.Repository<ProductCustom>().Entities
@@ -306,7 +326,31 @@ public class ProductCustomService : IProductCustomService
             Messages = new[] { "ProductCustom created successfully" }
         };
     }
-   
+    public async Task<string> CreateImageProductCustom(Guid ProductCustomId)
+    {
+        var productCustom = await _unitOfWork.GetRepo<ProductCustom>()
+            .Entities.Include(a => a.FlowerBasket)
+            .Include(n => n.Style)
+            .Include(n => n.Accessory)
+            .FirstOrDefaultAsync(m => m.ProductCustomId == ProductCustomId);
+
+        var flowerCustomList = await _unitOfWork.GetRepo<FlowerCustom>()
+            .Entities.Include(m => m.Flower)
+            .Where(a => a.ProductCustomId == productCustom.ProductCustomId)
+            .ToListAsync();
+
+        // Tạo danh sách hoa theo số lượng và tên
+        string flowerDetails = string.Join(", ", flowerCustomList.Select(f => $"{f.Quantity} {f.Flower.FlowerName}"));
+
+        // Chuỗi mô tả sản phẩm để gửi lên AI
+        string description = $"I have one FlowerBasket like this image {productCustom.FlowerBasket.Image}. " +
+                             $"Add {flowerDetails}. " +
+                             $"Design follows the {productCustom.Style.Name} style. " +
+                             $"Add accessories like this image: {productCustom.Accessory.Image}.";
+        string image = await _imageService.GenerateImageAsync(description);
+        return image;
+    }
+
     public async Task<Result<ProductCustomResponse>> UpdateProductCustom(Guid id, UpdateProductCustomRequest request)
     {
         var productCustom = await _productCustomRepository.GetProductCustomById(id);
@@ -391,6 +435,5 @@ public class ProductCustomService : IProductCustomService
         };
     }
 
-
-
+    
 }

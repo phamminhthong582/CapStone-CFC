@@ -27,10 +27,10 @@ public static class DependencyInjection
         //Store
         services.AddScoped<IStoreService, StoreService>();
         // Category
-        services.AddScoped<ICategoryService, CategoryService>(); 
+        services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         // Promotion
-        services.AddScoped<IPromotionService, PromotionService>(); 
+        services.AddScoped<IPromotionService, PromotionService>();
         services.AddScoped<IPromotionRepository, PromotionRepository>();
         // Customer
         services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -64,8 +64,8 @@ public static class DependencyInjection
         services.AddScoped<IProductService, ProductService>();
 
         //Order
-        services.AddScoped<IOrderService, OrderService>();  
-        services.AddScoped<IOrderRepository, OrderRepository>();  
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
 
         //Delivery
         services.AddScoped<IDeliveryService, DeliveryService>();
@@ -78,7 +78,7 @@ public static class DependencyInjection
         //IWithdrawMoney
 
         services.AddScoped<IWithdrawMoneyService, WithdrawMoneyService>();
-      
+
         //DepositMoney
         services.AddScoped<IIncomWalletService, IncomWalletService>();
 
@@ -86,7 +86,7 @@ public static class DependencyInjection
         services.AddScoped<IRefundService, RefundService>();
 
         //VNpay
-        services.AddScoped<IVnPayService,VnPayService>();
+        services.AddScoped<IVnPayService, VnPayService>();
 
         //Payment
         services.AddScoped<IPaymentService, PaymentService>();
@@ -101,7 +101,13 @@ public static class DependencyInjection
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
 
-        
+        //OpenAI
+        services.AddHttpClient<OpenAIService>(); // Đăng ký HttpClient
+        services.AddSingleton<OpenAIService>();
+        services.AddHttpClient<GeminiService>(); // Đăng ký HttpClient
+        services.AddSingleton<GeminiService>();
+
+        services.AddHttpClient<ImageService>(); // Đăng ký HttpClient
 
         // Hang
 

@@ -35,6 +35,7 @@ public partial class ProductCustom
 
 
     public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();
+    public Guid? OrderId { get; set; }
 
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual Order? Order { get; set; }
 }

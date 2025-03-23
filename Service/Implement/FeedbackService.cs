@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.FeedBack;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 using CloudinaryDotNet.Actions;
 using CloudinaryDotNet;
@@ -19,21 +20,17 @@ public class FeedbackService : IFeedbackService
     private IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
     private readonly CloudinaryService _cloudinaryService;
+    private readonly IFeedbackRepository _feedbackRepository;
+    private readonly ICustomerRepository _customerRepository;
 
-    public FeedbackService(IMapper mapper, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
+    public FeedbackService(IMapper mapper, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService, IFeedbackRepository feedbackRepository, ICustomerRepository customerRepository)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _cloudinaryService = cloudinaryService;
+        _feedbackRepository = feedbackRepository;
+        _customerRepository = customerRepository;
     }
-
-    public Task<List<FeedbackResponse>> GetAllFeedback()
-    {
-        throw new NotImplementedException();
-    }
-  
-
-
 
     public async Task CreateFeedbackByCustomer(Guid customerId, Guid orderId, CreateFeedbackRequest request)
     {
@@ -197,4 +194,21 @@ public class FeedbackService : IFeedbackService
     }
 
  
+    public async Task<PaginationResponse<FeedbackResponse>> GetAllFeedbackPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _feedbackRepository.CountFeedbacksAsync();  
+        var feedback = await _feedbackRepository.GetFeedbackPaginatedAsync(pageNumber, pageSize); 
+        var feedbackResponses = _mapper.Map<List<FeedbackResponse>>(feedback);
+        var paginationResponse = new PaginationResponse<FeedbackResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = feedbackResponses
+        };
+        return paginationResponse;
+    }
+
+   
 }

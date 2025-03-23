@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="ChatGPT.Net" Version="2.0.0" />
         <PackageReference Include="Hangfire" Version="1.8.18" />
         <PackageReference Include="MailKit" Version="4.9.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
@@ -23,6 +24,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="9.0.2" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+        <PackageReference Include="OpenAI.API" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
