@@ -19,7 +19,14 @@ public class FlowerCustomService : IFlowerCustomService
         _flowerCustomRepository = flowerCustomRepository;
         _mapper = mapper;
     }
-    public async Task<PaginationResponse<FlowerCustomResponse>> GetAllFlowerCustom(int pageNumber, int pageSize)
+
+    public async Task<List<FlowerCustomResponse>> GetAllFlowerCustom()
+    {
+        var list = await _flowerCustomRepository.GetAllFlowerCustom();
+        return _mapper.Map<List<FlowerCustomResponse>>(list);
+    }
+
+    public async Task<PaginationResponse<FlowerCustomResponse>> GetAllFlowerCustomPagination(int pageNumber, int pageSize)
     {
         var totalCount = await _flowerCustomRepository.CountFlowersCustomAsync();  
         var flowerCustom = await _flowerCustomRepository.GetFlowerCustomPaginatedAsync(pageNumber, pageSize); 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.FeedBack;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 using Core.Infrastructures;
 using Repository.Interface;
@@ -65,4 +66,19 @@ public class FeedbackService : IFeedbackService
         };
     }
 
+    public async Task<PaginationResponse<FeedbackResponse>> GetAllFeedbackPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _feedbackRepository.CountFeedbacksAsync();  
+        var feedback = await _feedbackRepository.GetFeedbackPaginatedAsync(pageNumber, pageSize); 
+        var feedbackResponses = _mapper.Map<List<FeedbackResponse>>(feedback);
+        var paginationResponse = new PaginationResponse<FeedbackResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = feedbackResponses
+        };
+        return paginationResponse;
+    }
 }

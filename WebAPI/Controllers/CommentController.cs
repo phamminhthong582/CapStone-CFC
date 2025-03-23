@@ -23,6 +23,12 @@ public class CommentController : Controller
       var result = await _commentService.GetAllComment();
       return Ok(result);
    }
+   [HttpGet("getComment-pagination")]
+   public async Task<IActionResult> GetCommentPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+   {
+      var result = await _commentService.GetAllCommentPagination(pageNumber, pageSize);
+      return Ok(result);
+   }
    [HttpGet("get-comments-by-productId")]
    public async Task<IActionResult> GetCommentsByProductId([FromQuery] Guid productId)
    {

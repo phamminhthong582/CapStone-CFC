@@ -6,4 +6,6 @@ public interface IFeedbackRepository
 {
     Task<List<Feedback>> GetAllFeedback();
     Task<Feedback> CreateFeedback(Feedback feedback);
+    Task<int> CountFeedbacksAsync();
+    Task<List<Feedback>> GetFeedbackPaginatedAsync(int pageNumber, int pageSize);
 }

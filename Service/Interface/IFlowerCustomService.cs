@@ -8,7 +8,8 @@ namespace Service.Interface;
 
 public interface IFlowerCustomService
 {
-    Task<PaginationResponse<FlowerCustomResponse>> GetAllFlowerCustom(int pageNumber, int pageSize);
+    Task<List<FlowerCustomResponse>> GetAllFlowerCustom();
+    Task<PaginationResponse<FlowerCustomResponse>> GetAllFlowerCustomPagination(int pageNumber, int pageSize);
     Task<Result<FlowerCustom>> CreateFlowerCustom(CreateFlowerCustomRequest request);
     Task<Result<FlowerCustomResponse>> UpdateFlowerCustom(Guid id, UpdateFlowerCustomRequest request);
     Task<Result<FlowerCustom>> DeleteFlowerCustom(Guid id);

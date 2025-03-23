@@ -23,6 +23,12 @@ public class FeedbackController : Controller
         var result = await _feedbackService.GetAllFeedback();
         return Ok(result);
     }
+    [HttpGet("getFeedback-pagination")]
+    public async Task<IActionResult> GetFeedbackPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _feedbackService.GetAllFeedbackPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
     [HttpPost("create-feedback")]
     public async Task<ActionResult<Result<Feedback>>> CreateFeedback( [FromBody] CreateFeedbackRequest request)
     {

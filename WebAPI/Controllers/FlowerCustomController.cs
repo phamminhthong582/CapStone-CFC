@@ -18,9 +18,15 @@ public class FlowerCustomController : Controller
         _flowerCustomService = flowerCustomService;
     }
     [HttpGet]
+    public async Task<IActionResult> GetFlowerCustoms()
+    {
+        var result = await _flowerCustomService.GetAllFlowerCustom();
+        return Ok(result);
+    }
+    [HttpGet("getFlowerCustom-pagination")]
     public async Task<IActionResult> GetFlowerCustom([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _flowerCustomService.GetAllFlowerCustom(pageNumber, pageSize);
+        var result = await _flowerCustomService.GetAllFlowerCustomPagination(pageNumber, pageSize);
         return Ok(result);
     }
     [HttpGet("Id")]
