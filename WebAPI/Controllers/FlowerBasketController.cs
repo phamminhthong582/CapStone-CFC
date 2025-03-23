@@ -34,6 +34,12 @@ public class FlowerBasketController : Controller
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         return Ok(result);
     }
+    [HttpGet("getFlowerBasket-pagination")]
+    public async Task<IActionResult> GetFlowerBasketPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _flowerBasketService.GetAllFlowerBasketPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
     [HttpPost("create-flowerbasket")]
     public async Task<ActionResult<Result<FlowerBasket>>> CreateFlowerBasket( [FromForm] CreateFlowerBasketRequest request)
     {
