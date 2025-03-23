@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Flower;
+using BusinessObject.DTO.Pagination;
 using BusinessObject.DTO.Product;
 using BusinessObject.Entities;
 using Repository.Interface;
@@ -26,6 +27,22 @@ public class FlowerService : IFlowerService
     {
         var list = await _flowerRepository.GetAllFlower();
         return _mapper.Map<List<FlowerResponse>>(list);
+    }
+
+    public async Task<PaginationResponse<FlowerResponse>> GetAllFlowerPagination(int pageNumber, int pageSize)
+    {
+        var totalCount = await _flowerRepository.CountFlowersAsync();  
+        var flower = await _flowerRepository.GetFlowerPaginatedAsync(pageNumber, pageSize); 
+        var flowerResponses = _mapper.Map<List<FlowerResponse>>(flower);
+        var paginationResponse = new PaginationResponse<FlowerResponse>
+        {
+            TotalCount = totalCount,
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+            Data = flowerResponses
+        };
+        return paginationResponse;
     }
 
     public async Task<Result<Flower>> CreateFlower(CreateFlowerRequest request)

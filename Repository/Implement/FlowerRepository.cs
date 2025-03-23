@@ -19,6 +19,19 @@ public class FlowerRepository : IFlowerRepository
         return list;
     }
 
+    public async Task<int> CountFlowersAsync()
+    {
+        return await _context.Flowers.CountAsync();
+    }
+
+    public async Task<List<Flower>> GetFlowerPaginatedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.Flowers
+            .Skip((pageNumber - 1) * pageSize) 
+            .Take(pageSize) 
+            .ToListAsync(); 
+    }
+
     public async Task<Flower?> GetFlowerById(Guid id)
     {
         var flower = await _context.Flowers.FirstOrDefaultAsync(x => x.FlowerId == id);

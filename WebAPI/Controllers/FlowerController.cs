@@ -24,6 +24,12 @@ public class FlowerController : Controller
         var result = await _flowerService.GetAllFlower();
         return Ok(result);
     }
+    [HttpGet("getFlower-pagination")]
+    public async Task<IActionResult> GetFlowerPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _flowerService.GetAllFlowerPagination(pageNumber, pageSize);
+        return Ok(result);
+    }
     [HttpGet("Id")]
     public async Task<IActionResult> GetFlowerById(Guid id)
     {
