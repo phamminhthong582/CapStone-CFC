@@ -51,6 +51,20 @@ public class FlowerBasketRepository : IFlowerBasketRepository
         return flowerBasket;
     }
 
+    public async Task<string> GetFlowerBasketInfoAsync(string basketName)
+    {
+        var flowerBasket = await _context.FlowerBaskets
+            .Where(fb => fb.FlowerBasketName.Contains(basketName))
+            .FirstOrDefaultAsync();
+
+        if (flowerBasket != null)
+        {
+            return $"Flower Basket: {flowerBasket.FlowerBasketName}, Price: {flowerBasket.Price} VND, Quantity: {flowerBasket.Quantity}.";
+        }
+
+        return "Sorry, we couldn't find any information about that flower basket.";
+    }
+
     public async Task<int> CountFlowerBasketAsync()
     {
         return await _context.FlowerBaskets.CountAsync();

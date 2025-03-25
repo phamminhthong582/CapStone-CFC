@@ -98,7 +98,7 @@ public static class DependencyInjection
         services.AddSingleton<CloudinaryService>();
         //OpenAI
         services.AddHttpClient<GeminiService>(); // Đăng ký HttpClient
-        services.AddSingleton<GeminiService>();
+        services.AddScoped<GeminiService>();
 
         //Revenue
         services.AddScoped<IRevenueService, RevenueService>();

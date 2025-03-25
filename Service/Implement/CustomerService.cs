@@ -38,15 +38,13 @@ public class CustomerService : ICustomerService
         _roleRepository = roleRepository;
         _emailService = emailService;
         _configuration = configuration;
-        _logger = logger; // Gán logger
+        _logger = logger; 
     }
     public async Task<Result<CustomerResponse>> RegisterCustomer(CreateCustomerRequest request)
     {
         try
         {
             var response = new Result<CustomerResponse>();
-
-            // Log the incoming request
             _logger.LogInformation($"Starting registration for email: {request.Email}");
 
             var isMailUsed = await _customerRepository.FindCustomerByEmail(request.Email);

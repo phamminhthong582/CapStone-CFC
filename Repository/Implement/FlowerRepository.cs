@@ -24,6 +24,19 @@ public class FlowerRepository : IFlowerRepository
         return await _context.Flowers.CountAsync();
     }
 
+    public async Task<string> GetFlowerInfoAsync(string flowerName)
+    {
+        var flower = await _context.Flowers
+            .Where(f => f.FlowerName.Contains(flowerName))
+            .FirstOrDefaultAsync();
+
+        if (flower != null)
+        {
+            return $"Flower: {flower.FlowerName}, Description: {flower.Description}, Color: {flower.FlowerId} ,  Price: {flower.Price} VND.";
+        }
+        return "Sorry, we couldn't find any information about that flower.";
+    }
+
     public async Task<List<Flower>> GetFlowerPaginatedAsync(int pageNumber, int pageSize)
     {
         return await _context.Flowers
