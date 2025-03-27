@@ -61,7 +61,6 @@ public class CustomerService : ICustomerService
             Customer customer = new Customer
             {
                 Email = request.Email,
-                Password = Convert.ToBase64String(passwordHash),
                 Status = CustomerStatus.NotVerified.ToString(),
             };
 
