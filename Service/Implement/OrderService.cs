@@ -59,7 +59,7 @@ namespace Service.Implement
             foreach (var order in orders)
             {
                 order.StaffId = staffIds[random.Next(staffIds.Count)];
-                order.UpdateAt = DateTime.UtcNow;
+                order.UpdateAt = DateTime.Now;
             }
 
             await _unitOfWork.CompleteAsync();
