@@ -18,7 +18,7 @@ public class FlowerCustomController : Controller
         _flowerCustomService = flowerCustomService;
     }
     [HttpGet]
-    public async Task<IActionResult> GetFlowerCustoms()
+    public async Task<IActionResult> GetFlowerCustom()
     {
         var result = await _flowerCustomService.GetAllFlowerCustom();
         return Ok(result);
@@ -40,7 +40,7 @@ public class FlowerCustomController : Controller
         return Ok(result);
     }
     [HttpPost("create-floweCustom")]
-    public async Task<ActionResult<Result<Flower>>> CreateFlowerCustom( [FromBody] CreateFlowerCustomRequest request)
+    public async Task<ActionResult<Result<Flower>>> CreateFlowerCustom([FromBody] CreateFlowerCustomRequest request)
     {
         var result = await _flowerCustomService.CreateFlowerCustom(request);
         if (result.ResultStatus != ResultStatus.Success.ToString())
@@ -49,12 +49,13 @@ public class FlowerCustomController : Controller
         }
         return Ok(result);
     }
+
     // [Authorize(Roles = "Admin")]
     [HttpPut("{flowerCustomId}")]
     public async Task<IActionResult> UpdateFlowerCustom([FromRoute] Guid flowerCustomIdId, UpdateFlowerCustomRequest request)
     {
         var result = await _flowerCustomService.UpdateFlowerCustom(flowerCustomIdId, request);
-        return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
+        return result.ResultStatus != ResultStatus.Success.ToString() ? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
     }
 
     [HttpDelete("delete-flowerCustom")]

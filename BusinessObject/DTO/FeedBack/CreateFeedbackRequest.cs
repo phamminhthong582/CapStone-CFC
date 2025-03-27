@@ -1,10 +1,13 @@
-﻿namespace BusinessObject.DTO.FeedBack;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BusinessObject.DTO.FeedBack;
 
 public class CreateFeedbackRequest
 {
-    public Guid? OrderId { get; set; }
-
-    public string? Descripstion { get; set; }
-
+    public string? FeedbackByCustomer { get; set; }
+    [FromForm]
+    public IFormFile? FeedBackVideoByCustomer { get; set; } // Chấp nhận file video
+    public bool? RequestRefundByCustomer { get; set; }
     public int? Rating { get; set; }
 }

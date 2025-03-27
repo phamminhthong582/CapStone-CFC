@@ -1,24 +1,42 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Service.Implement;
 
-namespace WebAPI.Controllers;
-
-public class ChatBoxController : ControllerBase
+namespace WebAPI.Controllers
 {
-    private readonly GeminiService _geminiService;
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ChatBoxController : Controller
+    {
 
-    public ChatBoxController(GeminiService geminiService)
-    {
-        _geminiService = geminiService;
+
+        private readonly GeminiService _geminiService;
+        private readonly ImageService _imageService;
+
+        public ChatBoxController(GeminiService geminiService, ImageService imageService)
+        {
+            _geminiService = geminiService;
+            _imageService = imageService;
+        }
+
+        [HttpPost("generate-image")]
+        public async Task<IActionResult> GenerateImages([FromBody] ImageRequest request)
+        {
+            var description = await _geminiService.GenerateTextAsync(request.Prompt);
+            var imageUrl = await _imageService.GenerateImageAsync(request.Prompt);
+
+            return Ok(new { imageUrl });
+        }
+        [HttpPost("chat-box")]
+        public async Task<IActionResult> Chatbot([FromBody] ImageRequest request)
+        {
+            var description = await _geminiService.GenerateTextAsync(request.Prompt);
+            return Ok(new { description });
+        }
     }
-    [HttpPost("chat-box")]
-    public async Task<IActionResult> GenerateImage([FromBody] ImageRequest request)
-    {
-        var description = await _geminiService.GenerateTextAsync(request.Prompt);
-        return Ok(new { description });
-    }
+
     public class ImageRequest
     {
         public string Prompt { get; set; }
     }
+
 }

@@ -53,14 +53,14 @@ public class FlowerController : Controller
     [HttpGet("filter-price")]
     public async Task<IActionResult> FilterFlowerByPrice(double minPrice, double? maxPrice)
     {
-        var result = await _flowerService.GetFlowerByPrice(minPrice , maxPrice);
+        var result = await _flowerService.GetFlowerByPrice(minPrice, maxPrice);
 
         if (result.ResultStatus != ResultStatus.Success.ToString())
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
 
         return Ok(result);
     }
-    
+
     [HttpPost("create-flower")]
     public async Task<IActionResult> CreateFlower([FromForm] CreateFlowerRequest request)
     {
@@ -72,10 +72,10 @@ public class FlowerController : Controller
     }
     // [Authorize(Roles = "Admin")]
     [HttpPut("{flowerId}")]
-    public async Task<IActionResult> UpdateFlower(Guid flowerId, [FromForm]UpdateFlowerRequest request)
+    public async Task<IActionResult> UpdateFlower(Guid flowerId, [FromForm] UpdateFlowerRequest request)
     {
         var result = await _flowerService.UpdateFlower(flowerId, request);
-        return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
+        return result.ResultStatus != ResultStatus.Success.ToString() ? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
     }
 
     [HttpDelete("delete-flower")]

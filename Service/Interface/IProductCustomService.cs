@@ -12,6 +12,7 @@ public interface IProductCustomService
     Task<PaginationResponse<ProductCustomResponse>>GetAllProductCustomPagination(int pageNumber, int pageSize);
     Task<Result<ProductCustom>> CreateProductCustom(Guid CustomerId, CreateProductCustomRequest request);
     Task<Result<ProductCustomResponse>> UpdateProductCustom(Guid id, UpdateProductCustomRequest request);
+    Task<string> CreateImageProductCustom(Guid ProductCustomId);
     Task<Result<ProductCustom>> DeleteProductCustom(Guid id);
     Task<ProductCustomResponse> GetProductCustomById(Guid id);
 }

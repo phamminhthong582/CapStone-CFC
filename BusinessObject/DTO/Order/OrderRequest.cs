@@ -21,6 +21,7 @@ namespace BusinessObject.DTO.Order
         public string?Status { get; set; }
         public bool? Transfer { get; set; }
        public bool? Delivery { get; set; }
+        public bool? Wallet { get; set; }
         public List<OrderDetailsRequest>? OrderDetails { get; set; }  
     }
 }

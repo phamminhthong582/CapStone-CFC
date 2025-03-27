@@ -10,6 +10,7 @@ public partial class Wallet
     public Guid? CustomerId { get; set; }
 
     public double? TotalPrice { get; set; }
+    public string? PasswordWallet {  get; set; }
 
     public DateTime? CreateAt { get; set; }
 
@@ -21,5 +22,7 @@ public partial class Wallet
 
     public virtual ICollection<Refund> Refunds { get; set; } = new List<Refund>();
     public virtual ICollection<WithdrawMoney> WithdrawMoneys { get; set; } = new List<WithdrawMoney>();
+    public virtual ICollection<IncomeWallet> IncomeWallets { get; set; } = new List<IncomeWallet>();
+
 
 }

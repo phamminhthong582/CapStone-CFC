@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.Order;
+﻿using BusinessObject.DTO.Employee;
+using BusinessObject.DTO.Order;
 using BusinessObject.DTO.Product;
 using Core.Infrastructures;
 using Microsoft.AspNetCore.Mvc;
@@ -27,10 +28,55 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
-        [HttpGet("GetOrderByStore")]
+        [HttpGet("GetFailOrderByCustomer")]
+        public async Task<IActionResult> GetFailOrderByCustomer(Guid CusomterId)
+        {
+            var result = await orderService.GetFailOrderByCustomerId(CusomterId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+        [HttpGet("GetCancelOrderByCustomer")]
+        public async Task<IActionResult> GetCancelOrderByCustomer(Guid CusomterId)
+        {
+            var result = await orderService.GetCanelOrderByCustomerId(CusomterId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+            [HttpGet("GetRefundOrderByCustomer")]
+            public async Task<IActionResult> GetRefundOrderByCustomer(Guid CusomterId)
+            {
+                var result = await orderService.GetRefundOrderByCustomerId(CusomterId);
+                return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+                  statusCode: StatusCodes.Status200OK,
+                  code: ResponseCodeConstants.SUCCESS,
+                  data: result));
+            }
+            [HttpGet("GetOrderByStore")]
         public async Task<IActionResult> GetOrderByStore(Guid StoreId)
         {
             var result = await orderService.GetOrderByStoreID(StoreId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+        [HttpGet("GetRefundOrderByStore")]
+        public async Task<IActionResult> GetRefundOrderByStore(Guid StoreId)
+        {
+            var result = await orderService.GetRefundOrderByStoreID(StoreId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+        [HttpGet("GetRailOrderByStore")]
+        public async Task<IActionResult> GetFailOrderByStore(Guid StoreId)
+        {
+            var result = await orderService.GetRefundOrderByStoreID(StoreId);
             return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
               statusCode: StatusCodes.Status200OK,
               code: ResponseCodeConstants.SUCCESS,
@@ -54,23 +100,87 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
+
+        [HttpGet("GetStaffByOrderId")]
+        public async Task<IActionResult> GetStaffForOrderId(Guid OrderId)
+        {
+            var result = await orderService.GetStaffForOrderId(OrderId);
+            return Ok(new BaseResponseModel<IEnumerable<EmployeeResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+        [HttpGet("GetDeliveryForOrderId")]
+        public async Task<IActionResult> GetDeliveryForOrderId(Guid OrderId)
+        {
+            var result = await orderService.GetDeliveryForOrderId(OrderId);
+            return Ok(new BaseResponseModel<IEnumerable<EmployeeResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
         [HttpPost("CreateOrder")]
         public async Task<IActionResult> CreateOrder(OrderRequest orderRequest, Guid CustomerId)
         {
-            await orderService.CreateOrder(orderRequest, CustomerId);
-            return Ok(new BaseResponseModel<string>(
-                     statusCode: StatusCodes.Status200OK,
-                     code: ResponseCodeConstants.SUCCESS,
-                     data: "Order thành công"));
+            try
+            {
+                var createdOrder = await orderService.CreateOrder(orderRequest, CustomerId);
+
+                return Ok(new
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Code = "Success!",
+                    Message = "Order thành công",
+                    OrderId = createdOrder.OrderId  // Now we can include the OrderId
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Code = ResponseCodeConstants.FAILED,
+                    Message = ex.Message
+                });
+            }
+        }
+        [HttpPost("CreateOrderCustom")]
+        public async Task<IActionResult> CreateOrderCustom(Guid Customer, OrderCustomRequest orderCustomRequest)
+        {
+            try
+            {
+                var createdOrder = await orderService.CreateOrderCustom(Customer, orderCustomRequest);
+
+                return Ok(new
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    Code = "Success!",
+                    Message = "Order thành công",
+                    OrderId = createdOrder.OrderId  // Now we can include the OrderId
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Code = ResponseCodeConstants.FAILED,
+                    Message = ex.Message
+                });
+            }
         }
         [HttpPost("ConvertCartToOrder")]
-        public async Task<IActionResult> ConvertCartToOrder(OrderRequest orderRequest, Guid CustomerId)
+        public async Task<IActionResult> ConvertCartToOrder(OrderCartRequest orderRequest, Guid CustomerId)
         {
-            await orderService.ConvertCartToOrder(CustomerId, orderRequest);
-            return Ok(new BaseResponseModel<string>(
-                     statusCode: StatusCodes.Status200OK,
-                     code: ResponseCodeConstants.SUCCESS,
-                     data: "Order thành công"));
+            var createdOrder = await orderService.ConvertCartToOrder(CustomerId, orderRequest);
+
+            return Ok(new
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Code = "Success!",
+                Message = "Order thành công",
+                OrderId = createdOrder.OrderId  // Now we can include the OrderId
+            });
         }
         [HttpDelete("DeleteOrder/{id}")]
         public async Task<IActionResult> DeleteOrder(Guid id)

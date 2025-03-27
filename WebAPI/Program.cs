@@ -30,6 +30,7 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddHostedService<PromotionBackgroundService>();
+builder.Services.AddHostedService<AutoUpdateOrderService>();
 builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddHangfire(x => x.UseSqlServerStorage("DBDefault"));
 // builder.Services.AddHangfireServer();
@@ -75,7 +76,6 @@ builder.Services.AddCors(options =>
                 .AllowCredentials();
         });
 });
-
 
 
 var app = builder.Build();

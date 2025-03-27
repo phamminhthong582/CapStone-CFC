@@ -2,7 +2,9 @@
 using BusinessObject.DTO.Comment;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.FeedBack;
+using BusinessObject.DTO.Order;
 using BusinessObject.Entities;
+using Core.Infrastructures;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
 
@@ -17,12 +19,12 @@ public class FeedbackController : Controller
     {
         _feedbackService = feedbackService;
     }
-    [HttpGet]
-    public async Task<IActionResult> GetFeedbacks()
-    {
-        var result = await _feedbackService.GetAllFeedback();
-        return Ok(result);
-    }
+    //[HttpGet]
+    //public async Task<IActionResult> GetFeedbacks()
+    //{
+    //    var result = await _feedbackService.GetAllFeedback();
+    //    return Ok(result);
+    //}
     [HttpGet("getFeedback-pagination")]
     public async Task<IActionResult> GetFeedbackPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
@@ -30,13 +32,47 @@ public class FeedbackController : Controller
         return Ok(result);
     }
     [HttpPost("create-feedback")]
-    public async Task<ActionResult<Result<Feedback>>> CreateFeedback( [FromBody] CreateFeedbackRequest request)
+    public async Task<ActionResult<Result<Feedback>>> CreateFeedback(Guid customerId, Guid orderId, [FromForm] CreateFeedbackRequest request)
     {
-        var result = await _feedbackService.CreateFeedback(request);
-        if (result.ResultStatus != ResultStatus.Success.ToString())
-        {
-            return StatusCode((int)HttpStatusCode.InternalServerError, result);
-        }
+        await _feedbackService.CreateFeedbackByCustomer(customerId, orderId, request);
+        return Ok(new BaseResponseModel<string>(
+                 statusCode: StatusCodes.Status200OK,
+                 code: ResponseCodeConstants.SUCCESS,
+                 data: "Thêm sản phẩm mới thành công"));
+    }
+    [HttpGet("GetFeedBackByOrderId")]
+
+    public async Task<IActionResult> GetFeedBackByOrderId(Guid OrderId)
+    {
+        var result = await _feedbackService.GetFeedBackByOrderId(OrderId);
         return Ok(result);
+    }
+
+    [HttpGet("CheckFeedBack")]
+
+    public async Task<IActionResult> CheckFeedBack(Guid OrderId)
+    {
+        var result = await _feedbackService.CheckFeedBack(OrderId);
+        return Ok(result);
+    }
+    [HttpPut("UpdateFeedBackByStoreId")]
+
+    public async Task<IActionResult> UpdateFeedBackByStoreId(Guid feedbackId, CreateFeedbackByStoreRequest request)
+    {
+        await _feedbackService.UpdateFeedbackByStoreID(feedbackId, request);
+        return Ok(new BaseResponseModel<string>(
+                                 statusCode: StatusCodes.Status200OK,
+                                 code: ResponseCodeConstants.SUCCESS,
+                                 data: "cập nhật sẩn phẩm thành công"));
+    }
+    [HttpPut("UpdateStatusFeedback")]
+
+    public async Task<IActionResult> UpdateStatusFeedback(Guid OrderId, string status)
+    {
+        await _feedbackService.UpdateStatusFeedback(OrderId, status);
+        return Ok(new BaseResponseModel<string>(
+                                 statusCode: StatusCodes.Status200OK,
+                                 code: ResponseCodeConstants.SUCCESS,
+                                 data: "cập nhật sẩn phẩm thành công"));
     }
 }

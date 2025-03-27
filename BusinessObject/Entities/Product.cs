@@ -9,10 +9,7 @@ public partial class Product
 
     public string? ProductName { get; set; }
     public double? Weight { get; set; }
-    public int? Quantity { get; set; }
-
     public double? Price { get; set; }
-
     public DateTime? CreateAt { get; set; }
 
     public DateTime? UpdateAt { get; set; }

@@ -72,4 +72,5 @@ public class EmailService : IEmailService
         response.ResultStatus = ResultStatus.Success.ToString();
         return response;
     }
+
 }

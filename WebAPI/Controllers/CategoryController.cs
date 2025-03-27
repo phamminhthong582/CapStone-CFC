@@ -23,12 +23,6 @@ public class CategoryController : ControllerBase
         var result = await _categoryService.GetAllCategory();
         return Ok(result);
     }
-    [HttpGet ("getCategory-pagination")]
-    public async Task<IActionResult> GetCategoryPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-    {
-        var result = await _categoryService.GetAllCategoryPagination(pageNumber, pageSize);
-        return Ok(result);
-    }
     [HttpGet("getCartegoryByProductType")]
     public async Task<IActionResult> GetCategoryByProductType()
     {
@@ -70,7 +64,7 @@ public class CategoryController : ControllerBase
         return Ok(result);
     }
     [HttpPost("create-category")]
-    public async Task<ActionResult<Result<Category>>> CreateCategory( [FromBody] CreateCategoryRequest request)
+    public async Task<ActionResult<Result<Category>>> CreateCategory([FromBody] CreateCategoryRequest request)
     {
         var result = await _categoryService.CreateCategory(request);
         if (result.ResultStatus != ResultStatus.Success.ToString())
@@ -79,12 +73,11 @@ public class CategoryController : ControllerBase
         }
         return Ok(result);
     }
-    // [Authorize(Roles = "Admin")]
     [HttpPut("{categoryId}")]
     public async Task<IActionResult> UpdateNameCategory([FromRoute] Guid categoryId, UpdateCategoryRequest request)
     {
         var result = await _categoryService.UpdateNameCategory(categoryId, request);
-        return result.ResultStatus != ResultStatus.Success .ToString()? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
+        return result.ResultStatus != ResultStatus.Success.ToString() ? StatusCode((int)HttpStatusCode.InternalServerError, result) : Ok(result);
     }
 
     [HttpDelete("delete-category")]
@@ -95,6 +88,12 @@ public class CategoryController : ControllerBase
         {
             return StatusCode((int)HttpStatusCode.InternalServerError, result);
         }
+        return Ok(result);
+    }
+    [HttpGet("getCategory-pagination")]
+    public async Task<IActionResult> GetCategoryPagination([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _categoryService.GetAllCategoryPagination(pageNumber, pageSize);
         return Ok(result);
     }
 }

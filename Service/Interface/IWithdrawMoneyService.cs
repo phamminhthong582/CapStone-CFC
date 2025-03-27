@@ -12,7 +12,9 @@ namespace Service.Interface
     public interface IWithdrawMoneyService
     {
         Task<IEnumerable<WithdrawMoneyResponse>> GetWithDrawMoneyByWalletId(Guid WalletId);
-        Task CreateWithdrawMoney(Guid WalletId, WithdrawMoneyRequest withdrawMoneyRequest );
+        Task<IEnumerable<WithdrawMoneyResponse>> GetWithDrawMoney();
+
+        Task<Guid> CreateWithdrawMoney(Guid WalletId, WithdrawMoneyRequest withdrawMoneyRequest );
         Task UpdateStatusWithdrawMoney(Guid WithdrawMoneyId, string status);
         Task<WithdrawMoneyResponse> GetWithDrawMoneyByWithdrawMoneyId(Guid WithdrawMoneyId);
 

@@ -64,18 +64,22 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; }
 
     public virtual DbSet<WithdrawMoney> WithdrawMoneys { get; set; }
+    public virtual DbSet<IncomeWallet> IncomeWallets { get; set; }
 
     public virtual DbSet<Style> Styles { get; set; }
+    public virtual DbSet<User> Users{ get; set; }
 
     public virtual DbSet<Accessory> Accessories { get; set; }
+    public virtual DbSet<Noti> Notis { get; set; }
 
-//     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//       => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
-      protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-  #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-          => optionsBuilder.UseSqlServer(
-              "Server=DESKTOP-T4BVTKU\\SQLEXPRESS;Database= CustomFlowerChain;UID=sa;PWD=123456;TrustServerCertificate=True");
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+      => optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+    //        => optionsBuilder.UseSqlServer(
+    //            "Server=DESKTOP-T4BVTKU\\SQLEXPRESS;Database= CustomFlowerChain;UID=sa;PWD=123456;TrustServerCertificate=True");
     // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //     => optionsBuilder.UseSqlServer(GetConnectionString());
 
@@ -118,7 +122,6 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.FullName)
                 .HasMaxLength(255)
                 .HasColumnName("Full Name");
-            entity.Property(e => e.Password).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(255);
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
             entity.Property(e => e.Status).HasColumnType("nvarchar").HasMaxLength(20);
@@ -159,15 +162,32 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Role).WithMany(p => p.Employees)
-                .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("FK_Employee_Role");
-
             entity.HasOne(d => d.Store).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.StoreId)
                 .HasConstraintName("FK_Employee_Store");
+          
         });
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("User");
 
+            entity.Property(e => e.UserId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.Users)
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK_User_Role");
+            entity.HasOne(d => d.Employee)
+                  .WithOne(p => p.User)
+                  .HasForeignKey<Employee>(p => p.UserId) // Chỉ định khóa ngoại
+                  .HasConstraintName("FK_User_Employee");
+            entity.HasOne(d => d.Customer)
+                  .WithOne(p => p.User)
+                  .HasForeignKey<Customer>(p => p.UserId) // Chỉ định khóa ngoại
+                  .HasConstraintName("FK_User_Customer");
+
+        });
         modelBuilder.Entity<Feedback>(entity =>
         {
             entity.ToTable("Feedback");
@@ -175,10 +195,6 @@ public partial class CustomFlowerChainContext : DbContext
             entity.Property(e => e.FeedbackId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.UpdateAt).HasColumnType("datetime");
-
-            entity.HasOne(d => d.Customer).WithMany(p => p.Feedbacks)
-                .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK_Feedback_Customer");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.OrderId)
@@ -284,9 +300,15 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.CustomerId)
                 .HasConstraintName("FK_Order_Customer");
 
-            entity.HasOne(d => d.ProductCustom).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.ProductCustomId)
-                .HasConstraintName("FK_Order_ProductCustom1");
+            /* entity.HasOne(d => d.ProductCustom).WithMany(p => p.Orders)
+                 .HasForeignKey(d => d.ProductCustomId)
+                 .HasConstraintName("FK_Order_ProductCustom1");*/
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.ProductCustom)
+                .WithOne(pc => pc.Order)
+                .HasForeignKey<ProductCustom>(pc => pc.OrderId)
+                .OnDelete(DeleteBehavior.Cascade) // Khi xóa Order, ProductCustom cũng bị xóa
+                .HasConstraintName("FK_Order_ProductCustom");
 
             entity.HasOne(d => d.Promotion).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.PromotionId)
@@ -463,7 +485,20 @@ public partial class CustomFlowerChainContext : DbContext
 
             entity.HasOne(d => d.Wallet).WithMany(p => p.WithdrawMoneys)
                 .HasForeignKey(d => d.WalletId)
-                .HasConstraintName("FK_WithdrawMoney_Refund");
+                .HasConstraintName("FK_WithdrawMoney_Wallet");
+        });
+        modelBuilder.Entity<IncomeWallet>(entity =>
+        {
+            entity.ToTable("IncomeWallet");
+
+            entity.Property(e => e.IncomeWalletID).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+
+            entity.HasOne(d => d.Wallet).WithMany(p => p.IncomeWallets)
+                .HasForeignKey(d => d.WalletID)
+                .HasConstraintName("FK_IncomeWallet_Wallet");
         });
         modelBuilder.Entity<ChatRoom>(entity =>
         {
@@ -499,6 +534,14 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Message).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.MessageId)
                 .HasConstraintName("FK_NotificationId_Message");
+        });
+        modelBuilder.Entity<Noti>(entity =>
+        {
+            entity.ToTable("Noti");
+            entity.Property(e => e.NotiId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
         });
 
 

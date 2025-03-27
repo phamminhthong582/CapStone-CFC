@@ -226,10 +226,6 @@ namespace BusinessObject.Migrations
                     b.Property<string>("Otp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<string>("Phone")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -242,7 +238,14 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("CustomerId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Customer", (string)null);
                 });
@@ -351,9 +354,6 @@ namespace BusinessObject.Migrations
                     b.Property<string>("Otp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
@@ -369,11 +369,16 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("EmployeeId");
 
-                    b.HasIndex("RoleId");
-
                     b.HasIndex("StoreId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Employee", (string)null);
                 });
@@ -391,7 +396,10 @@ namespace BusinessObject.Migrations
                     b.Property<Guid?>("CustomerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Descripstion")
+                    b.Property<string>("FeedBackVideoByCustomer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FeedbackByCustomer")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("OrderId")
@@ -400,15 +408,22 @@ namespace BusinessObject.Migrations
                     b.Property<int?>("Rating")
                         .HasColumnType("int");
 
+                    b.Property<bool?>("RequestRefundByCustomer")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ResponseFeedBackStore")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
                     b.HasKey("FeedbackId");
-
-                    b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderId");
 
@@ -558,6 +573,41 @@ namespace BusinessObject.Migrations
                     b.ToTable("FlowerCustom", (string)null);
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.IncomeWallet", b =>
+                {
+                    b.Property<Guid?>("IncomeWalletID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("(newid())");
+
+                    b.Property<DateTime?>("CreateAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<double?>("IncomePrice")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Method")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<Guid?>("WalletID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("IncomeWalletID");
+
+                    b.HasIndex("WalletID");
+
+                    b.ToTable("IncomeWallet", (string)null);
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Message", b =>
                 {
                     b.Property<Guid?>("MessageId")
@@ -594,6 +644,45 @@ namespace BusinessObject.Migrations
                     b.HasIndex("ChatRoomId");
 
                     b.ToTable("Message", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Entities.Noti", b =>
+                {
+                    b.Property<Guid>("NotiId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("(newid())");
+
+                    b.Property<DateTime?>("CreateAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<Guid?>("FromUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("RelatedId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ToUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("NotiId");
+
+                    b.ToTable("Noti", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Notification", b =>
@@ -696,12 +785,13 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime");
 
+                    b.Property<bool?>("Wallet")
+                        .HasColumnType("bit");
+
                     b.HasKey("OrderId")
                         .HasName("PK_Table_1");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("ProductCustomId");
 
                     b.HasIndex("PromotionId");
 
@@ -820,9 +910,6 @@ namespace BusinessObject.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("int");
-
                     b.Property<string>("Size")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -868,6 +955,9 @@ namespace BusinessObject.Migrations
                     b.Property<Guid?>("FlowerBasketId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ProductName")
                         .HasColumnType("nvarchar(max)");
 
@@ -891,6 +981,10 @@ namespace BusinessObject.Migrations
                     b.HasIndex("AccessoryId");
 
                     b.HasIndex("FlowerBasketId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasFilter("[OrderId] IS NOT NULL");
 
                     b.HasIndex("StyleId");
 
@@ -1116,6 +1210,44 @@ namespace BusinessObject.Migrations
                     b.ToTable("Style", (string)null);
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.User", b =>
+                {
+                    b.Property<Guid?>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("(newid())");
+
+                    b.Property<DateTime?>("CreateAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool?>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("User", (string)null);
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Wallet", b =>
                 {
                     b.Property<Guid>("WalletId")
@@ -1128,6 +1260,9 @@ namespace BusinessObject.Migrations
 
                     b.Property<Guid?>("CustomerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PasswordWallet")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
@@ -1243,6 +1378,16 @@ namespace BusinessObject.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.Customer", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.User", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("BusinessObject.Entities.Customer", "UserId")
+                        .HasConstraintName("FK_User_Customer");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Delivery", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Order", "Order")
@@ -1262,34 +1407,27 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Employee", b =>
                 {
-                    b.HasOne("BusinessObject.Entities.Role", "Role")
-                        .WithMany("Employees")
-                        .HasForeignKey("RoleId")
-                        .HasConstraintName("FK_Employee_Role");
-
                     b.HasOne("BusinessObject.Entities.Store", "Store")
                         .WithMany("Employees")
                         .HasForeignKey("StoreId")
                         .HasConstraintName("FK_Employee_Store");
 
-                    b.Navigation("Role");
+                    b.HasOne("BusinessObject.Entities.User", "User")
+                        .WithOne("Employee")
+                        .HasForeignKey("BusinessObject.Entities.Employee", "UserId")
+                        .HasConstraintName("FK_User_Employee");
 
                     b.Navigation("Store");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Feedback", b =>
                 {
-                    b.HasOne("BusinessObject.Entities.Customer", "Customer")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("CustomerId")
-                        .HasConstraintName("FK_Feedback_Customer");
-
                     b.HasOne("BusinessObject.Entities.Order", "Order")
                         .WithMany("Feedbacks")
                         .HasForeignKey("OrderId")
                         .HasConstraintName("FK_Feedback_Order");
-
-                    b.Navigation("Customer");
 
                     b.Navigation("Order");
                 });
@@ -1331,6 +1469,16 @@ namespace BusinessObject.Migrations
                     b.Navigation("ProductCustom");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.IncomeWallet", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Wallet", "Wallet")
+                        .WithMany("IncomeWallets")
+                        .HasForeignKey("WalletID")
+                        .HasConstraintName("FK_IncomeWallet_Wallet");
+
+                    b.Navigation("Wallet");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Message", b =>
                 {
                     b.HasOne("BusinessObject.Entities.ChatRoom", "ChatRoom")
@@ -1358,11 +1506,6 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("CustomerId")
                         .HasConstraintName("FK_Order_Customer");
 
-                    b.HasOne("BusinessObject.Entities.ProductCustom", "ProductCustom")
-                        .WithMany("Orders")
-                        .HasForeignKey("ProductCustomId")
-                        .HasConstraintName("FK_Order_ProductCustom1");
-
                     b.HasOne("BusinessObject.Entities.Promotion", "Promotion")
                         .WithMany("Orders")
                         .HasForeignKey("PromotionId")
@@ -1374,8 +1517,6 @@ namespace BusinessObject.Migrations
                         .HasConstraintName("FK_Order_Employee");
 
                     b.Navigation("Customer");
-
-                    b.Navigation("ProductCustom");
 
                     b.Navigation("Promotion");
 
@@ -1445,6 +1586,12 @@ namespace BusinessObject.Migrations
                         .HasForeignKey("FlowerBasketId")
                         .HasConstraintName("FK_ProductCustom_FlowerBasket");
 
+                    b.HasOne("BusinessObject.Entities.Order", "Order")
+                        .WithOne("ProductCustom")
+                        .HasForeignKey("BusinessObject.Entities.ProductCustom", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("FK_Order_ProductCustom");
+
                     b.HasOne("BusinessObject.Entities.Style", "Style")
                         .WithMany("ProductCustoms")
                         .HasForeignKey("StyleId")
@@ -1453,6 +1600,8 @@ namespace BusinessObject.Migrations
                     b.Navigation("Accessory");
 
                     b.Navigation("FlowerBasket");
+
+                    b.Navigation("Order");
 
                     b.Navigation("Style");
                 });
@@ -1494,6 +1643,16 @@ namespace BusinessObject.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.User", b =>
+                {
+                    b.HasOne("BusinessObject.Entities.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .HasConstraintName("FK_User_Role");
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Wallet", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Customer", "Customer")
@@ -1509,7 +1668,7 @@ namespace BusinessObject.Migrations
                     b.HasOne("BusinessObject.Entities.Wallet", "Wallet")
                         .WithMany("WithdrawMoneys")
                         .HasForeignKey("WalletId")
-                        .HasConstraintName("FK_WithdrawMoney_Refund");
+                        .HasConstraintName("FK_WithdrawMoney_Wallet");
 
                     b.Navigation("Wallet");
                 });
@@ -1542,8 +1701,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("Carts");
 
                     b.Navigation("Comments");
-
-                    b.Navigation("Feedbacks");
 
                     b.Navigation("Orders");
 
@@ -1586,6 +1743,8 @@ namespace BusinessObject.Migrations
 
                     b.Navigation("Payments");
 
+                    b.Navigation("ProductCustom");
+
                     b.Navigation("Refunds");
                 });
 
@@ -1603,8 +1762,6 @@ namespace BusinessObject.Migrations
             modelBuilder.Entity("BusinessObject.Entities.ProductCustom", b =>
                 {
                     b.Navigation("FlowerCustoms");
-
-                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Promotion", b =>
@@ -1614,7 +1771,7 @@ namespace BusinessObject.Migrations
 
             modelBuilder.Entity("BusinessObject.Entities.Role", b =>
                 {
-                    b.Navigation("Employees");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("BusinessObject.Entities.Store", b =>
@@ -1629,8 +1786,17 @@ namespace BusinessObject.Migrations
                     b.Navigation("ProductCustoms");
                 });
 
+            modelBuilder.Entity("BusinessObject.Entities.User", b =>
+                {
+                    b.Navigation("Customer");
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("BusinessObject.Entities.Wallet", b =>
                 {
+                    b.Navigation("IncomeWallets");
+
                     b.Navigation("Refunds");
 
                     b.Navigation("WithdrawMoneys");

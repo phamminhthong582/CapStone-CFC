@@ -10,8 +10,13 @@ namespace Service.Interface
 {
     public interface IVnPayService
     {
-        Task<String> CreatePaymentUrlAsync(Guid PaymentId);
+        Task<String> CreatePaymentUrlAsync(Guid orderId);
         VnPaymentResponseModel PaymentExecute(IQueryCollection collections);
+
+        VnPaymentWalletResponseModel PaymentDepositExecute(IQueryCollection collections);
+
+        Task<String> CreateDepositWallet(Guid walletId, double price );
+
 
     }
 }
