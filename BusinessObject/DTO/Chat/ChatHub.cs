@@ -8,7 +8,7 @@ public class ChatHub : Hub
     // Gửi tin nhắn
     public async Task SendMessage(MessageResponse message)
     {
-        
+
         await Clients.Group(message.ChatRoomId.ToString()).SendAsync("ReceiveMessage", message);
     }
     // Tham gia phòng tin nhắn

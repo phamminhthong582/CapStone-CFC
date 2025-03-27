@@ -59,6 +59,8 @@ public class MessageService : IMessageService
             Status = createdMessage.Status,
             CreateAt = createdMessage.CreateAt
         };
+
+
         response.Messages = new[] { "Successfully!" };
         response.ResultStatus = ResultStatus.Success.ToString();
         return response;

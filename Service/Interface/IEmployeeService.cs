@@ -16,7 +16,7 @@ public interface IEmployeeService
     Task<IEnumerable<EmployeeResponse>> GetFloristWithStoreIdWithStatusTrue(Guid storeId);
     Task<IEnumerable<CourierResponse>> GetCourierWithStoreIdWithStatusTrue(Guid storeid);
     //Task<Result<Employee>> DeleteEmployee(Guid id);
-    //Task CreateManagerStore(Guid storeid, CreateManagerStoreRequest createManagerStoreRequest);
+    Task CreateManagerStore(Guid storeid, CreateManagerStoreRequest createManagerStoreRequest);
     Task ApproveEmployee(Guid employeeId);
     Task Reject(Guid employeeid, string reason);
     //Task UpdateStatusEmloyee(Guid employeeid, bool status);
