@@ -32,6 +32,7 @@ public partial class ProductCustom
     public virtual Style? Style { get; set; }
 
     public virtual Accessory? Accessory { get; set; }
+    public virtual string? productCustomImage {  get; set; }
 
 
     public virtual ICollection<FlowerCustom> FlowerCustoms { get; set; } = new List<FlowerCustom>();

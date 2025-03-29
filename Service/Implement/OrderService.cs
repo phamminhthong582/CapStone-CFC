@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO.Accessory;
+using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Check;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Employee;
@@ -20,8 +21,8 @@ using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+    using System.Collections.Generic;
+    using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,10 +33,12 @@ namespace Service.Implement
     public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IChatRoomService _chatRoomService;
 
-        public OrderService(IUnitOfWork unitOfWork)
+        public OrderService(IUnitOfWork unitOfWork, IChatRoomService chatRoomService)
         {
             _unitOfWork = unitOfWork;
+            _chatRoomService = chatRoomService;
         }
 
         public async Task AutoUpdateOrder()
@@ -355,6 +358,11 @@ namespace Service.Implement
 
             }*/
             order.OrderPrice = totalPrice;
+            productCustom.OrderId = order.OrderId;
+
+            _unitOfWork.Repository<ProductCustom>().Update(productCustom);
+            await _unitOfWork.CompleteAsync();
+
             _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
             return order;
@@ -920,8 +928,9 @@ namespace Service.Implement
                 OrderId = order.OrderId,
                 OrderPrice = order.OrderPrice,
                 CustomerId = CustomerID,
-                ProductCustomId = order.ProductCustomId,
                 Delivery = order.Delivery,
+                ProductCustomId = order.ProductCustomId,
+                   
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
                     ProductCustomId = order.ProductCustomId,
@@ -932,6 +941,7 @@ namespace Service.Implement
                     CreateAt = order.ProductCustom.CreateAt,
                     UpdateAt = order.ProductCustom.UpdateAt,
                     Status = order.ProductCustom.Status,
+                    productCustomImage = order.ProductCustom.productCustomImage,
                     flowerBasketResponse = order.ProductCustom.FlowerBasket != null ? new FlowerBasketResponse
                     {
                         FlowerBasketId = order.ProductCustom.FlowerBasket.FlowerBasketId,
@@ -1052,9 +1062,12 @@ namespace Service.Implement
              .Include(d => d.Promotion)
              .Include(o => o.OrderDetails)
                  .ThenInclude(od => od.Product)
-                 .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
-                 .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
-                 .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
+                .Include(m => m.ProductCustom)
+    .ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
+.Include(c => c.ProductCustom)
+    .ThenInclude(a => a.Style).ThenInclude(l => l.Category)
+.Include(e => e.ProductCustom)
+    .ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
                  .Include(p => p.Staff)
                                     .OrderByDescending(n => n.CreateAt)
 
@@ -1101,6 +1114,8 @@ namespace Service.Implement
                     CreateAt = order.ProductCustom.CreateAt,
                     UpdateAt = order.ProductCustom.UpdateAt,
                     Status = order.ProductCustom.Status,
+                    productCustomImage = order.ProductCustom.productCustomImage,
+
                     flowerBasketResponse = order.ProductCustom.FlowerBasket != null ? new FlowerBasketResponse
                     {
                         FlowerBasketId = order.ProductCustom.FlowerBasket.FlowerBasketId,
@@ -1936,7 +1951,21 @@ namespace Service.Implement
             order.UpdateAt = DateTime.Now;
             order.Status = "Arranging & Packing";
             _unitOfWork.Repository<Order>().Update(order);
+
             await _unitOfWork.CompleteAsync();
+
+
+            var chatRoomRequest = new CreateChatRoomRequest { OrderId = orderId };
+            var chatRoomResult = await _chatRoomService.CreateChatRoom(chatRoomRequest);
+
+            if (chatRoomResult.ResultStatus != ResultStatus.Success.ToString())
+            {
+                throw new Exception("Failed to create chat room: " + string.Join(", ", chatRoomResult.Messages));
+            }
+
+            await _unitOfWork.Repository<ChatRoom>().AddAsync(chatRoomResult.Data);
+            await _unitOfWork.CompleteAsync();
+
 
 
         }

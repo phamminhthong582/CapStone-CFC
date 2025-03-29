@@ -105,7 +105,9 @@ public static class DependencyInjection
         services.AddHttpClient<OpenAIService>(); // Đăng ký HttpClient
         services.AddSingleton<OpenAIService>();
         services.AddHttpClient<GeminiService>(); // Đăng ký HttpClient
-        services.AddSingleton<GeminiService>();
+        services.AddScoped<GeminiService>();
+        services.AddHttpClient<ChatGptService>(); 
+        services.AddScoped<ChatGptService>();
 
         services.AddHttpClient<ImageService>(); // Đăng ký HttpClient
 

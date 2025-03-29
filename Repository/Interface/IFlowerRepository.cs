@@ -6,6 +6,7 @@ public interface IFlowerRepository
 {
     Task<List<Flower?>> GetAllFlower();
     Task<int> CountFlowersAsync();
+    Task<string> GetFlowerInfoAsync(string flowerName);
     Task<List<Flower>> GetFlowerPaginatedAsync(int pageNumber, int pageSize);
     Task<Flower?> GetFlowerById(Guid id);
     Task<Flower?> AddFlower(Flower flower);

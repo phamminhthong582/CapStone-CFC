@@ -3,6 +3,7 @@ using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Notification;
 using Core.Middleware;
 using Hangfire;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -64,6 +65,13 @@ builder.Services.AddSwaggerGen(sw =>
         }
     });
 });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://your-identity-provider";
+        options.Audience = "your-api";
+    });
+
 
 builder.Services.AddCors(options =>
 {
@@ -107,6 +115,7 @@ else
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.MapHub<ChatHub>("/chatHub");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
