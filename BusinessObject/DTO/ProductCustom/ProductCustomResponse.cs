@@ -12,8 +12,10 @@ public class ProductCustomResponse
     public FlowerBasketResponse? flowerBasketResponse { get; set; }
     public StyleResponse? styleResponse { get; set; }
     public AccessoryResponse? accessoryResponse { get; set; }
-
+    
     public List<FlowerCustomResponse>? flowerCustomResponses { get; set; }
+    public string? productCustomImage { get; set; }
+
     public int? Quantity { get; set; }
     public double? TotalPrice { get; set; }
     public string? Description { get; set; }

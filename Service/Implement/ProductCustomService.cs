@@ -17,6 +17,7 @@ using System.Drawing;
 using BusinessObject.DTO.Pagination;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Net.Mime.MediaTypeNames;
+using BusinessObject.DTO.Product;
 
 namespace Service.Implement;
 
@@ -26,13 +27,17 @@ public class ProductCustomService : IProductCustomService
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ImageService _imageService;
+    private readonly OpenAIService _openAIService;
+    private readonly CloudinaryService _cloudinaryService;
 
-    public ProductCustomService(IProductCustomRepository productCustomRepository, IMapper mapper, IUnitOfWork unitOfWork, ImageService imageService)
+    public ProductCustomService(IProductCustomRepository productCustomRepository, IMapper mapper, IUnitOfWork unitOfWork, ImageService imageService, OpenAIService openAIService, CloudinaryService cloudinaryService)
     {
         _productCustomRepository = productCustomRepository;
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _imageService = imageService;
+        _openAIService = openAIService;
+        _cloudinaryService = cloudinaryService;
     }
 
     public async Task<IEnumerable<ProductCustomResponse>> GetAllProductCustom()
@@ -302,7 +307,6 @@ public class ProductCustomService : IProductCustomService
 
             Console.WriteLine($"Tổng số hoa trong list: {flowerCustoms.Count}");
             productCustom.TotalPrice = ((flowerBasket?.Price ?? 0) + (accessory?.Price ?? 0) + totalFlowersPrice) * request.Quantity;
-
             await _unitOfWork.Repository<FlowerCustom>().AddRangeAsync(flowerCustoms);
             _unitOfWork.Repository<ProductCustom>().Update(productCustom);
             await _unitOfWork.CompleteAsync();
@@ -334,6 +338,11 @@ public class ProductCustomService : IProductCustomService
             .Include(n => n.Accessory)
             .FirstOrDefaultAsync(m => m.ProductCustomId == ProductCustomId);
 
+        if (productCustom == null)
+        {
+            throw new Exception("ProductCustom not found");
+        }
+
         var flowerCustomList = await _unitOfWork.GetRepo<FlowerCustom>()
             .Entities.Include(m => m.Flower)
             .Where(a => a.ProductCustomId == productCustom.ProductCustomId)
@@ -347,9 +356,32 @@ public class ProductCustomService : IProductCustomService
                              $"Add {flowerDetails}. " +
                              $"Design follows the {productCustom.Style.Name} style. " +
                              $"Add accessories like this image: {productCustom.Accessory.Image}.";
-        string image = await _imageService.GenerateImageAsync(description);
-        return image;
+
+        string imageUrl = await _openAIService.GenerateImageAsync(description);
+
+        if (string.IsNullOrEmpty(imageUrl))
+        {
+            throw new Exception("Failed to generate image from OpenAI");
+        }
+
+        // Tải ảnh từ URL về để chuẩn bị upload lên Cloudinary
+        using (var httpClient = new HttpClient())
+        {
+            var imageStream = await httpClient.GetStreamAsync(imageUrl);
+            var folderName = "flower_products";
+            var cloudinaryUrl = await _cloudinaryService.UploadImageAsync(imageStream, $"{folderName}/product_{ProductCustomId}");
+
+            if (!string.IsNullOrEmpty(cloudinaryUrl))
+            {
+                productCustom.productCustomImage = cloudinaryUrl;
+                _unitOfWork.Repository<ProductCustom>().Update(productCustom);
+                await _unitOfWork.CompleteAsync();
+            }
+
+            return cloudinaryUrl;
+        }
     }
+
 
     public async Task<Result<ProductCustomResponse>> UpdateProductCustom(Guid id, UpdateProductCustomRequest request)
     {

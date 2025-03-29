@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTO.Product;
 using BusinessObject.DTO.Response;
 using Core.Infrastructures;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Implement;
 using Service.Interface;
@@ -19,7 +20,7 @@ namespace WebAPI.Controllers
             _productService = productService;
             _configuration = configuration;
         }
-
+        //[Authorize(Roles = "Florist")]
         [HttpGet("GetAllProduct")]
 
         public async Task<IActionResult> GetProducts()

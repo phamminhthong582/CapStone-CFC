@@ -11,11 +11,13 @@ namespace WebAPI.Controllers
 
         private readonly GeminiService _geminiService;
         private readonly ImageService _imageService;
+        private readonly OpenAIService _openAIService;
 
-        public ChatBoxController(GeminiService geminiService, ImageService imageService)
+        public ChatBoxController(GeminiService geminiService, ImageService imageService, OpenAIService openAIService)
         {
             _geminiService = geminiService;
             _imageService = imageService;
+            _openAIService = openAIService;
         }
 
         [HttpPost("generate-image")]
@@ -30,6 +32,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Chatbot([FromBody] ImageRequest request)
         {
             var description = await _geminiService.GenerateTextAsync(request.Prompt);
+            return Ok(new { description });
+        }
+        [HttpPost("chat-box-GPT")]
+        public async Task<IActionResult> ChatbotGPT([FromBody] ImageRequest request)
+        {
+            var description = await _openAIService.GenerateImageAsync(request.Prompt);
             return Ok(new { description });
         }
     }
