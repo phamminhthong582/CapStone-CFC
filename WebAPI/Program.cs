@@ -1,10 +1,14 @@
+using System.Text;
 using BusinessObject.Context;
 using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Notification;
 using Core.Middleware;
 using Hangfire;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Service.Implement;
 using WebAPI;
@@ -28,6 +32,8 @@ builder.Services.AddDbContext<CustomFlowerChainContext>();
 //var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddHostedService<PromotionBackgroundService>();
 builder.Services.AddHostedService<AutoUpdateOrderService>();
@@ -49,6 +55,7 @@ builder.Services.AddSwaggerGen(sw =>
         BearerFormat = "JWT",
         Scheme = "bearer"
     });
+
     sw.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -64,7 +71,30 @@ builder.Services.AddSwaggerGen(sw =>
         }
     });
 });
-
+string? jwtIssuer = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtIssuer];
+string? jwtKey = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtKey];
+string? jwtAudience = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtAudience];
+builder
+    .Services.AddAuthentication()
+    .AddCookie()
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+        };
+    });
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -85,6 +115,7 @@ var app = builder.Build();
 //{
 app.UseSwagger();
 app.UseSwaggerUI();
+
 //}
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -108,6 +139,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.MapHub<ChatHub>("/chatHub");
 app.UseAuthorization();
+app.UseAuthentication();
 app.MapControllers();
 
 app.Run();

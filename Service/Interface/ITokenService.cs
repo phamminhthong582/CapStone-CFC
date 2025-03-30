@@ -5,5 +5,5 @@ namespace Service.Interface;
 
 public interface ITokenService
 {
-   public string GenerateToken(object user);
+   public string GenerateAccessToken(List<Claim> claims);
 }

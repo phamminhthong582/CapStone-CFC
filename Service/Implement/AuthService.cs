@@ -46,13 +46,16 @@ public class AuthService : IAuthService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<LoginResponse>> Login(string email, string password)
+  public async Task<Result<LoginResponse>> Login(string email, string password)
+{
+    try
     {
         var customer = await _customerRepository.FindCustomerByEmail(email);
-        var User = await _unitOfWork.GetRepo<User>().Entities.FirstOrDefaultAsync(x => x.Email == email);
-        if (customer != null )
+        var user = await _unitOfWork.GetRepo<User>().Entities.FirstOrDefaultAsync(x => x.Email == email);
+        
+        if (customer != null)
         {
-            if (User.Status == false)
+            if (user == null || user.Status == false)
             {
                 return new Result<LoginResponse>
                 {
@@ -60,10 +63,16 @@ public class AuthService : IAuthService
                     Messages = new[] { "Account is Not Verified! Please verify your account" }
                 };
             }
-
-            if (User.Password == password )
+            if (user.Password == password) 
             {
-                var accessToken = _tokenService.GenerateToken(customer);
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, customer.Email),
+                    new Claim(ClaimTypes.Role, RoleName.Customer.ToString()), 
+                   
+                };
+                var accessToken = _tokenService.GenerateAccessToken(claims);
+
                 var dataCustomer = new LoginResponse
                 {
                     AccessToken = accessToken,
@@ -80,85 +89,86 @@ public class AuthService : IAuthService
                 };
             }
         }
-
-        var employee = await _employeeRepository.GetEmployeeByEmail(email);
-        var admin = _employeeRepository.GetAdminAccount(email, password);
-
-        if (employee is null && admin is null)
-        {
-            return new Result<LoginResponse>
-            {
-                ResultStatus = ResultStatus.NotFound.ToString(),
-                Messages = ["Account is not found"]
-            };
-        }
-        else if (admin != null)
+        var admin =  _employeeRepository.GetAdminAccount(email, password);
+        if (admin != null)
         {
             var userAdmin = new Employee
             {
                 FullName = admin,
             };
-            var accessTokenAdmin = _tokenService.GenerateToken(userAdmin);
+
+            var claimsAdmin = new List<Claim>
+            {
+                new Claim(ClaimTypes.Role, RoleName.Admin.ToString()) 
+            };
+
+            var accessTokenAdmin = _tokenService.GenerateAccessToken(claimsAdmin);
             var dataAdmin = new LoginResponse
             {
                 AccessToken = accessTokenAdmin,
-                Email = admin,
                 RoleName = RoleName.Admin.ToString()
             };
 
             return new Result<LoginResponse>
             {
                 Data = dataAdmin,
-                Messages = ["Login successfully. Welcome Admin"],
+                Messages = new[] { "Login successfully. Welcome Admin" },
                 ResultStatus = ResultStatus.Success.ToString()
             };
         }
-        else if (employee != null)
+        var employee = await _employeeRepository.GetEmployeeByEmail(email);
+        if (employee == null)
         {
-            if (employee.User.Role == null || string.IsNullOrEmpty(employee.User.Role.RoleName))
-            {
-                return new Result<LoginResponse>
-                {
-                    ResultStatus = ResultStatus.Error.ToString(),
-                    Messages = ["Employee role is not defined."]
-                };
-            }
-
-            var roleName = employee.User.Role.RoleName;
-            var accessToken = _tokenService.GenerateToken(employee);
-            string welcomeMessage = roleName switch
-            {
-                nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
-                nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
-                nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
-                nameof(RoleName.Customer) => "Login successfully. Welcome Customer",
-                _ => "Login successfully. Welcome"
-            };
-
-            var dataUser = new LoginResponse
-            {
-                AccessToken = accessToken,
-                Email = employee.Email,
-                RoleName = roleName
-            };
-
             return new Result<LoginResponse>
             {
-                Data = dataUser,
-                Messages = [welcomeMessage],
-                ResultStatus = ResultStatus.Success.ToString()
+                ResultStatus = ResultStatus.NotFound.ToString(),
+                Messages = new[] { "Account is not found" }
+            };
+        }
+        if (employee.User.Role == null || string.IsNullOrEmpty(employee.User.Role.RoleName))
+        {
+            return new Result<LoginResponse>
+            {
+                ResultStatus = ResultStatus.Error.ToString(),
+                Messages = new[] { "Employee role is not defined." }
             };
         }
 
+        var roleName = employee.User.Role.RoleName;
+        var accessTokenEmployee = _tokenService.GenerateAccessToken(new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, employee.Email),
+            new Claim(ClaimTypes.Role, roleName) 
+        });
+        string welcomeMessage = roleName switch
+        {
+            nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
+            nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
+            nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
+            _ => "Login successfully. Welcome"
+        };
+        var dataUser = new LoginResponse
+        {
+            AccessToken = accessTokenEmployee,
+            Email = employee.Email,
+            RoleName = roleName
+        };
         return new Result<LoginResponse>
         {
-            ResultStatus = ResultStatus.NotFound.ToString(),
-            Messages = ["Login failed"]
+            Data = dataUser,
+            Messages = new[] { welcomeMessage },
+            ResultStatus = ResultStatus.Success.ToString()
         };
     }
-
-
-
+    catch (Exception e)
+    {
+        return new Result<LoginResponse>
+        {
+            ResultStatus = ResultStatus.Error.ToString(),
+            Messages = new[] { e.Message }
+        };
+    }
+}
     public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, RegisterRequest request)
     {
         var response = new Result<EmployeeResponse>();
