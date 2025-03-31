@@ -36,12 +36,20 @@ namespace Service.Implement
         private readonly IUnitOfWork _unitOfWork;
         private readonly IChatRoomService _chatRoomService;
         private readonly IMessageService _messageService;
-       
-        public OrderService(IUnitOfWork unitOfWork, IChatRoomService chatRoomService, IMessageService messageService)
+        private readonly INotiService _notiService;
+
+        public OrderService(IUnitOfWork unitOfWork, IChatRoomService chatRoomService, IMessageService messageService, INotiService notiService)
         {
             _unitOfWork = unitOfWork;
             _chatRoomService = chatRoomService;
             _messageService = messageService;
+            _notiService = notiService;
+        }
+
+        public OrderService(IUnitOfWork unitOfWork, INotiService notiService)
+        {
+            _unitOfWork = unitOfWork;
+            _notiService = notiService;
         }
 
         public async Task AutoUpdateOrder()
@@ -1956,11 +1964,11 @@ namespace Service.Implement
         public async Task UpdateOrderByStoreId(Guid orderId, Guid StaffId)
         {
             var order = await _unitOfWork.GetRepo<Order>()
-                .Entities
-                .Include(d => d.Promotion)
-                .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
-                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+               .Entities
+               .Include(d => d.Promotion)
+               .Include(o => o.OrderDetails)
+               .ThenInclude(od => od.Product)
+               .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
             if (order == null)
             {
@@ -2007,9 +2015,28 @@ namespace Service.Implement
             {
                 return;
             }
-
-
             await _unitOfWork.CompleteAsync();
+            try
+            {
+                var notification = new Noti
+                {
+                    ToUserId = StaffId,
+                    Message = $"bạn có một đơn hàng cần sử lý",
+                    Type = "Order",
+                    RelatedId = orderId,
+                };
+
+                // Giả sử có _notiService được inject vào class
+                await _notiService.CreateNotificationAsync(notification);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nhưng không ảnh hưởng đến luồng chính
+                Console.WriteLine($"Failed to send notification: {ex.Message}");
+                // Hoặc sử dụng ILogger nếu có
+                // _logger.LogError(ex, "Failed to send notification");
+            }
+
         }
 
 
