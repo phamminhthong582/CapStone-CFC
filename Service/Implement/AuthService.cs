@@ -280,6 +280,8 @@ public class AuthService : IAuthService
             UpdateAt = DateTime.Now,
             Status = false,
         };
+        await _unitOfWork.GetRepo<User>().AddAsync(User);
+        await _unitOfWork.CompleteAsync();
         var employee = new Employee
         {
             UserId = User.UserId,

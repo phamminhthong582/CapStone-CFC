@@ -464,4 +464,47 @@ public class EmployeeService : IEmployeeService
             return result.ToString();
         }
     }
+    public async Task CreateManagerStore(Guid storeid, CreateManagerStoreRequest createManagerStoreRequest)
+    {
+
+        var store = await _unitOfWork.Repository<Store>().GetByIdAsync(storeid);
+        if (store == null)
+        {
+            throw new Exception("store not found");
+        }
+        var folderName = $"Employee/{createManagerStoreRequest.Email}";
+
+        var avatarUrl = createManagerStoreRequest.Avatar != null
+           ? await _cloudinaryService.UploadImageAsync(createManagerStoreRequest.Avatar.OpenReadStream(), $"{folderName}/avatar")
+           : null;
+        var User = new User
+        {
+            Email = createManagerStoreRequest.Email,
+            Password = createManagerStoreRequest.Password,
+            RoleId = Guid.Parse("a7ad79e3-a5e8-4e85-a672-41c95a2e37ac"),
+            CreateAt = DateTime.Now,
+            UpdateAt = DateTime.Now,
+            Status = true,
+        };
+        await _unitOfWork.GetRepo<User>().AddAsync(User);
+        await _unitOfWork.CompleteAsync();
+        var employee = new Employee
+        {
+            UserId = User.UserId,
+            StoreId = storeid,
+            FullName = createManagerStoreRequest.FullName,
+            Address = createManagerStoreRequest.Address,
+            Email = createManagerStoreRequest.Email,
+            Gender = createManagerStoreRequest.Gender,
+            Phone = createManagerStoreRequest.Phone,
+            Birthday = createManagerStoreRequest.Birthday,
+            RoleId = Guid.Parse("a7ad79e3-a5e8-4e85-a672-41c95a2e37ac"),
+            Status = true,
+            Avatar = avatarUrl,
+        };
+        User.EmployeeId = employee.EmployeeId;
+        _unitOfWork.GetRepo<User>().Update(User);
+        await _unitOfWork.Repository<Employee>().AddAsync(employee);
+        await _unitOfWork.CompleteAsync();
+    }
 }

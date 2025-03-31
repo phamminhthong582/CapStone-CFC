@@ -32,10 +32,12 @@ namespace Service.Implement
     public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly INotiService _notiService;
 
-        public OrderService(IUnitOfWork unitOfWork)
+        public OrderService(IUnitOfWork unitOfWork, INotiService notiService)
         {
             _unitOfWork = unitOfWork;
+            _notiService = notiService;
         }
 
         public async Task AutoUpdateOrder()
@@ -59,7 +61,7 @@ namespace Service.Implement
             foreach (var order in orders)
             {
                 order.StaffId = staffIds[random.Next(staffIds.Count)];
-                order.UpdateAt = DateTime.UtcNow;
+                order.UpdateAt = DateTime.Now;
             }
 
             await _unitOfWork.CompleteAsync();
@@ -1932,11 +1934,32 @@ namespace Service.Implement
         public async Task UpdateOrderByStoreId(Guid orderId, Guid StaffId)
         {
             var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == orderId);
-            order.StaffId = StaffId ;
+            order.StaffId = StaffId;
             order.UpdateAt = DateTime.Now;
             order.Status = "Arranging & Packing";
             _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
+
+            try
+            {
+                var notification = new Noti
+                {
+                    ToUserId = StaffId, 
+                    Message = $"bạn có một đơn hàng cần sử lý",
+                    Type = "Order",
+                    RelatedId = orderId,
+                };
+
+                // Giả sử có _notiService được inject vào class
+                await _notiService.CreateNotificationAsync(notification);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nhưng không ảnh hưởng đến luồng chính
+                Console.WriteLine($"Failed to send notification: {ex.Message}");
+                // Hoặc sử dụng ILogger nếu có
+                // _logger.LogError(ex, "Failed to send notification");
+            }
 
 
         }

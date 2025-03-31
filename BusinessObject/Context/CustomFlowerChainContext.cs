@@ -70,14 +70,16 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<User> Users{ get; set; }
 
     public virtual DbSet<Accessory> Accessories { get; set; }
+    public virtual DbSet<Noti> Notis { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-      => optionsBuilder.UseSqlServer("Server=DESKTOP-NJ1QUHC;Database= CustomFlowerChain;UID=sa;PWD=12345;TrustServerCertificate=True");
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseSqlServer(
-    //            "Server=DESKTOP-T4BVTKU\\SQLEXPRESS;Database= CustomFlowerChain;UID=sa;PWD=123456;TrustServerCertificate=True");
+            //=> optionsBuilder.UseSqlServer("Server=DESKTOP-NJ1QUHC;Database= CustomFlowerChain;UID=sa;PWD=12345;TrustServerCertificate=True");
+            //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+            => optionsBuilder.UseSqlServer(
+                "Data Source=DESKTOP-NJ1QUHC;Database= CustomFlowerChain;User ID=sa;Password=12345;TrustServerCertificate=True");
     // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //     => optionsBuilder.UseSqlServer(GetConnectionString());
 
@@ -532,6 +534,14 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Message).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.MessageId)
                 .HasConstraintName("FK_NotificationId_Message");
+        });
+        modelBuilder.Entity<Noti>(entity =>
+        {
+            entity.ToTable("Noti");
+            entity.Property(e => e.NotiId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
         });
 
 

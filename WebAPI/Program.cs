@@ -1,5 +1,6 @@
 using BusinessObject.Context;
 using BusinessObject.DTO.Chat;
+using BusinessObject.DTO.Noti;
 using BusinessObject.DTO.Notification;
 using Core.Middleware;
 using Hangfire;
@@ -107,6 +108,7 @@ else
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 app.UseAuthorization();
 app.MapControllers();
 
