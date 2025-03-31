@@ -25,6 +25,9 @@ namespace Service.Implement
 
         public async Task CreateProduct(ProductRequest productRequest)
         {
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
             var product = new Product
             {
                 ProductName = productRequest.ProductName,
@@ -37,7 +40,7 @@ namespace Service.Implement
                 CategoryId = productRequest.CategoryId,
                 Sold = 0,
                 Status = true,
-                CreateAt = DateTime.Now,
+                CreateAt = DateTime.UtcNow,
             };
             await _unitOfWork.Repository<Product>().AddAsync(product);
             await _unitOfWork.CompleteAsync();
@@ -65,7 +68,7 @@ namespace Service.Implement
                     {
                         ProductImage1 = imageUrl,
                         ProductId = product.ProductId,
-                        CreateAt = DateTime.Now,
+                        CreateAt = DateTime.UtcNow,
                         Status = true
                     };
 
@@ -101,14 +104,16 @@ namespace Service.Implement
                         .FirstOrDefaultAsync(p => p.ProductId == id);
 
             var allImages = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
             var productResponse = new ProductResponse{
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 Price = product.Price,
                 Weight = product.Weight,
-                CreateAt = DateTime.Now,
-                UpdateAt = DateTime.Now,
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
               
                 Size = product.Size,
                 Discount = product.Discount,
@@ -137,14 +142,16 @@ namespace Service.Implement
         {
             var products = await _unitOfWork.Repository<Product>().Entities.Include(n => n.Category).ToListAsync();
             var allImages = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
             var productResponse = products.Select(product => new ProductResponse
             {
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 Price = product.Price,
-                CreateAt = DateTime.Now,
-                UpdateAt = DateTime.Now,
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
                 Weight = product.Weight,
                 Size = product.Size,
                 Discount = product.Discount,
@@ -211,6 +218,9 @@ namespace Service.Implement
             {
                 throw new KeyNotFoundException("Product not found");
             }
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
             product.ProductName = updateProductRequest.ProductName ?? product.ProductName; 
             product.Description = updateProductRequest.Description ?? product.Description;
             product.Price= updateProductRequest.Price?? product.Price;
@@ -220,7 +230,7 @@ namespace Service.Implement
             product.Featured = updateProductRequest.Featured ?? product.Featured;
             product.CategoryId = updateProductRequest.CategoryId ?? product.CategoryId;
             product.Status = updateProductRequest.Status ?? product.Status;
-            product.UpdateAt = DateTime.Now;
+            product.UpdateAt = vietnamTime;
             _unitOfWork.Repository<Product>().Update(product);
             await _unitOfWork.CompleteAsync();
         }

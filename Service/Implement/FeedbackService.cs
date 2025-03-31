@@ -54,6 +54,8 @@ public class FeedbackService : IFeedbackService
             feedBackVideoUrl = await _cloudinaryService.UploadVideoAsync(
                 request.FeedBackVideoByCustomer.OpenReadStream(), folderName);
         }
+        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
         var newFeedback = new Feedback
         {
@@ -64,8 +66,8 @@ public class FeedbackService : IFeedbackService
             RequestRefundByCustomer = request.RequestRefundByCustomer,
             Rating = request.Rating,
             Status = "Sent By Customer",
-            CreateAt = DateTime.Now,
-            UpdateAt = DateTime.Now,
+            CreateAt = vietnamTime,
+            UpdateAt = vietnamTime,
             FeedBackVideoByCustomer = feedBackVideoUrl // Lưu URL video vào database
             
         };
@@ -114,6 +116,8 @@ public class FeedbackService : IFeedbackService
         {
             wallet.TotalPrice += Order.OrderPrice;
             _unitOfWork.Repository<Wallet>().Update(wallet);
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
             var refund = new Refund
             {
@@ -121,8 +125,8 @@ public class FeedbackService : IFeedbackService
                 StoreId = Order.StoreId,
                 Price = Order.OrderPrice,
                 WallerId = wallet.WalletId,
-                CreateAt = DateTime.Now,
-                UpdateAt = DateTime.Now,
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
                 Status = "Refund Order",
             };
              await _unitOfWork.Repository<Refund>().AddAsync(refund);
@@ -132,8 +136,8 @@ public class FeedbackService : IFeedbackService
                 IncomePrice = Order.OrderPrice,
                 Method = "Refund",
                 Status = "Successfull",
-                CreateAt =DateTime.Now,
-                UpdateAt =DateTime.Now,
+                CreateAt =vietnamTime,
+                UpdateAt =vietnamTime,
                 OrderId = Order.OrderId,
             };
             await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomeWallet);

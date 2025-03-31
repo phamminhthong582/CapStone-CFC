@@ -85,6 +85,9 @@ public class PromotionService : IPromotionService
         var promotionUrl = request.Image != null
 ? await _cloudinaryService.UploadImageAsync(request.Image.OpenReadStream(), $"{folderName}")
 : null;
+        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
         var promotion = new Promotion
         {
             PromotionName = request.PromotionName,
@@ -94,7 +97,7 @@ public class PromotionService : IPromotionService
             StartDate = request.StartDate.Value,
             Image = promotionUrl,
             EndDate = request.EndDate.Value,
-            CreateAt = DateTime.UtcNow,
+            CreateAt = vietnamTime,
             Status = status, 
         };
         await _promotionRepository.AddPromotion(promotion);
@@ -141,9 +144,11 @@ public class PromotionService : IPromotionService
     {
         promotion.PromotionDiscount = request.PromotionDiscount.Value;
     }
-  
-    promotion.Status = promotion.EndDate > DateTime.UtcNow;
-    promotion.UpdateAt = DateTime.UtcNow;
+        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
+        promotion.Status = promotion.EndDate > vietnamTime;
+    promotion.UpdateAt = vietnamTime;
     string? imageUrl = promotion.Image;
         if (request.Image != null)
         {

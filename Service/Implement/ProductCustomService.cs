@@ -349,13 +349,13 @@ public class ProductCustomService : IProductCustomService
             .ToListAsync();
 
         // Tạo danh sách hoa theo số lượng và tên
-        string flowerDetails = string.Join(", ", flowerCustomList.Select(f => $"{f.Quantity} {f.Flower.FlowerName}"));
+        string flowerDetails = string.Join(", ", flowerCustomList.Select(f => $"{f.Quantity} {f.Flower.FlowerName} {f.Flower.Image}"));
 
         // Chuỗi mô tả sản phẩm để gửi lên AI
-        string description = $"I have one FlowerBasket like this image {productCustom.FlowerBasket.Image}. " +
-                             $"Add {flowerDetails}. " +
-                             $"Design follows the {productCustom.Style.Name} style. " +
-                             $"Add accessories like this image: {productCustom.Accessory.Image}.";
+        string description = $"Tôi có một giỏ hoa giống như hình ảnh này{productCustom.FlowerBasket.Image}. " +
+                             $"Thêm  {flowerDetails}. " +
+                             $"hiết kế theo phong cách {productCustom.Style.Name} style. " +
+                             $"Thêm phụ kiện giống như hình ảnh này: {productCustom.Accessory.Image}.Hãy thiết kế cho tôi một bức tranh AI mổ phỏng một giỏ hoa hoàn chỉnh";
 
         string imageUrl = await _openAIService.GenerateImageAsync(description);
 

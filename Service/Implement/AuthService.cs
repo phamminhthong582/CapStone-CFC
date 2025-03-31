@@ -203,12 +203,14 @@ public class AuthService : IAuthService
 
         /*        CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
         */
+        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
         var User = new User()
         {
             Email = request.Email,
             RoleId = roleId,
-            CreateAt = DateTime.Now,
-            UpdateAt = DateTime.Now,
+            CreateAt = vietnamTime,
+            UpdateAt = vietnamTime,
             Status = false,
         };
         await _unitOfWork.GetRepo<User>().AddAsync(User);
@@ -228,7 +230,7 @@ public class AuthService : IAuthService
             IdentificationBackOfPhoto = idBackUrl,
             Phone = request.Phone,
             Status = false,
-            CreateAt = DateTime.UtcNow,
+            CreateAt = vietnamTime,
             RoleId = roleId
         };
         var registeredEmployee = await _employeeRepository.Register(employee);
@@ -272,12 +274,15 @@ public class AuthService : IAuthService
         var idBackUrl = request.IdentificationBackOfPhoto != null
             ? await _cloudinaryService.UploadImageAsync(request.IdentificationBackOfPhoto.OpenReadStream(), $"{folderName}/id_back")
             : null;
+        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
         var User = new User()
         {
             Email = request.Email,
             RoleId = roleId,
-            CreateAt = DateTime.Now,
-            UpdateAt = DateTime.Now,
+            CreateAt = vietnamTime,
+            UpdateAt = vietnamTime,
             Status = false,
         };
         await _unitOfWork.GetRepo<User>().AddAsync(User);
@@ -300,7 +305,7 @@ public class AuthService : IAuthService
             IdentificationBackOfPhoto = idBackUrl,
             IdentificationNumber = request.IdentificationNumber,
             Status = false,
-            CreateAt = DateTime.UtcNow
+            CreateAt = vietnamTime
         };
 
         var registeredEmployee = await _employeeRepository.Register(employee);

@@ -32,6 +32,8 @@ namespace Service.Implement
             var AccessoryUrl = accessoryRequest.Image != null
             ? await _cloudinaryService.UploadImageAsync(accessoryRequest.Image.OpenReadStream(), $"{folderName}")
             : null;
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
             var newAccessory = new Accessory
             {
                 CategoryId = accessoryRequest.CategoryId,
@@ -41,8 +43,8 @@ namespace Service.Implement
                 Price = accessoryRequest.Price,
                 Image = AccessoryUrl,
                 Feature = accessoryRequest.Feature,
-                CreateAt = DateTime.UtcNow,
-                UpdateAt = DateTime.UtcNow,
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
                 Status = true,
 
             };
@@ -88,11 +90,13 @@ namespace Service.Implement
             {
                 asccessory.Price = accessoryRequest.Price.Value;
             }
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
             asccessory.Status = accessoryRequest.Status ?? asccessory.Status;
             asccessory.Image = AccessoryUrl ?? asccessory.Image;
             asccessory.CategoryId = accessoryRequest.CategoryId;
             asccessory.Feature = accessoryRequest.Feature;
-            asccessory.UpdateAt = DateTime.Now;
+            asccessory.UpdateAt = vietnamTime;
 
             _unitOfWork.GetRepo<Accessory>().Update(asccessory);
             await _unitOfWork.CompleteAsync();

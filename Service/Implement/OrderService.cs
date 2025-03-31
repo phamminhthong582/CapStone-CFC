@@ -6,6 +6,7 @@ using BusinessObject.DTO.Employee;
 using BusinessObject.DTO.Flower;
 using BusinessObject.DTO.FlowerBasket;
 using BusinessObject.DTO.FlowerCustom;
+using BusinessObject.DTO.Message;
 using BusinessObject.DTO.Order;
 using BusinessObject.DTO.OrderDetails;
 using BusinessObject.DTO.ProductCustom;
@@ -34,17 +35,27 @@ namespace Service.Implement
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IChatRoomService _chatRoomService;
+        private readonly IMessageService _messageService;
+        private readonly INotiService _notiService;
 
-        public OrderService(IUnitOfWork unitOfWork, IChatRoomService chatRoomService)
+        public OrderService(IUnitOfWork unitOfWork, IChatRoomService chatRoomService, IMessageService messageService, INotiService notiService)
         {
             _unitOfWork = unitOfWork;
             _chatRoomService = chatRoomService;
+            _messageService = messageService;
+            _notiService = notiService;
+        }
+
+        public OrderService(IUnitOfWork unitOfWork, INotiService notiService)
+        {
+            _unitOfWork = unitOfWork;
+            _notiService = notiService;
         }
 
         public async Task AutoUpdateOrder()
         {
             var orders = (await _unitOfWork.Repository<Order>().GetAllAsync())
-                .Where(o => o.Status == "đặt hàng thành công" && o.StaffId == null)
+                .Where(o => o.Status == "Order Successfully" && o.StaffId == null)
                 .ToList();
 
             if (!orders.Any())
@@ -88,7 +99,8 @@ namespace Service.Implement
             {
                 throw new Exception("Cart is empty.");
             }
-
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
             // Tạo đơn hàng
             var order = new Order
             {
@@ -102,8 +114,8 @@ namespace Service.Implement
                 RecipientTime = orderRequest.RecipientTime,
                 Phone = orderRequest.Phone,
                 Transfer = orderRequest.Transfer,
-                CreateAt = DateTime.Now,
-                UpdateAt = DateTime.Now,
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
                 Delivery = orderRequest.Delivery,
                 Refund = false,
                 Status = "Pending Payment",
@@ -111,6 +123,7 @@ namespace Service.Implement
                 Wallet = orderRequest.Wallet,
 
             };
+         
 
             await _unitOfWork.Repository<Order>().AddAsync(order);
             await _unitOfWork.CompleteAsync();
@@ -134,7 +147,7 @@ namespace Service.Implement
                     OrderId = order.OrderId,
                     ProductId = cartItem.ProductId,
                     Quantity = cartItem.Quantity,
-                    CreateAt = DateTime.Now,
+                    CreateAt = vietnamTime,
                     Status = true,
                     ProductTotalPrice = cartItem.Quantity * cartItem.Product.Price -
                         (cartItem.Quantity * cartItem.Product.Price * cartItem.Product.Discount) / 100
@@ -203,7 +216,8 @@ namespace Service.Implement
             bool? Delivery = orderRequest.Delivery;
             string? RecipientName = orderRequest.RecipientName;
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
-
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
             var order = new Order()
             {
                 CustomerId = customerId,
@@ -216,8 +230,8 @@ namespace Service.Implement
                 Phone = Phone,
                 RecipientName = RecipientName,
                 Transfer = Transfer,
-                CreateAt = DateTime.Now,
-                UpdateAt = DateTime.Now,
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
                 Refund = false,
                 Status = "Pending Payment",
                 PromotionId = PromotionID,
@@ -247,7 +261,7 @@ namespace Service.Implement
                         OrderId = order.OrderId,
                         ProductId = orderDetailsRequest.ProductId,
                         Quantity = orderDetailsRequest.Quantity,
-                        CreateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
                         Status = true,
                         ProductTotalPrice = orderDetailsRequest.Quantity * product.Price - (orderDetailsRequest.Quantity * product.Price * product.Discount)/100
                     };
@@ -314,7 +328,8 @@ namespace Service.Implement
             bool? Delivery = orderCustomRequest.Delivery;
             string? RecipientName = orderCustomRequest.RecipientName;
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(Customer);
-
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
             var order = new Order()
             {
                 CustomerId = Customer,
@@ -328,8 +343,8 @@ namespace Service.Implement
                 Phone = Phone,
                 RecipientName = RecipientName,
                 Transfer = Transfer,
-                CreateAt = DateTime.Now,
-                UpdateAt = DateTime.Now,
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
                 Refund = false,
                 Status = "Pending Payment",
                 PromotionId = PromotionID,
@@ -1930,6 +1945,8 @@ namespace Service.Implement
         }
         public async Task UpdateOrder(OrderRequest orderRequest,Guid orderId)
         {
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
             var order = await _unitOfWork.Repository<Order>().GetByIdAsync(orderId);
             order.DeliveryDistrict = orderRequest.DeliveryDistrict ?? order.DeliveryDistrict;
             order.DeliveryCity = orderRequest.DeliveryCity ?? order.DeliveryCity;
@@ -1939,42 +1956,98 @@ namespace Service.Implement
             order.Phone= orderRequest.Phone ?? order.Phone;
             order.Transfer = orderRequest.Transfer ?? order.Transfer;
             order.Status = orderRequest.Status ?? order.Status;
-            order.UpdateAt = DateTime.Now;
+            order.UpdateAt = vietnamTime;
             _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
         }
 
         public async Task UpdateOrderByStoreId(Guid orderId, Guid StaffId)
         {
-            var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == orderId);
-            order.StaffId = StaffId ;
-            order.UpdateAt = DateTime.Now;
-            order.Status = "Arranging & Packing";
-            _unitOfWork.Repository<Order>().Update(order);
+            var order = await _unitOfWork.GetRepo<Order>()
+               .Entities
+               .Include(d => d.Promotion)
+               .Include(o => o.OrderDetails)
+               .ThenInclude(od => od.Product)
+               .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
+            if (order == null)
+            {
+                throw new Exception($"Order {orderId} not found.");
+            }
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            order.StaffId = StaffId;
+            order.UpdateAt = vietnamTime;
+            order.Status = "Arranging & Packing";
+
+            _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
 
-
+            // Tạo ChatRoom
             var chatRoomRequest = new CreateChatRoomRequest { OrderId = orderId };
             var chatRoomResult = await _chatRoomService.CreateChatRoom(chatRoomRequest);
 
             if (chatRoomResult.ResultStatus != ResultStatus.Success.ToString())
             {
-                throw new Exception("Failed to create chat room: " + string.Join(", ", chatRoomResult.Messages));
+                throw new Exception($"Failed to create chat room: {string.Join(", ", chatRoomResult.Messages)}");
             }
 
-            await _unitOfWork.Repository<ChatRoom>().AddAsync(chatRoomResult.Data);
+            if (chatRoomResult.Data == null)
+            {
+                return; // Không ném Exception ngay, tránh làm lỗi toàn bộ hàm.
+            }
+
+            var chatRoom = chatRoomResult.Data;
+
+            // Tạo tin nhắn
+            var messageRequest = new CreateMessageRequest
+            {
+                ChatRoomId = chatRoom.ChatRoomId,
+                SenderId = StaffId,
+                ReceiveId = order.CustomerId,
+                MessageType = "text",
+                Content = $"Hello, I am the employee with ID number: {StaffId}, I will serve your order. We will consult your order via this chat channel."
+            };
+
+            var messageResult = await _messageService.SendMessage(messageRequest);
+
+            if (messageResult.ResultStatus != ResultStatus.Success.ToString() || messageResult.Data == null)
+            {
+                return;
+            }
             await _unitOfWork.CompleteAsync();
+            try
+            {
+                var notification = new Noti
+                {
+                    ToUserId = StaffId,
+                    Message = $"bạn có một đơn hàng cần sử lý",
+                    Type = "Order",
+                    RelatedId = orderId,
+                };
 
-
+                // Giả sử có _notiService được inject vào class
+                await _notiService.CreateNotificationAsync(notification);
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nhưng không ảnh hưởng đến luồng chính
+                Console.WriteLine($"Failed to send notification: {ex.Message}");
+                // Hoặc sử dụng ILogger nếu có
+                // _logger.LogError(ex, "Failed to send notification");
+            }
 
         }
+
+
 
         public async Task UpdateStatusOrderByStaffId(Guid orderId, string Status)
         {
             var order = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Promotion).Include(o => o.OrderDetails).ThenInclude(od => od.Product).FirstOrDefaultAsync(o => o.OrderId == orderId);
             order.Status = Status ?? order.Status;
-            order.UpdateAt = DateTime.Now;
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            order.UpdateAt = vietnamTime;
             _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
         }

@@ -125,6 +125,10 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<INotificationService, NotificationService>();
 
+        //Noti
+        services.AddScoped<INotiRepository, NotiRepository>();
+        services.AddScoped<INotiService, NotiService>();
+
         //logger
         services.AddLogging(builder =>
         {

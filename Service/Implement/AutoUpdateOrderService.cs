@@ -1,9 +1,12 @@
 ﻿using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.Message;
 using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
 using System;
@@ -36,6 +39,7 @@ namespace Service.Implement
                     {
                         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                         var chatRoomService = scope.ServiceProvider.GetRequiredService<IChatRoomService>();
+                        var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
                         var orders = (await unitOfWork.Repository<Order>().GetAllAsync())
                             .Where(o => o.Status == "Order Successfully" && o.StaffId == null)
@@ -45,7 +49,7 @@ namespace Service.Implement
                         {
                             var random = new Random();
                             var staffRepo = unitOfWork.Repository<Employee>();
-                            var staffList = await staffRepo.GetAllAsync();
+                            var staffList = await staffRepo.Entities.Include(n => n.User).Where(m => m .User.Role.RoleName == "Florist").ToListAsync();
 
                             foreach (var order in orders)
                             {
@@ -55,11 +59,13 @@ namespace Service.Implement
                                     _logger.LogWarning($"No available staff for Order {order.OrderId} in Store {order.StoreId}");
                                     continue;
                                 }
+                                var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                                var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
                                 var assignedStaff = availableStaff[random.Next(availableStaff.Count)];
                                 order.StaffId = assignedStaff.EmployeeId;
                                 order.Status = "Arranging & Packing";
-                                order.UpdateAt = DateTime.UtcNow;
+                                order.UpdateAt = vietnamTime;
 
                                 _logger.LogInformation($"Order {order.OrderId} assigned to Staff {order.StaffId} and updated to 'Arranging & Packing'.");
 
@@ -70,11 +76,35 @@ namespace Service.Implement
                                 if (chatRoomResult.ResultStatus != ResultStatus.Success.ToString())
                                 {
                                     _logger.LogError($"Failed to create chat room for Order {order.OrderId}: {string.Join(", ", chatRoomResult.Messages)}");
+                                    continue;
+                                }
+
+                                if (chatRoomResult.Data == null)
+                                {
+                                    return; // Không ném Exception ngay, tránh làm lỗi toàn bộ hàm.
+                                }
+
+                                _logger.LogInformation($"ChatRoom created for Order {order.OrderId}");
+                                var chatRoom = chatRoomResult.Data;
+
+                                // Gửi tin nhắn thông báo
+                                var messageRequest = new CreateMessageRequest
+                                {
+                                    ChatRoomId = chatRoom.ChatRoomId,
+                                    SenderId = assignedStaff.EmployeeId,
+                                    ReceiveId = order.CustomerId,
+                                    MessageType = "text",
+                                    Content = $"Hello, I am the employee with ID number: {assignedStaff.EmployeeId}, I will serve your order. We will consult your order via this chat channel."
+                                };
+
+                                var messageResult = await messageService.SendMessage(messageRequest);
+                                if (messageResult.ResultStatus != ResultStatus.Success.ToString())
+                                {
+                                    _logger.LogError($"Failed to send message for Order {order.OrderId}: {string.Join(", ", messageResult.Messages)}");
                                 }
                                 else
                                 {
-                                    await unitOfWork.Repository<ChatRoom>().AddAsync(chatRoomResult.Data);
-                                    _logger.LogInformation($"ChatRoom created for Order {order.OrderId}");
+                                    _logger.LogInformation($"Message sent to Customer {order.CustomerId} for Order {order.OrderId}");
                                 }
                             }
 
