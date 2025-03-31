@@ -13,15 +13,21 @@ public class ChatGptService
     private readonly IFlowerRepository _flowerRepository;
     private readonly IFlowerBasketRepository _flowerBasketRepository;
     private readonly IFlowerCustomRepository _flowerCustomRepository;
+    private readonly IProductCustomRepository _productCustomRepository;
     private const string OpenAiUrl = "https://api.openai.com/v1/chat/completions";
 
-    public ChatGptService(IConfiguration configuration, IFlowerRepository flowerRepository, IFlowerBasketRepository flowerBasketRepository , IFlowerCustomRepository flowerCustomRepository)
+    public ChatGptService(IConfiguration configuration, 
+        IFlowerRepository flowerRepository, 
+        IFlowerBasketRepository flowerBasketRepository , 
+        IFlowerCustomRepository flowerCustomRepository,
+        IProductCustomRepository productCustomRepository)
     {
         _apiKey = configuration["OpenAI:ApiKey"];
         _httpClient = new HttpClient();
         _flowerRepository = flowerRepository;
         _flowerBasketRepository = flowerBasketRepository;
         _flowerCustomRepository = flowerCustomRepository;
+        _productCustomRepository = productCustomRepository;
     }
 
     public async Task<string> GenerateTextAsync(string userMessage)
@@ -30,9 +36,11 @@ public class ChatGptService
     {
         return "Sorry, I can only answer questions related to flowers and flower baskets. Please ask something about flowers or baskets.";
     }
+    
     string flowerInfo = "No flower info available";
     string flowerBasketInfo = "No flower basket info available";
     string flowerCustomInfo = "No flower custom info available";
+    string productCustomInfo = "No product custom info available"; // Thêm thông tin cho sản phẩm tùy chỉnh
 
     if (userMessage.Contains("flower"))
     {
@@ -46,8 +54,13 @@ public class ChatGptService
     {
         flowerCustomInfo = await _flowerCustomRepository.GetFlowerCustomInfoAsync(userMessage); 
     }
+    if (userMessage.Contains("productcustom"))
+    {
+        productCustomInfo = await _productCustomRepository.GetProductCustomInfoAsync(userMessage); // Thêm xử lý lấy thông tin sản phẩm tùy chỉnh
+    }
 
-    string prompt = $"You are a chatbot assisting with a flower ordering system. The user asks: '{userMessage}'. Here is some information: {flowerInfo} {flowerBasketInfo} {flowerCustomInfo}";
+    string prompt = $"You are a chatbot assisting with a flower ordering system. The user asks: '{userMessage}'. Here is some information: {flowerInfo} {flowerBasketInfo} {flowerCustomInfo} {productCustomInfo}"; // Cập nhật prompt với thông tin sản phẩm tùy chỉnh
+
     var requestBody = new
     {
         model = "gpt-3.5-turbo", 
@@ -57,7 +70,7 @@ public class ChatGptService
             new { role = "user", content = prompt }
         }
     };
-    
+
     var requestContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
     _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
 

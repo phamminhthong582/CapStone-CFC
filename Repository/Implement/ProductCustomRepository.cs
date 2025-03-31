@@ -19,6 +19,29 @@ public class ProductCustomRepository : IProductCustomRepository
         return list; 
     }
 
+    public async Task<string> GetProductCustomInfoAsync(string productName)
+    {
+        try
+        {
+            
+            var productCustom = await _context.ProductCustoms
+                .Where(pc => pc.ProductName.Contains(productName)) 
+                .FirstOrDefaultAsync(); 
+            if (productCustom != null)
+            {
+                return $"Product: {productCustom.ProductName}, " +
+                       $"Description: {productCustom.Description}, " +
+                       $"Quantity: {productCustom.Quantity}, " +
+                       $"Price: {productCustom.TotalPrice} VND.";
+            }
+            return $"Sorry, we couldn't find any product with the name '{productName}'.";
+        }
+        catch (Exception ex)
+        {
+            return $"Error processing request: {ex.Message}";
+        }
+    }
+
     public async Task<ProductCustom> CreateProductCustom(ProductCustom productCustom)
     {
         await _context.ProductCustoms.AddAsync(productCustom);
