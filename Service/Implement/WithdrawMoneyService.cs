@@ -89,6 +89,8 @@ namespace Service.Implement
             }
 
             var otp = new Random().Next(100000, 999999).ToString();
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
             var withdrawMoney = new WithdrawMoney
             {
@@ -100,7 +102,7 @@ namespace Service.Implement
                 Reason = withdrawMoneyRequest.Reason,
                 Status = "Waiting OTP",
                 Otp = otp,
-                CreateAt = DateTime.Now,
+                CreateAt = vietnamTime,
             };
 
             await _unitOfWork.Repository<WithdrawMoney>().AddAsync(withdrawMoney);
@@ -182,6 +184,8 @@ namespace Service.Implement
         {
             var withdrawMoney = await _unitOfWork.Repository<WithdrawMoney>().GetByIdAsync(WithdrawMoneyId);
             var wallet = await _unitOfWork.Repository<Wallet>().Entities.FirstOrDefaultAsync(m => m.WalletId == withdrawMoney.WalletId);
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
             withdrawMoney.Status = status;
             if (status == "Successfull")
@@ -193,7 +197,7 @@ namespace Service.Implement
                     Method = "Withdraw Money successfull",
                     Status = "Successfull",
                     CreateAt = withdrawMoney.CreateAt,
-                    UpdateAt = DateTime.Now,
+                    UpdateAt = vietnamTime,
 
                 };
                 await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomWallet);
@@ -211,7 +215,7 @@ namespace Service.Implement
                     Method = "Withdraw Money failure",
                     Status = "Successfull",
                     CreateAt = withdrawMoney.CreateAt,
-                    UpdateAt = DateTime.Now,
+                    UpdateAt = vietnamTime,
 
                 };
                 await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomWallet);

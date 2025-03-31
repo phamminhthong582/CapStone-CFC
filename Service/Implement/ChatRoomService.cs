@@ -4,6 +4,7 @@ using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.FlowerBasket;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.SignalR;
+using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
 
@@ -17,10 +18,9 @@ public class ChatRoomService : IChatRoomService
     private readonly ICustomerRepository _customerRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IHubContext<ChatHub> _hubContext;
-    
-    
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ChatRoomService(IHubContext<ChatHub> hubContext,IChatRoomRepository chatRoomRepository,IOrderRepository orderRepository,ICustomerRepository customerRepository,IEmployeeRepository employeeRepository, IMapper mapper)
+    public ChatRoomService(IChatRoomRepository chatRoomRepository, IMapper mapper, IEmployeeRepository employeeRepository, ICustomerRepository customerRepository, IOrderRepository orderRepository, IHubContext<ChatHub> hubContext, IUnitOfWork unitOfWork)
     {
         _chatRoomRepository = chatRoomRepository;
         _mapper = mapper;
@@ -28,7 +28,9 @@ public class ChatRoomService : IChatRoomService
         _customerRepository = customerRepository;
         _orderRepository = orderRepository;
         _hubContext = hubContext;
+        _unitOfWork = unitOfWork;
     }
+
     public async Task<List<ChatRoomResponse>> GetAllChatRoom()
     {
         var list = await _chatRoomRepository.GetAllChatRoom();
@@ -158,32 +160,38 @@ public class ChatRoomService : IChatRoomService
     public async Task<Result<ChatRoom>> CreateChatRoom(CreateChatRoomRequest request)
     {
         var response = new Result<ChatRoom>();
+
         if (request.OrderId == Guid.Empty)
         {
-            response.Messages = new[] { "OrderId ID is invalid." };
+            response.Messages = new[] { "OrderId is invalid." };
             response.ResultStatus = ResultStatus.Invalid.ToString();
             return response;
         }
-        var order =  await _orderRepository.GetOrderById(request.OrderId);
-        var customerId = order.CustomerId;
-        var employeeId = order.StaffId;
-        
-        
-        var chatRoom = new ChatRoom
+
+        var order = await _orderRepository.GetOrderById(request.OrderId);
+        if (order == null)
         {
-            OrderId = request.OrderId,
-            CustomerId = customerId,  
-            EmployeeId = employeeId,  
-            Status = ChatRoomStatus.Active.ToString(),
-            CreateAt = DateTime.UtcNow
-        };
-        var createdChatRoom =  _chatRoomRepository.CreateChatRoom(chatRoom);
-        if (createdChatRoom == null)
-        {
-            response.Messages = new[] { "Failed to create chat room." };
+            response.Messages = new[] { "Order not found." };
             response.ResultStatus = ResultStatus.Error.ToString();
             return response;
         }
+        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
+        var chatRoom = new ChatRoom
+        {
+            OrderId = request.OrderId,
+            CustomerId = order.CustomerId,
+            EmployeeId = order.StaffId,
+            Status = ChatRoomStatus.Active.ToString(),
+            CreateAt = vietnamTime
+        };
+
+        // 🔥 Dùng `await` để lưu chat room
+        await _unitOfWork.GetRepo<ChatRoom>().AddAsync(chatRoom);
+        await _unitOfWork.CompleteAsync(); // 🔥 Đảm bảo lưu vào database
+
+        response.Data = chatRoom;
         response.Messages = new[] { "Successfully!" };
         response.ResultStatus = ResultStatus.Success.ToString();
 

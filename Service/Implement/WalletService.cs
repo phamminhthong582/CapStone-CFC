@@ -37,12 +37,15 @@ namespace Service.Implement
 
         public async Task CreateWallet(Guid CustomerId, string PasswordWallet)
         {
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
             var Wallet = new Wallet
             {
                 CustomerId = CustomerId,
                 PasswordWallet = PasswordWallet,
                 TotalPrice = 0,
-                CreateAt = DateTime.Now,
+                CreateAt = vietnamTime,
             };
             await _unitOfWork.Repository<Wallet>().AddAsync(Wallet);
             await _unitOfWork.CompleteAsync();
@@ -54,14 +57,17 @@ namespace Service.Implement
            var wallet = await _unitOfWork.Repository<Wallet>().GetByIdAsync(WalletId);
             wallet.TotalPrice += price; // Cộng dồn số tiền vào ví
             _unitOfWork.GetRepo<Wallet>().Update(wallet);
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
             var IncomeWallet = new IncomeWallet
             {
                 WalletID = wallet.WalletId,
                 IncomePrice = price,
                 Method = "Deposit",
                 Status = "Successfull",
-                CreateAt = DateTime.Now,
-                UpdateAt= DateTime.Now,
+                CreateAt = vietnamTime,
+                UpdateAt= vietnamTime,
             };
            await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(IncomeWallet);
 
@@ -103,14 +109,17 @@ namespace Service.Implement
                         await _paymentService.CreatePayment(OrderId);
                         wallet.TotalPrice -= order.OrderPrice / 2;
                          _unitOfWork.GetRepo<Wallet>().Update(wallet);
+                        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
                         var incomeWallet = new IncomeWallet
                         {
                             WalletID = wallet.WalletId,
                             IncomePrice = -(order.OrderPrice / 2),
                             Method = "Payment",
                             Status = "Successfull",
-                            CreateAt = DateTime.Now,
-                            UpdateAt = DateTime.Now,
+                            CreateAt = vietnamTime,
+                            UpdateAt = vietnamTime,
                             OrderId = OrderId,
                         };
                         await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
@@ -127,15 +136,19 @@ namespace Service.Implement
                     {
                         await _paymentService.CreatePayment(OrderId);
                         wallet.TotalPrice -= order.OrderPrice;
+                        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
                         var incomeWallet = new IncomeWallet
                         {
+
                             WalletID = wallet.WalletId,
                             IncomePrice = -(order.OrderPrice),
                             Method = "Payment",
                             Status = "Successfull",
                             OrderId = OrderId,
-                            CreateAt = DateTime.Now,
-                            UpdateAt = DateTime.Now,
+                            CreateAt = vietnamTime,
+                            UpdateAt = vietnamTime,
                         };
                         await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
                         _unitOfWork.GetRepo<Wallet>().Update(wallet);

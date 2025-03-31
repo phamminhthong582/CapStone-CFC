@@ -42,7 +42,7 @@ namespace Service.Implement
 
             // Truy vấn tất cả đơn hàng và lọc "Hoàn thành"
             var orders = await _unitOfWork.GetRepo<Order>().Entities
-                .Where(o => o.Status.Trim().ToLower() == "hoàn thành") // So sánh chính xác, tránh lỗi Unicode
+                .Where(o => o.Status.Trim().ToLower() == "Received") // So sánh chính xác, tránh lỗi Unicode
                 .ToListAsync(); // Đảm bảo truy vấn dữ liệu từ database
 
             foreach (var order in orders)
@@ -96,7 +96,7 @@ namespace Service.Implement
 
             // Lấy danh sách đơn hàng hoàn thành
             var orders = await _unitOfWork.GetRepo<Order>().Entities
-                .Where(o => o.StoreId == storeId && o.Status.Trim().ToLower() == "hoàn thành")
+                .Where(o => o.StoreId == storeId && o.Status.Trim().ToLower() == "Received")
                 .ToListAsync();
 
             foreach (var order in orders)
@@ -137,7 +137,7 @@ namespace Service.Implement
             int currentMonth = DateTime.Now.Month;
             int currentYear = DateTime.Now.Year;
             var orders = await _unitOfWork.GetRepo<Order>().Entities
-               .Where(o => o.Status.Trim().ToLower() == "hoàn thành") // So sánh chính xác, tránh lỗi Unicode
+               .Where(o => o.Status.Trim().ToLower() == "Received") // So sánh chính xác, tránh lỗi Unicode
                .ToListAsync();
             foreach (var order in orders)
             {
@@ -180,7 +180,7 @@ namespace Service.Implement
 
             // Lọc đơn hàng hoàn thành của store
             var orders = await _unitOfWork.GetRepo<Order>().Entities
-                .Where(o => o.StoreId == storeId && o.Status.Trim().ToLower() == "hoàn thành")
+                .Where(o => o.StoreId == storeId && o.Status.Trim().ToLower() == "Received")
                 .ToListAsync();
 
             foreach (var order in orders)
@@ -225,15 +225,16 @@ namespace Service.Implement
                 November = 0,
                 December = 0
             };
-            var refunds = await _unitOfWork.GetRepo<Refund>().Entities
-             .Where(o => o.StoreId == StoreId && o.Status.Trim().ToLower() == "hoàn thành")
-             .ToListAsync();
-            foreach (var refund in refunds)
+            // Lọc đơn hàng hoàn thành của store
+            var orders = await _unitOfWork.GetRepo<Order>().Entities
+                .Where(o => o.StoreId == StoreId && o.Status.Trim().ToLower() == "Accept refund")
+                .ToListAsync();
+            foreach (var refund in orders)
             {
                 if (!refund.UpdateAt.HasValue) continue; // Bỏ qua nếu UpdateAt là null
 
                 int month = refund.UpdateAt.Value.Month;
-                double Price = refund.Price ?? 0; // Nếu OrderPrice null thì thay bằng 0
+                double Price = refund.OrderPrice ?? 0; // Nếu OrderPrice null thì thay bằng 0
 
                 switch (month)
                 {
@@ -275,17 +276,19 @@ namespace Service.Implement
             };
 
             // Truy vấn tất cả đơn hàng và lọc "Hoàn thành"
-            var refunds = await _unitOfWork.GetRepo<Refund>().Entities
-                .Where(o => o.Status.Trim().ToLower() == "hoàn thành") // So sánh chính xác, tránh lỗi Unicode
-                .ToListAsync(); // Đảm bảo truy vấn dữ liệu từ database
+            // Lọc đơn hàng hoàn thành của store
+            var orders = await _unitOfWork.GetRepo<Order>().Entities
+                .Where(o => o.Status.Trim().ToLower() == "Accept refund")
+                .ToListAsync();
+          
 
-            foreach (var refund in refunds)
+            foreach (var refund in orders)
             {
                 if (!refund.UpdateAt.HasValue) continue; // Bỏ qua nếu UpdateAt null
-                if (!refund.Price.HasValue) continue; // Bỏ qua nếu OrderPrice null
+                if (!refund.OrderPrice.HasValue) continue; // Bỏ qua nếu OrderPrice null
 
                 int month = refund.UpdateAt.Value.Month;
-                double Price = refund.Price.Value; // Lấy giá trị thực
+                double Price = refund.OrderPrice.Value; // Lấy giá trị thực
 
                 switch (month)
                 {

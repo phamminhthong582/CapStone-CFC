@@ -32,6 +32,8 @@ namespace Service.Implement
             /*var CustomerByOrder = await _unitOfWork.GetRepo<Order>().Entities.Include(d => d.Customer).ToListAsync();*/
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(order.CustomerId);
             var wallet = (await _unitOfWork.Repository<Wallet>().GetAllAsync()).FirstOrDefault(n => n.CustomerId == customer.CustomerId);
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
             if (order.Transfer == false && order.Status != "Received")
             {
@@ -50,7 +52,7 @@ namespace Service.Implement
                         OrderId = order.OrderId,
                         WallerId = wallet.WalletId,
                         Price = order.OrderPrice/2,
-                        CreateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
                         Status = "Refund Successfull",
                         StoreId = order.StoreId,
                         
@@ -62,8 +64,8 @@ namespace Service.Implement
                         IncomePrice = order.OrderPrice / 2,
                         Method ="Refund",
                         Status = "Successfull",
-                        CreateAt = DateTime.Now,
-                        UpdateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
                         OrderId = order.OrderId,
 
                     };
@@ -82,7 +84,7 @@ namespace Service.Implement
            
             else if (order.Transfer == true && order.Status != "Received")
             {
-                TimeSpan timeUntilDelivery = order.RecipientTime.Value - DateTime.Now; // Tính khoảng cách thời gian
+                TimeSpan timeUntilDelivery = order.RecipientTime.Value - vietnamTime; // Tính khoảng cách thời gian
 
                 if (order.Status == "Order Successfully")
                 {
@@ -92,7 +94,7 @@ namespace Service.Implement
                         OrderId = order.OrderId,
                         WallerId = wallet.WalletId,
                         Price = order.OrderPrice,
-                        CreateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
                         Status = "Refund Successfull",
                         StoreId = order.StoreId,
 
@@ -104,8 +106,8 @@ namespace Service.Implement
                         IncomePrice = order.OrderPrice,
                         Method = "Refund",
                         Status = "Successfull",
-                        CreateAt = DateTime.Now,
-                        UpdateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
                         OrderId = order.OrderId,
 
 
@@ -129,7 +131,7 @@ namespace Service.Implement
                         OrderId = order.OrderId,
                         WallerId = wallet.WalletId,
                         Price = refundPrice,
-                        CreateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
                         Status = "Refund Successfull",
                         StoreId = order.StoreId,
 
@@ -142,8 +144,8 @@ namespace Service.Implement
                         IncomePrice = refundPrice,
                         Method = "Refund",
                         Status = "Successfull",
-                        CreateAt = DateTime.Now,
-                        UpdateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
                         OrderId = order.OrderId,
 
                     };
@@ -165,7 +167,7 @@ namespace Service.Implement
                         OrderId = order.OrderId,
                         WallerId = wallet.WalletId,
                         Price = refundPrice,
-                        CreateAt = DateTime.Now
+                        CreateAt = vietnamTime
                     };
 
                     await _unitOfWork.Repository<Refund>().AddAsync(refund);
@@ -175,8 +177,8 @@ namespace Service.Implement
                         IncomePrice = refundPrice,
                         Method = "Refund",
                         Status = "Successfull",
-                        CreateAt = DateTime.Now,
-                        UpdateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
                         OrderId = order.OrderId,
 
                     };
@@ -200,7 +202,7 @@ namespace Service.Implement
                         OrderId = order.OrderId,
                         WallerId = wallet.WalletId,
                         Price = refundPrice,
-                        CreateAt = DateTime.Now
+                        CreateAt = vietnamTime
                     };
 
                     await _unitOfWork.Repository<Refund>().AddAsync(refund);
@@ -210,8 +212,8 @@ namespace Service.Implement
                         IncomePrice = refundPrice,
                         Method = "Refund",
                         Status = "Successfull",
-                        CreateAt = DateTime.Now,
-                        UpdateAt = DateTime.Now,
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
                         OrderId = order.OrderId,
 
                     };
@@ -293,9 +295,11 @@ namespace Service.Implement
             {
                 throw new Exception($"Refund with ID {RefundId} not found.");
             }
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
             refund.Status = status;
-            refund.UpdateAt = DateTime.Now;
+            refund.UpdateAt = vietnamTime;
             if(status == "Refund")
             {
 

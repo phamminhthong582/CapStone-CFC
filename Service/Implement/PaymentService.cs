@@ -30,13 +30,16 @@ namespace Service.Implement
 
             if (order.Transfer == true && order.Status == "Pending Payment")
             {
+                var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
                 var payment = new Payment
                 {
                     OrderId = order.OrderId,
                     Method = "Tiền tổng",
                     StoreId = order.StoreId,
                     TotalPrice = order.OrderPrice,
-                    CreateAt = DateTime.Now,
+                    CreateAt = vietnamTime,
                     Status = "Payment Successfully",
                 };
                 order.Status = "Order Successfully";
@@ -47,15 +50,19 @@ namespace Service.Implement
                 await _unitOfWork.CompleteAsync();
 
             }
+          
             else if (order.Transfer == false && order.Status == "Pending Payment")
             {
+                var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
                 var payment = new Payment
                 {
                     OrderId = order.OrderId,
                     Method = "Tiền cọc",
                     StoreId = order.StoreId,
                     TotalPrice = order.OrderPrice * 50 / 100,
-                    CreateAt = DateTime.Now,
+                    CreateAt = vietnamTime,
                     Status = "Payment Confirmed",
                 };
                 order.Status = "Order Successfully";
