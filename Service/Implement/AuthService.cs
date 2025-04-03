@@ -32,8 +32,9 @@ public class AuthService : IAuthService
     private readonly ICustomerRepository _customerRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly CloudinaryService _cloudinaryService;
+    private readonly JWTKEY _jwtkey;
 
-    public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IRoleRepository roleRepository, IMemoryCache cache, ICustomerRepository customerRepository, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
+    public AuthService(IEmployeeRepository employeeRepository,JWTKEY jwtkey, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IRoleRepository roleRepository, IMemoryCache cache, ICustomerRepository customerRepository, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
@@ -44,17 +45,20 @@ public class AuthService : IAuthService
         _cache = cache;
         _customerRepository = customerRepository;
         _unitOfWork = unitOfWork;
+        _jwtkey = jwtkey;
     }
 
   public async Task<Result<LoginResponse>> Login(string email, string password)
 {
     try
     {
+        // Kiểm tra xem người dùng có phải là customer không
         var customer = await _customerRepository.FindCustomerByEmail(email);
         var user = await _unitOfWork.GetRepo<User>().Entities.FirstOrDefaultAsync(x => x.Email == email);
-        
+
         if (customer != null)
         {
+            // Kiểm tra trạng thái tài khoản customer
             if (user == null || user.Status == false)
             {
                 return new Result<LoginResponse>
@@ -63,13 +67,14 @@ public class AuthService : IAuthService
                     Messages = new[] { "Account is Not Verified! Please verify your account" }
                 };
             }
+
+            // Kiểm tra mật khẩu của customer
             if (user.Password == password) 
             {
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, customer.Email),
                     new Claim(ClaimTypes.Role, RoleName.Customer.ToString()), 
-                   
                 };
                 var accessToken = _tokenService.GenerateAccessToken(claims);
 
@@ -88,8 +93,18 @@ public class AuthService : IAuthService
                     ResultStatus = ResultStatus.Success.ToString()
                 };
             }
+            else
+            {
+                return new Result<LoginResponse>
+                {
+                    ResultStatus = ResultStatus.Error.ToString(),
+                    Messages = new[] { "Invalid password for customer." }
+                };
+            }
         }
-        var admin =  _employeeRepository.GetAdminAccount(email, password);
+
+        // Kiểm tra xem người dùng có phải là admin không
+        var admin = _employeeRepository.GetAdminAccount(email, password);
         if (admin != null)
         {
             var userAdmin = new Employee
@@ -116,6 +131,8 @@ public class AuthService : IAuthService
                 ResultStatus = ResultStatus.Success.ToString()
             };
         }
+
+        // Kiểm tra xem người dùng có phải là employee không
         var employee = await _employeeRepository.GetEmployeeByEmail(email);
         if (employee == null)
         {
@@ -125,6 +142,7 @@ public class AuthService : IAuthService
                 Messages = new[] { "Account is not found" }
             };
         }
+
         if (employee.User.Role == null || string.IsNullOrEmpty(employee.User.Role.RoleName))
         {
             return new Result<LoginResponse>
@@ -134,12 +152,15 @@ public class AuthService : IAuthService
             };
         }
 
+        // Tạo token cho employee
         var roleName = employee.User.Role.RoleName;
         var accessTokenEmployee = _tokenService.GenerateAccessToken(new List<Claim>
         {
             new Claim(ClaimTypes.Name, employee.Email),
-            new Claim(ClaimTypes.Role, roleName) 
+            new Claim(ClaimTypes.Role, roleName)
         });
+
+        // Tạo thông điệp chào mừng dựa trên vai trò của nhân viên
         string welcomeMessage = roleName switch
         {
             nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
@@ -147,12 +168,14 @@ public class AuthService : IAuthService
             nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
             _ => "Login successfully. Welcome"
         };
+
         var dataUser = new LoginResponse
         {
             AccessToken = accessTokenEmployee,
             Email = employee.Email,
             RoleName = roleName
         };
+
         return new Result<LoginResponse>
         {
             Data = dataUser,

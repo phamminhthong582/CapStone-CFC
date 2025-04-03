@@ -63,6 +63,7 @@ public class CategoryController : ControllerBase
 
         return Ok(result);
     }
+    [Authorize(Roles = "Customer")]
     [HttpPost("create-category")]
     public async Task<ActionResult<Result<Category>>> CreateCategory([FromBody] CreateCategoryRequest request)
     {

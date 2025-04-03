@@ -32,15 +32,10 @@ public class ChatGptService
 
     public async Task<string> GenerateTextAsync(string userMessage)
 {
-    if (!userMessage.Contains("flower") && !userMessage.Contains("basket") && !userMessage.Contains("price") && !userMessage.Contains("delivery"))
-    {
-        return "Sorry, I can only answer questions related to flowers and flower baskets. Please ask something about flowers or baskets.";
-    }
-    
     string flowerInfo = "No flower info available";
     string flowerBasketInfo = "No flower basket info available";
     string flowerCustomInfo = "No flower custom info available";
-    string productCustomInfo = "No product custom info available"; // Thêm thông tin cho sản phẩm tùy chỉnh
+    string productCustomInfo = "No product custom info available"; 
 
     if (userMessage.Contains("flower"))
     {
@@ -56,7 +51,7 @@ public class ChatGptService
     }
     if (userMessage.Contains("productcustom"))
     {
-        productCustomInfo = await _productCustomRepository.GetProductCustomInfoAsync(userMessage); // Thêm xử lý lấy thông tin sản phẩm tùy chỉnh
+        productCustomInfo = await _productCustomRepository.GetProductCustomInfoAsync(userMessage); 
     }
 
     string prompt = $"You are a chatbot assisting with a flower ordering system. The user asks: '{userMessage}'. Here is some information: {flowerInfo} {flowerBasketInfo} {flowerCustomInfo} {productCustomInfo}"; // Cập nhật prompt với thông tin sản phẩm tùy chỉnh

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using BusinessObject.Context;
 using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Notification;
@@ -12,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Service.Implement;
 using WebAPI;
+using WebAPI.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -41,39 +43,47 @@ builder.Services.AddEndpointsApiExplorer();
 // builder.Services.AddHangfire(x => x.UseSqlServerStorage("DBDefault"));
 // builder.Services.AddHangfireServer();
 //builder.Services.AddSwaggerGen();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(x => { x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
-
-builder.Services.AddSwaggerGen(sw =>
+builder.Services.AddSwaggerGen(options =>
 {
-    sw.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "1.0" });
-    sw.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Insert JWT Token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-    });
+    options.SwaggerDoc("v1", new OpenApiInfo() { Title = "CustomFlowerChain API", Version = "v1" });
 
-    sw.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme()
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header
         }
-    });
+    );
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement()
+        {
+            {
+                new OpenApiSecurityScheme()
+                {
+                    Reference = new OpenApiReference()
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new List<string>()
+            }
+        }
+    );
 });
-string? jwtIssuer = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtIssuer];
-string? jwtKey = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtKey];
-string? jwtAudience = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtAudience];
+ string? jwtIssuer = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtIssuer];
+ string? jwtKey = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtKey];
+ string? jwtAudience = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtAudience];
+
 builder
     .Services.AddAuthentication()
     .AddCookie()
@@ -138,8 +148,8 @@ else
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.MapHub<ChatHub>("/chatHub");
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
