@@ -111,7 +111,8 @@ public static class DependencyInjection
 
         services.AddHttpClient<ImageService>(); // Đăng ký HttpClient
 
-        // Hang
+        // Login
+        services.AddScoped<JWTKEY, JWTService>();
 
         //Revenue
         services.AddScoped<IRevenueService, RevenueService>();

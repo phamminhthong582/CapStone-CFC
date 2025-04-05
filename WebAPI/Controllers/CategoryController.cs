@@ -17,6 +17,7 @@ public class CategoryController : ControllerBase
     {
         _categoryService = categoryService;
     }
+    //[Authorize(Roles = "Customer")]
     [HttpGet]
     public async Task<IActionResult> GetCategory()
     {
@@ -63,6 +64,7 @@ public class CategoryController : ControllerBase
 
         return Ok(result);
     }
+    [Authorize(Roles = "Customer")]
     [HttpPost("create-category")]
     public async Task<ActionResult<Result<Category>>> CreateCategory([FromBody] CreateCategoryRequest request)
     {

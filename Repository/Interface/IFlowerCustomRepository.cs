@@ -5,6 +5,7 @@ namespace Repository.Interface;
 public interface IFlowerCustomRepository
 {
     Task<List<FlowerCustom>> GetAllFlowerCustom();
+    Task<string> GetFlowerCustomInfoAsync(string flowerName);
     Task<FlowerCustom> CreateFlowerCustom(FlowerCustom flowerCustom);
     Task<FlowerCustom> UpdateFlowerCustom(FlowerCustom flowerCustom);
     Task<FlowerCustom> DeleteFlowerCustom(Guid id);

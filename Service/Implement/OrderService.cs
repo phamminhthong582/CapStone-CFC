@@ -15,6 +15,8 @@ using BusinessObject.Entities;
 using MailKit.Search;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MimeKit.Cryptography;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.X509;
@@ -28,6 +30,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static Service.Implement.CheckService;
 
 namespace Service.Implement
 {
@@ -36,14 +39,20 @@ namespace Service.Implement
         private readonly IUnitOfWork _unitOfWork;
         private readonly IChatRoomService _chatRoomService;
         private readonly IMessageService _messageService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _googleApiKey;
         private readonly INotiService _notiService;
+        private readonly ILogger<OrderService> _logger;
 
-        public OrderService(IUnitOfWork unitOfWork, IChatRoomService chatRoomService, IMessageService messageService, INotiService notiService)
+        public OrderService(IUnitOfWork unitOfWork,IConfiguration configuration, IChatRoomService chatRoomService, IMessageService messageService, IHttpClientFactory httpClientFactory, INotiService notiService, ILogger<OrderService> logger)
         {
             _unitOfWork = unitOfWork;
             _chatRoomService = chatRoomService;
             _messageService = messageService;
+            _httpClientFactory = httpClientFactory;
+            _googleApiKey = configuration["GoogleMaps:ApiKey"]; // Lấy từ config
             _notiService = notiService;
+            _logger = logger;
         }
 
         public OrderService(IUnitOfWork unitOfWork, INotiService notiService)
@@ -174,10 +183,7 @@ namespace Service.Implement
                 string deliveryAddress = $"{orderRequest.DeliveryAddress}, {orderRequest.DeliveryDistrict}, {orderRequest.DeliveryCity}";
                 var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(orderRequest.StoreId);
                 string StoreAddress = store.Address + "," + store.District + "," + store.City;
-                var storeLocation = await GetCoordinatesAsync(StoreAddress);
-                var deliveryLocation = await GetCoordinatesAsync(deliveryAddress);
-                double distance = CalculateDistance(storeLocation.Value.Latitude, storeLocation.Value.Longitude,
-                                 deliveryLocation.Value.Latitude, deliveryLocation.Value.Longitude);
+                double distance = await GetDistanceFromGoogleAsync(StoreAddress, deliveryAddress);
                 double? shipperMoney = 0.0;
                 if (distance < 5)
                 {
@@ -188,7 +194,7 @@ namespace Service.Implement
                 {
                     totalPrice = totalPrice;
                 }
-
+              
             }
 
             order.OrderPrice = totalPrice;
@@ -290,10 +296,7 @@ namespace Service.Implement
                     string deliveryAddress = $"{DeliveryAddress}, {DeliveryDistrict}, {DeliveryCity}";
                     var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(orderRequest.StoreId);
                     string StoreAddress = store.Address + "," + store.District + "," + store.City;
-                    var storeLocation = await GetCoordinatesAsync(StoreAddress);
-                    var deliveryLocation = await GetCoordinatesAsync(deliveryAddress);
-                    double distance = CalculateDistance(storeLocation.Value.Latitude, storeLocation.Value.Longitude,
-                                     deliveryLocation.Value.Latitude, deliveryLocation.Value.Longitude);
+                    double distance = await GetDistanceFromGoogleAsync(StoreAddress, deliveryAddress);
                     double? shipperMoney = 0.0;
                     if (distance < 5)
                     {
@@ -365,13 +368,25 @@ namespace Service.Implement
                     totalPrice *= (1 - (promotion.PromotionDiscount / 100.0));
                 }
             }
-        /*    if (Delivery == true)
+            if (Delivery == true)
             {
                 string deliveryAddress = $"{DeliveryAddress}, {DeliveryDistrict}, {DeliveryCity}";
-                var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(storeId);
+                var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(orderCustomRequest.StoreId);
+                string StoreAddress = store.Address + "," + store.District + "," + store.City;
+                double distance = await GetDistanceFromGoogleAsync(StoreAddress, deliveryAddress);
+                double? shipperMoney = 0.0;
+                if (distance < 5)
+                {
+                    shipperMoney = 10000 + distance * 5000;
+                    totalPrice = shipperMoney + totalPrice;
+                }
+                else if (distance > 5)
+                {
+                    totalPrice = totalPrice;
+                }
 
 
-            }*/
+            }
             order.OrderPrice = totalPrice;
             productCustom.OrderId = order.OrderId;
 
@@ -382,49 +397,84 @@ namespace Service.Implement
             await _unitOfWork.CompleteAsync();
             return order;
         }
-        public async Task<(double Latitude, double Longitude)?> GetCoordinatesAsync(string address)
+        private async Task<double> GetDistanceFromGoogleAsync(string origin, string destination)
         {
-            using (var httpClient = new HttpClient())
+            const string API_CONNECTION_ERROR = "Lỗi kết nối với Google Maps API";
+            const string INVALID_RESPONSE_FORMAT = "Định dạng phản hồi từ Google không hợp lệ";
+            const string GOOGLE_API_ERROR = "Google Maps API trả về lỗi";
+            const string CALCULATION_SUCCESS = "Tính khoảng cách thành công";
+            const string UNKNOWN_ERROR = "Lỗi không xác định khi tính khoảng cách";
+            try
             {
-                string url = $"https://nominatim.openstreetmap.org/search?format=json&q={Uri.EscapeDataString(address)}";
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "TripPlanner/1.0 (trinhbloc2003@email.com)");
+                var httpClient = _httpClientFactory.CreateClient();
+                string url = $"https://maps.googleapis.com/maps/api/distancematrix/json" +
+                            $"?origins={Uri.EscapeDataString(origin)}" +
+                            $"&destinations={Uri.EscapeDataString(destination)}" +
+                            $"&key={_googleApiKey}" +
+                            $"&region=vn&language=vi";
 
                 var response = await httpClient.GetAsync(url);
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var results = JsonConvert.DeserializeObject<List<NominatimResponse>>(content);
-
-                    if (results != null && results.Count > 0)
-                    {
-                        return (results[0].Lat, results[0].Lon);
-                    }
+                    string statusCode = response.StatusCode.ToString();
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    return  0;
                 }
+                var content = await response.Content.ReadAsStringAsync();
+                var distanceMatrix = JsonConvert.DeserializeObject<GoogleDistanceMatrixResponse>(content);
+
+                if (distanceMatrix?.rows == null ||
+                    distanceMatrix.rows.Count == 0 ||
+                    distanceMatrix.rows[0].elements == null ||
+                    distanceMatrix.rows[0].elements.Count == 0)
+                {
+                    return (0);
+                }
+
+                var element = distanceMatrix.rows[0].elements[0];
+                if (element.status != "OK")
+                {
+                    return  0;
+                }
+
+                double meters = element.distance.value;
+                return  meters / 1000.0; // Convert to km
             }
-            return null;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting distance from Google Maps");
+                return 0;
+            }
         }
-        public double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        public class GoogleDistanceMatrixResponse
         {
-            const double R = 6371; // Bán kính Trái Đất (km)
-            double dLat = ToRadians(lat2 - lat1);
-            double dLon = ToRadians(lon2 - lon1);
+            public List<Row> rows { get; set; }
+            public string status { get; set; }
+            public string error_message { get; set; }
 
-            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                       Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            public class Row
+            {
+                public List<Element> elements { get; set; }
+            }
 
-            return R * c; // Khoảng cách tính bằng km
-        }
+            public class Element
+            {
+                public DistanceInfo distance { get; set; }
+                public DurationInfo duration { get; set; }
+                public string status { get; set; }
+            }
 
-        private double ToRadians(double angle)
-        {
-            return Math.PI * angle / 180.0;
-        }
-        public class NominatimResponse
-        {
-            public double Lat { get; set; }
-            public double Lon { get; set; }
+            public class DistanceInfo
+            {
+                public string text { get; set; }
+                public int value { get; set; } // in meters
+            }
+
+            public class DurationInfo
+            {
+                public string text { get; set; }
+                public int value { get; set; } // in seconds
+            }
         }
         public async Task DeleteOrder(Guid orderID)
         {
@@ -1251,10 +1301,10 @@ namespace Service.Implement
 
             return orderResponse;
         }
-     
+
         public async Task<IEnumerable<OrderResponse>> GetOrderByStaffId(Guid StaffId)
         {
-           
+
             var orders = await _unitOfWork.GetRepo<Order>().Entities
                .Include(d => d.Promotion)
                .Include(o => o.OrderDetails)
@@ -1262,9 +1312,160 @@ namespace Service.Implement
                    .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
                    .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
                    .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
-               .Where(order => order.StaffId == StaffId)
+                 .Where(order => order.StaffId == StaffId && order.Status != "Pending Payment" && order.Status != "Request refund" && order.Status != "Accept refund" && order.Status != "Refuse refund")
+                                 .OrderByDescending(n => n.CreateAt)
                                   .OrderByDescending(n => n.CreateAt)
 
+               .ToListAsync();
+
+            var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();
+            var productImage = await _unitOfWork.Repository<ProductImage>().GetAllAsync();
+            var flowerCustoms = await _unitOfWork.Repository<FlowerCustom>().Entities
+                                   .Include(fc => fc.Flower)
+                                       .ThenInclude(f => f.Category)
+                                   .ToListAsync();
+
+            var orderResponse = orders.Select(order => new OrderResponse
+            {
+                OrderId = order.OrderId,
+                OrderPrice = order.OrderPrice,
+                CustomerId = order.CustomerId,
+                ProductCustomId = order.ProductCustomId,
+                Delivery = order.Delivery,
+
+                ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
+                {
+                    ProductCustomId = order.ProductCustomId,
+                    ProductName = order.ProductCustom.ProductName,
+                    Quantity = order.ProductCustom.Quantity,
+                    TotalPrice = order.ProductCustom.TotalPrice,
+                    CustomerId = order.ProductCustom.CustomerId,
+                    CreateAt = order.ProductCustom.CreateAt,
+                    UpdateAt = order.ProductCustom.UpdateAt,
+                    Status = order.ProductCustom.Status,
+                    flowerBasketResponse = order.ProductCustom.FlowerBasket != null ? new FlowerBasketResponse
+                    {
+                        FlowerBasketId = order.ProductCustom.FlowerBasket.FlowerBasketId,
+                        FlowerBasketName = order.ProductCustom.FlowerBasket.FlowerBasketName,
+                        MaxQuantity = order.ProductCustom.FlowerBasket.MaxQuantity,
+                        MinQuantity = order.ProductCustom.FlowerBasket.MinQuantity,
+                        Quantity = order.ProductCustom.FlowerBasket.Quantity,
+                        Image = order.ProductCustom.FlowerBasket.Image,
+                        CategoryName = order.ProductCustom.FlowerBasket.Category?.CategoryName,
+                        Price = order.ProductCustom.FlowerBasket.Price,
+                        Decription = order.ProductCustom.FlowerBasket.Decription,
+                        Feature = order.ProductCustom.FlowerBasket.Feature,
+                        Status = order.ProductCustom.FlowerBasket.Status,
+                        Sold = order.ProductCustom.FlowerBasket.Sold,
+                        CreateAt = order.ProductCustom.FlowerBasket.CreateAt,
+                        UpdateAt = order.ProductCustom.FlowerBasket.UpdateAt,
+                    } : null,
+                    styleResponse = order.ProductCustom.Style != null ? new StyleResponse
+                    {
+                        StyleId = order.ProductCustom.Style.StyleId,
+                        Name = order.ProductCustom.Style.Name,
+                        Description = order.ProductCustom.Style.Description,
+                        Note = order.ProductCustom.Style.Note,
+                        CategoryName = order.ProductCustom.Style.Category?.CategoryName,
+                        Image = order.ProductCustom.Style.Image,
+                        CreateAt = order.ProductCustom.Style.CreateAt,
+                        UpdateAt = order.ProductCustom.Style.UpdateAt,
+                        Status = order.ProductCustom.Style.Status,
+                        Feature = order.ProductCustom.Style.Feature,
+                    } : null,
+                    accessoryResponse = order.ProductCustom.Accessory != null ? new AccessoryResponse
+                    {
+                        AccessoryId = order.ProductCustom.Accessory.AccessoryId,
+                        Name = order.ProductCustom.Accessory.Name,
+                        Note = order.ProductCustom.Accessory.Note,
+                        Price = order.ProductCustom.Accessory.Price,
+                        CategoryName = order.ProductCustom.Accessory.Category?.CategoryName,
+                        Description = order.ProductCustom.Accessory.Description,
+                        Image = order.ProductCustom.Accessory.Image,
+                        Status = order.ProductCustom.Accessory.Status,
+                        Feature = order.ProductCustom.Accessory.Feature,
+                    } : null,
+                    flowerCustomResponses = flowerCustoms
+                    .Where(a => a.ProductCustomId == order.ProductCustom.ProductCustomId)
+                                    .Select(a => new FlowerCustomResponse
+                                    {
+                                        FlowerCustomId = a.FlowerCustomId,
+                                        FlowerId = a.FlowerId,
+                                        Quantity = a.Quantity,
+                                        TotalPrice = a.Price,
+                                        CreateAt = a.CreateAt,
+                                        UpdateAt = a.UpdateAt,
+                                        Status = a.Status,
+                                        flowerResponse = a.Flower != null ? new FlowerResponse
+                                        {
+                                            FlowerId = a.Flower.FlowerId,
+                                            FlowerName = a.Flower.FlowerName,
+                                            Price = a.Flower.Price,
+                                            Color = a.Flower.Color,
+                                            Image = a.Flower.Image,
+                                            Quantity = a.Flower.Quantity,
+                                            CategoryName = a.Flower.Category?.CategoryName,
+                                            Description = a.Flower.Description,
+                                            Sold = a.Flower.Sold,
+                                            Feature = a.Flower.Feature,
+                                            Status = a.Flower.Status,
+                                        } : null
+                                    }).ToList()
+                } : null,
+                StaffId = order.StaffId,
+                PromotionId = order.PromotionId,
+                PromotionName = order.Promotion?.PromotionName,
+                PromotionDiscount = order.Promotion?.PromotionDiscount ?? 0,
+                DeliveryAddress = order.DeliveryAddress,
+                DeliveryDistrict = order.DeliveryDistrict,
+                DeliveryCity = order.DeliveryCity,
+                StoreId = order.StoreId,
+                Note = order.Note,
+                DeliveryDateTime = order.RecipientTime,
+                Phone = order.Phone,
+                Transfer = order.Transfer,
+                Refund = order.Refund,
+                CreateAt = order.CreateAt,
+                UpdateAt = order.UpdateAt,
+                Status = order.Status,
+                OrderDetails = order.OrderDetails?
+                    .Where(orderDetail => orderDetail.OrderId == order.OrderId)
+                    .Select(orderDetail => new OrderDetailsResponse
+                    {
+                        OrderDetailId = orderDetail.OrderDetailId,
+                        ProductId = orderDetail.ProductId,
+                        ProductName = orderDetail.Product?.ProductName,
+                        ProductImage = productImage
+                            .Where(pi => pi.ProductId == orderDetail.ProductId)
+                            .Select(pi => pi.ProductImage1)
+                            .FirstOrDefault(),
+                        Price = orderDetail.Product?.Price ?? 0,
+                        Discount = orderDetail.Product?.Discount ?? 0,
+                        ProductTotalPrice = orderDetail.ProductTotalPrice,
+                        Quantity = orderDetail.Quantity ?? 0,
+                        OrderId = orderDetail.OrderId,
+                        CreateAt = orderDetail.CreateAt,
+                        UpdateAt = orderDetail.UpdateAt,
+                        Status = orderDetail.Status
+                    })
+                    .ToList() ?? new List<OrderDetailsResponse>()
+            });
+
+            return orderResponse;
+        }
+        public async Task<IEnumerable<OrderResponse>> GetRefundOrderByStaffId(Guid StaffId)
+        {
+
+            var orders = await _unitOfWork.GetRepo<Order>().Entities
+               .Include(d => d.Promotion)
+               .Include(o => o.OrderDetails)
+                   .ThenInclude(od => od.Product)
+                   .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
+                   .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
+                   .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
+              
+ .Where(order => order.StaffId == StaffId && order.Status != "Pending Payment" && order.Status == "Request refund" || order.Status == "Accept refund" || order.Status == "Refuse refund")
+                                 .OrderByDescending(n => n.CreateAt)
                .ToListAsync();
 
             var orderDetail = await _unitOfWork.Repository<OrderDetail>().GetAllAsync();

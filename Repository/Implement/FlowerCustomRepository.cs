@@ -19,6 +19,24 @@ public class FlowerCustomRepository : IFlowerCustomRepository
         return list;
     }
 
+    public async Task<string> GetFlowerCustomInfoAsync(string flowerName)
+    {
+        var flowerCustom = await _context.FlowerCustoms
+            .Include(fc => fc.Flower) 
+            .Where(fc => fc.Flower.FlowerName.Contains(flowerName))
+            .FirstOrDefaultAsync();
+
+        if (flowerCustom != null)
+        {
+            return $"Flower Custom ID: {flowerCustom.FlowerCustomId}, Flower Name: {flowerCustom.Flower.FlowerName}, " +
+                   $"Product Custom ID: {flowerCustom.ProductCustomId}, Quantity: {flowerCustom.Quantity}, " +
+                   $"Price: {flowerCustom.Price} VND, Status: {(flowerCustom.Status == true ? "Active" : "Inactive")}, " +
+                   $"Created At: {flowerCustom.CreateAt}, Updated At: {flowerCustom.UpdateAt}";
+        }
+
+        return "Sorry, we couldn't find any information about that flower custom.";
+    }
+
     public async Task<FlowerCustom> CreateFlowerCustom(FlowerCustom flowerCustom)
     {
         await _context.FlowerCustoms.AddAsync(flowerCustom);

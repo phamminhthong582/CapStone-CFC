@@ -91,6 +91,15 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
+        [HttpGet("GetRefundOrderByStaffId")]
+        public async Task<IActionResult> GetRefundOrderByStaffId(Guid StaffId)
+        {
+            var result = await orderService.GetRefundOrderByStaffId(StaffId);
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
         [HttpGet("GetOrderByOrderId")]
         public async Task<IActionResult> GetOrderByOrderId(Guid OrderId)
         {

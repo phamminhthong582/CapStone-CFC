@@ -27,6 +27,7 @@ public enum ResultStatus
     Invalid,
     Failed,
     NotVerified,
+    Failure,
 
 }
 

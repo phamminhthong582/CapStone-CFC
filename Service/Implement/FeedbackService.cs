@@ -118,6 +118,7 @@ public class FeedbackService : IFeedbackService
             _unitOfWork.Repository<Wallet>().Update(wallet);
             var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            var payment = (await _unitOfWork.Repository<Payment>().GetAllAsync()).FirstOrDefault(n => n.OrderId == OrderId);
 
             var refund = new Refund
             {
@@ -127,7 +128,7 @@ public class FeedbackService : IFeedbackService
                 WallerId = wallet.WalletId,
                 CreateAt = vietnamTime,
                 UpdateAt = vietnamTime,
-                Status = "Refund Order",
+                Status = "Refund Successfull",
             };
              await _unitOfWork.Repository<Refund>().AddAsync(refund);
             var incomeWallet = new IncomeWallet
@@ -141,8 +142,10 @@ public class FeedbackService : IFeedbackService
                 OrderId = Order.OrderId,
             };
             await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomeWallet);
+            payment.Status = "refund";
+            _unitOfWork.Repository<Payment>().Update(payment);
+            await _unitOfWork.CompleteAsync();
         }
-        await _unitOfWork.CompleteAsync();
     }
     public async Task<FeedbackResponse> GetFeedBackByOrderId(Guid orderId)
     {
