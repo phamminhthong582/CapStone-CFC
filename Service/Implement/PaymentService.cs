@@ -36,7 +36,7 @@ namespace Service.Implement
                 var payment = new Payment
                 {
                     OrderId = order.OrderId,
-                    Method = "Tiền tổng",
+                    Method = "100% transfer",
                     StoreId = order.StoreId,
                     TotalPrice = order.OrderPrice,
                     CreateAt = vietnamTime,
@@ -59,11 +59,11 @@ namespace Service.Implement
                 var payment = new Payment
                 {
                     OrderId = order.OrderId,
-                    Method = "Tiền cọc",
+                    Method = "50% deposit",
                     StoreId = order.StoreId,
                     TotalPrice = order.OrderPrice * 50 / 100,
                     CreateAt = vietnamTime,
-                    Status = "Payment Confirmed",
+                    Status = "Payment Successfully",
                 };
                 order.Status = "Order Successfully";
                 await _unitOfWork.Repository<Payment>().AddAsync(payment);

@@ -30,6 +30,8 @@ namespace Service.Interface
         Task UpdateOrderByStoreId(Guid orderId, Guid StaffId);
         Task UpdateStatusOrderByStaffId(Guid orderId, string Status);
         Task<IEnumerable<OrderResponse>> GetOrderByStaffId(Guid StaffId);
+        Task<IEnumerable<OrderResponse>> GetRefundOrderByStaffId(Guid StaffId);
+
         Task<Order> ConvertCartToOrder(Guid CustomerID, OrderCartRequest orderRequest);
 
         Task<Order> CreateOrderCustom(Guid Customer , OrderCustomRequest orderCustomRequest);

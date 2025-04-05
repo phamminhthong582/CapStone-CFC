@@ -13,73 +13,27 @@ namespace Service.Implement;
 
 public class TokenService : ITokenService
 {
-    private const int SaltSize = 128 / 8;
-    private const int KeySize = 256 / 8;
-    private const int Iterations = 10000;
-    private const char Delimiter = ';';
-    private static readonly HashAlgorithmName _hashAlgorithmName = HashAlgorithmName.SHA256;
     private readonly IConfiguration _configuration;
 
     public TokenService(IConfiguration configuration)
     {
         _configuration = configuration;
     }
-    public string GenerateToken(object user)
+    public string GenerateAccessToken(List<Claim> claims)
     {
-        // Lấy key từ cấu hình
-        var secretKey = _configuration["Jwt:Key"];
-        if (string.IsNullOrEmpty(secretKey))
-        {
-            throw new InvalidOperationException("Jwt:Key is not configured in appsettings.json");
-        }
+        var securityKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_configuration[BusinessObject.DTO.Commons.JwtConstants.JwtKey]!)
+        );
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var jwtTokenHandler = new JwtSecurityTokenHandler();
-        var secretKeyByte = Encoding.UTF8.GetBytes(secretKey);
-
-        var claims = new List<Claim>();
-
-       
-        if (user is Employee employee)
-        {
-            claims.AddRange(new[]
-  {
-    new Claim(ClaimTypes.NameIdentifier, employee.FullName ?? throw new ArgumentNullException(nameof(employee.FullName))),
-    new Claim("Id", employee.EmployeeId.ToString()),
-    new Claim(ClaimTypes.Role, employee.RoleId.ToString()),
-    new Claim("FullName", employee.FullName ?? ""),
-    new Claim("Avatar", employee.Avatar ?? ""),
-    new Claim("StoreId", employee.StoreId?.ToString() ?? "") // Thêm StoreId
-});
-        }
-        
-        else if (user is Customer customer)
-        {
-            claims.AddRange(new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, !string.IsNullOrEmpty(customer.FullName) ? customer.FullName : customer.Email), // Nếu FullName bị null, dùng Email
-                new Claim("Id", customer.CustomerId.ToString()),
-                new Claim(ClaimTypes.Role, RoleName.Customer.ToString()),
-                new Claim("FullName", !string.IsNullOrEmpty(customer.FullName) ? customer.FullName : customer.Email), // Dùng Email nếu FullName bị null
-                new Claim("Avatar", customer.Avatar ?? "") // Tránh null cho Avatar
-            });
-        }
-        else
-        {
-            throw new ArgumentException("Unsupported user type", nameof(user));
-        }
-
-        
-        var tokenDescription = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(secretKeyByte),
-                SecurityAlgorithms.HmacSha256)
-        };
-
-        // Tạo token
-        var token = jwtTokenHandler.CreateToken(tokenDescription);
-        return jwtTokenHandler.WriteToken(token);
+        var token = new JwtSecurityToken(
+            _configuration[BusinessObject.DTO.Commons.JwtConstants.JwtIssuer],
+            _configuration[BusinessObject.DTO.Commons.JwtConstants.JwtAudience],
+            claims,
+            expires: DateTime.Now.AddDays(1),
+            signingCredentials: credentials
+        );
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
 }

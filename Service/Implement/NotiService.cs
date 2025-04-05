@@ -145,10 +145,12 @@ namespace Service.Implement
                         Messages = new[] { "ToUserId is required" }
                     };
                 }
+                var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
                 // Set default values
                 notification.NotiId = Guid.NewGuid();
-                notification.CreateAt = DateTime.UtcNow;
+                notification.CreateAt = vietnamTime;
                 notification.IsRead = false;
 
                 // Save to database

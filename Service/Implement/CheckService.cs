@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTO.Check;
 using BusinessObject.Entities;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Repository.Implement;
 using Repository.Interface;
@@ -16,86 +17,206 @@ namespace Service.Implement
     public class CheckService : ICheckService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _googleApiKey;
 
-        public CheckService(IUnitOfWork unitOfWork)
+
+        public CheckService(IUnitOfWork unitOfWork, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
+            _httpClientFactory = httpClientFactory;
+            _googleApiKey = configuration["GoogleMaps:ApiKey"]; // Lấy từ config
         }
 
         public async Task<(bool isSuccess, double? distance)> CheckDeliveryByCheckOutProduct(Guid storeId, CheckProductRequest checkProductRequest)
         {
-            var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(storeId);
-            double? totalWeight = 0.0;
+            try
+            {
+                var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(storeId);
+                if (store == null) return (false, null);
 
-            if (checkProductRequest.CheckQuantityAndWeightProducts != null)
-            {
-                foreach (var item in checkProductRequest.CheckQuantityAndWeightProducts)
+                // Tính tổng trọng lượng
+                double? totalWeight = 0.0;
+                if (checkProductRequest.CheckQuantityAndWeightProducts != null)
                 {
-                    var product = await _unitOfWork.GetRepo<Product>().GetByIdAsync(item.ProductId);
-                    totalWeight += (product.Weight ?? 0) * item.Quantity; 
+                    // Tạo danh sách các task
+                    var tasks = checkProductRequest.CheckQuantityAndWeightProducts
+                        .Select(async item =>
+                        {
+                            var product = await _unitOfWork.GetRepo<Product>().GetByIdAsync(item.ProductId);
+                            return (product?.Weight ?? 0) * item.Quantity;
+                        })
+                        .ToList();
+
+                    // Chờ tất cả task hoàn thành
+                    var weights = await Task.WhenAll(tasks);
+                    totalWeight = weights.Sum();
                 }
-            }
-            string deliveryAddress = $"{checkProductRequest.DetailedAddress}, {checkProductRequest.District}, {checkProductRequest.City}";
-            string StoreAddress = store.Address + "," + store.District + "," + store.City;
-            var storeLocation = await GetCoordinatesAsync(StoreAddress);
-            var deliveryLocation = await GetCoordinatesAsync(deliveryAddress);
-            if (storeLocation == null || deliveryLocation == null)
-                return (false,-1);
-            double distance = CalculateDistance(storeLocation.Value.Latitude, storeLocation.Value.Longitude,
-                                        deliveryLocation.Value.Latitude, deliveryLocation.Value.Longitude);
-            double? shipperMoney = 0.0;
-            if (totalWeight < 3)
-            {
-                if(distance < 5)
+
+                // Validate trọng lượng
+                if (totalWeight > 5) return (false, null);
+                if (totalWeight <= 0) return (false, null);
+
+                string deliveryAddress = $"{checkProductRequest.DetailedAddress}, {checkProductRequest.District}, {checkProductRequest.City}";
+                string storeAddress = $"{store.Address}, {store.District}, {store.City}";
+
+                var distanceResult = await GetDistanceFromGoogleAsync(storeAddress, deliveryAddress);
+                if (!distanceResult.isSuccess) return (false, null);
+
+                double distance = distanceResult.distance.Value;
+
+                // Tính phí vận chuyển
+                if (distance < 5 && totalWeight < 3)
                 {
-                    shipperMoney = 10000 + distance * 5000;
+                    double shipperMoney = 10000 + distance * 5000;
                     return (true, shipperMoney);
                 }
-                else if (distance > 5)
-                {
-                    return (false, shipperMoney);
-                }
 
+                return (false, null);
             }
-            else if(totalWeight > 5)
+            catch (Exception ex)
             {
-                return (false, shipperMoney);
+                return (false, null );
             }
-
-            return (false, shipperMoney);
         }
 
-        public async Task<(bool isSuccess, double? distance)> CheckDeliveryByProductCustom(Guid storeId, CheckProductFlowerRequest checkProductFlowerRequest)
+        public async Task<(bool isSuccess, double? distance, string message)> GetDistanceFromGoogleAsync(string origin, string destination)
         {
-            var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(storeId);
-            string deliveryAddress = $"{checkProductFlowerRequest.DetailedAddress}, {checkProductFlowerRequest.District}, {checkProductFlowerRequest.City}";
-            string StoreAddress = store.Address + "," + store.District + "," + store.City;
-            var storeLocation = await GetCoordinatesAsync(StoreAddress);
-            var deliveryLocation = await GetCoordinatesAsync(deliveryAddress);
-            if (storeLocation == null || deliveryLocation == null)
-                return (false, -1);
-            double distance = CalculateDistance(storeLocation.Value.Latitude, storeLocation.Value.Longitude,
-                                        deliveryLocation.Value.Latitude, deliveryLocation.Value.Longitude);
-            double? shipperMoney = 0.0;
-            if (checkProductFlowerRequest.ProductQuantity < 2)
+            const string API_CONNECTION_ERROR = "Lỗi kết nối với Google Maps API";
+            const string INVALID_RESPONSE_FORMAT = "Định dạng phản hồi từ Google không hợp lệ";
+            const string GOOGLE_API_ERROR = "Google Maps API trả về lỗi";
+            const string CALCULATION_SUCCESS = "Tính khoảng cách thành công";
+            const string UNKNOWN_ERROR = "Lỗi không xác định khi tính khoảng cách";
+
+            try
             {
-                if (distance < 5)
+                var httpClient = _httpClientFactory.CreateClient();
+                string url = $"https://maps.googleapis.com/maps/api/distancematrix/json" +
+                            $"?origins={Uri.EscapeDataString(origin)}" +
+                            $"&destinations={Uri.EscapeDataString(destination)}" +
+                            $"&key={_googleApiKey}" +
+                            $"&region=vn&language=vi";
+
+                var response = await httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
                 {
-                    shipperMoney = 10000 + distance * 5000;
-                    return (true, shipperMoney);
-                }
-                else if (distance > 5)
-                {
-                    return (false, shipperMoney);
+                    string statusCode = response.StatusCode.ToString();
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    return (false, null, $"{API_CONNECTION_ERROR}. Status: {statusCode}. Response: {responseContent}");
                 }
 
+                var content = await response.Content.ReadAsStringAsync();
+                var distanceMatrix = JsonConvert.DeserializeObject<GoogleDistanceMatrixResponse>(content);
+
+                // Kiểm tra response hợp lệ
+                if (distanceMatrix?.rows == null ||
+                    distanceMatrix.rows.Count == 0 ||
+                    distanceMatrix.rows[0].elements == null ||
+                    distanceMatrix.rows[0].elements.Count == 0)
+                {
+                    return (false, null, $"{INVALID_RESPONSE_FORMAT}. Response: {content}");
+                }
+
+                var element = distanceMatrix.rows[0].elements[0];
+                if (element.status != "OK")
+                {
+                    string errorDetails = element.status;
+                    if (distanceMatrix.error_message != null)
+                    {
+                        errorDetails += $". {distanceMatrix.error_message}";
+                    }
+                    return (false, null, $"{GOOGLE_API_ERROR}: {errorDetails}");
+                }
+
+                double meters = element.distance.value;
+                return (true, meters / 1000.0, CALCULATION_SUCCESS);
             }
-            else if (checkProductFlowerRequest.ProductQuantity > 2)
+            catch (HttpRequestException httpEx)
             {
-                return (false, shipperMoney);
+                return (false, null, $"{API_CONNECTION_ERROR}: {httpEx.Message}");
+            }
+            catch (JsonException jsonEx)
+            {
+                return (false, null, $"{INVALID_RESPONSE_FORMAT}: {jsonEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Log full exception details here
+                return (false, null, $"{UNKNOWN_ERROR}: {ex.Message}");
+            }
+        }
+
+        public class GoogleDistanceMatrixResponse
+        {
+            public List<Row> rows { get; set; }
+            public string status { get; set; }
+            public string error_message { get; set; } // Thêm trường error_message
+
+            public class Row
+            {
+                public List<Element> elements { get; set; }
             }
 
-            return (false, shipperMoney);
+            public class Element
+            {
+                public DistanceInfo distance { get; set; }
+                public DurationInfo duration { get; set; }
+                public string status { get; set; }
+            }
+
+            public class DistanceInfo
+            {
+                public string text { get; set; } // Ví dụ: "1.5 km"
+                public int value { get; set; } // in meters
+            }
+
+            public class DurationInfo
+            {
+                public string text { get; set; } // Ví dụ: "5 phút"
+                public int value { get; set; } // in seconds
+            }
+        }
+        public async Task<(bool isSuccess, double? distance)> CheckDeliveryByProductCustom( Guid storeId, CheckProductFlowerRequest checkProductFlowerRequest)
+        {
+            try
+            {
+                // 1. Validate input
+                if (checkProductFlowerRequest == null)
+                    return (false, null);
+
+                // 2. Get store information
+                var store = await _unitOfWork.GetRepo<Store>().GetByIdAsync(storeId);
+                if (store == null)
+                    return (false, null);
+
+                // 3. Validate product quantity
+                if (checkProductFlowerRequest.ProductQuantity > 2)
+                    return (false, null);
+
+                // 4. Prepare addresses
+                string deliveryAddress = $"{checkProductFlowerRequest.DetailedAddress}, {checkProductFlowerRequest.District}, {checkProductFlowerRequest.City}";
+                string storeAddress = $"{store.Address}, {store.District}, {store.City}";
+
+                // 5. Get distance from Google Maps API
+                var distanceResult = await GetDistanceFromGoogleAsync(storeAddress, deliveryAddress);
+                if (!distanceResult.isSuccess)
+                    return (false, null );
+
+                double distance = distanceResult.distance.Value;
+
+                // 6. Check distance limit
+                if (distance >= 5)
+                    return (false, null);
+
+                // 7. Calculate shipping fee
+                double shippingFee = 10000 + distance * 5000;
+                return (true, shippingFee);
+            }
+            catch (Exception ex)
+            {
+                // Log error here
+                return (false, null);
+            }
         }
 
 

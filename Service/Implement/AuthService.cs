@@ -32,8 +32,9 @@ public class AuthService : IAuthService
     private readonly ICustomerRepository _customerRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly CloudinaryService _cloudinaryService;
+    private readonly JWTKEY _jwtkey;
 
-    public AuthService(IEmployeeRepository employeeRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IRoleRepository roleRepository, IMemoryCache cache, ICustomerRepository customerRepository, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
+    public AuthService(IEmployeeRepository employeeRepository,JWTKEY jwtkey, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IRoleRepository roleRepository, IMemoryCache cache, ICustomerRepository customerRepository, IUnitOfWork unitOfWork, CloudinaryService cloudinaryService)
     {
         _employeeRepository = employeeRepository;
         _tokenService = tokenService;
@@ -44,122 +45,158 @@ public class AuthService : IAuthService
         _cache = cache;
         _customerRepository = customerRepository;
         _unitOfWork = unitOfWork;
+        _jwtkey = jwtkey;
     }
 
     public async Task<Result<LoginResponse>> Login(string email, string password)
     {
-        var customer = await _customerRepository.FindCustomerByEmail(email);
-        var User = await _unitOfWork.GetRepo<User>().Entities.FirstOrDefaultAsync(x => x.Email == email);
-        if (customer != null )
+        try
         {
-            if (User.Status == false)
+            // Kiểm tra xem người dùng có phải là customer không
+            var customer = await _customerRepository.FindCustomerByEmail(email);
+            var user = await _unitOfWork.GetRepo<User>().Entities.FirstOrDefaultAsync(x => x.Email == email);
+
+            if (customer != null)
             {
-                return new Result<LoginResponse>
+                // Kiểm tra trạng thái tài khoản customer
+                if (user == null || user.Status == false)
                 {
-                    ResultStatus = ResultStatus.Error.ToString(),
-                    Messages = new[] { "Account is Not Verified! Please verify your account" }
+                    return new Result<LoginResponse>
+                    {
+                        ResultStatus = ResultStatus.Error.ToString(),
+                        Messages = new[] { "Account is Not Verified! Please verify your account" }
+                    };
+                }
+
+                // Kiểm tra mật khẩu của customer
+                if (user.Password == password)
+                {
+                    var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, customer.Email),
+                    new Claim(ClaimTypes.Role, RoleName.Customer.ToString()),
+                    new Claim("Id", customer.CustomerId.ToString()),
+
                 };
+                    var accessToken = _tokenService.GenerateAccessToken(claims);
+
+                    var dataCustomer = new LoginResponse
+                    {
+                        AccessToken = accessToken,
+                        Email = customer.Email,
+                        RoleName = RoleName.Customer.ToString()
+                    };
+
+                    return new Result<LoginResponse>
+                    {
+                        RoleName = RoleName.Customer.ToString(),
+                        Data = dataCustomer,
+                        Messages = new[] { "Login successfully. Welcome Customer" },
+                        ResultStatus = ResultStatus.Success.ToString()
+                    };
+                }
+                else
+                {
+                    return new Result<LoginResponse>
+                    {
+                        ResultStatus = ResultStatus.Error.ToString(),
+                        Messages = new[] { "Invalid password for customer." }
+                    };
+                }
             }
 
-            if (User.Password == password )
+            // Kiểm tra xem người dùng có phải là admin không
+            var admin = _employeeRepository.GetAdminAccount(email, password);
+            if (admin != null)
             {
-                var accessToken = _tokenService.GenerateToken(customer);
-                var dataCustomer = new LoginResponse
+                var claimsAdmin = new List<Claim>
+            {
+                new Claim(ClaimTypes.Role, RoleName.Admin.ToString())
+            };
+
+                var accessTokenAdmin = _tokenService.GenerateAccessToken(claimsAdmin);
+                var dataAdmin = new LoginResponse
                 {
-                    AccessToken = accessToken,
-                    Email = customer.Email,
-                    RoleName = RoleName.Customer.ToString()
+                    AccessToken = accessTokenAdmin,
+                    RoleName = RoleName.Admin.ToString()
                 };
 
                 return new Result<LoginResponse>
                 {
-                    RoleName = RoleName.Customer.ToString(),
-                    Data = dataCustomer,
-                    Messages = new[] { "Login successfully. Welcome Customer" },
+                    Data = dataAdmin,
+                    Messages = new[] { "Login successfully. Welcome Admin" },
                     ResultStatus = ResultStatus.Success.ToString()
                 };
             }
-        }
 
-        var employee = await _employeeRepository.GetEmployeeByEmail(email);
-        var admin = _employeeRepository.GetAdminAccount(email, password);
+            // Kiểm tra xem người dùng có phải là employee không
+            var employee = await _employeeRepository.GetEmployeeByEmail(email);
+            if (employee == null)
+            {
+                return new Result<LoginResponse>
+                {
+                    ResultStatus = ResultStatus.NotFound.ToString(),
+                    Messages = new[] { "Account is not found" }
+                };
+            }
 
-        if (employee is null && admin is null)
-        {
-            return new Result<LoginResponse>
-            {
-                ResultStatus = ResultStatus.NotFound.ToString(),
-                Messages = ["Account is not found"]
-            };
-        }
-        else if (admin != null)
-        {
-            var userAdmin = new Employee
-            {
-                FullName = admin,
-            };
-            var accessTokenAdmin = _tokenService.GenerateToken(userAdmin);
-            var dataAdmin = new LoginResponse
-            {
-                AccessToken = accessTokenAdmin,
-                Email = admin,
-                RoleName = RoleName.Admin.ToString()
-            };
-
-            return new Result<LoginResponse>
-            {
-                Data = dataAdmin,
-                Messages = ["Login successfully. Welcome Admin"],
-                ResultStatus = ResultStatus.Success.ToString()
-            };
-        }
-        else if (employee != null)
-        {
             if (employee.User.Role == null || string.IsNullOrEmpty(employee.User.Role.RoleName))
             {
                 return new Result<LoginResponse>
                 {
                     ResultStatus = ResultStatus.Error.ToString(),
-                    Messages = ["Employee role is not defined."]
+                    Messages = new[] { "Employee role is not defined." }
                 };
             }
 
+            // Lấy thông tin StoreId (nếu có)
+            var storeId = employee.StoreId.HasValue ? employee.StoreId.ToString() : "";
+
+            // Tạo token cho employee với StoreId
             var roleName = employee.User.Role.RoleName;
-            var accessToken = _tokenService.GenerateToken(employee);
+            var accessTokenEmployee = _tokenService.GenerateAccessToken(new List<Claim>
+        {
+                new Claim("Id", employee.EmployeeId.ToString()),
+            new Claim(ClaimTypes.Name, employee.Email),
+            new Claim(ClaimTypes.Role, roleName),
+            new Claim("StoreId", employee.StoreId?.ToString() ?? "") // Thêm StoreId
+        });
+
+            // Tạo thông điệp chào mừng dựa trên vai trò của nhân viên
             string welcomeMessage = roleName switch
             {
                 nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
                 nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
                 nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
-                nameof(RoleName.Customer) => "Login successfully. Welcome Customer",
                 _ => "Login successfully. Welcome"
             };
 
             var dataUser = new LoginResponse
             {
-                AccessToken = accessToken,
+                AccessToken = accessTokenEmployee,
                 Email = employee.Email,
-                RoleName = roleName
+                RoleName = roleName,
             };
 
             return new Result<LoginResponse>
             {
                 Data = dataUser,
-                Messages = [welcomeMessage],
+                Messages = new[] { welcomeMessage },
                 ResultStatus = ResultStatus.Success.ToString()
             };
         }
-
-        return new Result<LoginResponse>
+        catch (Exception e)
         {
-            ResultStatus = ResultStatus.NotFound.ToString(),
-            Messages = ["Login failed"]
-        };
+            return new Result<LoginResponse>
+            {
+                ResultStatus = ResultStatus.Error.ToString(),
+                Messages = new[] { e.Message }
+            };
+        }
     }
 
 
-
-    public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, RegisterRequest request)
+public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, RegisterRequest request)
     {
         var response = new Result<EmployeeResponse>();
         var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
