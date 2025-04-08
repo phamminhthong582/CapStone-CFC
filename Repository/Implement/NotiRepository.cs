@@ -55,6 +55,26 @@ namespace Repository.Implement
             return notification;
         }
 
+        public async Task<Noti?> UpdateNotificationByRelatedIdAndToUserAsync(Guid relatedId, Guid toUserId, Noti updatedNoti)
+        {
+            var existingNoti = await _context.Notis
+                .FirstOrDefaultAsync(n => n.RelatedId == relatedId && n.ToUserId == toUserId);
+
+            if (existingNoti == null)
+                return null;
+
+            
+            existingNoti.FromUserId = updatedNoti.FromUserId;
+            existingNoti.Type = updatedNoti.Type;
+            existingNoti.Message = updatedNoti.Message;
+            existingNoti.Status = updatedNoti.Status;
+            existingNoti.IsRead = updatedNoti.IsRead;
+            existingNoti.UpdateAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return existingNoti;
+        }
+
         public async Task<bool> MarkAsReadAsync(Guid notificationId)
         {
             var notification = await _context.Notis.FindAsync(notificationId);

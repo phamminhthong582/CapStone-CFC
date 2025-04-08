@@ -75,11 +75,11 @@ public partial class CustomFlowerChainContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-=> optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+//=> optionsBuilder.UseSqlServer("Server=tcp:customflowerchain.database.windows.net,1433;Initial Catalog=CustomFlowerChain;Persist Security Info=False;User ID=HuongVu;Password=Hoanggia001;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
     //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    //=> optionsBuilder.UseSqlServer(
-    //    "Data Source=DESKTOP-NJ1QUHC;Database= CustomFlowerChain;User ID=sa;Password=12345;TrustServerCertificate=True");
+    => optionsBuilder.UseSqlServer(
+        "Data Source=DESKTOP-NJ1QUHC;Database= CustomFlowerChain;User ID=sa;Password=12345;TrustServerCertificate=True");
     // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //     => optionsBuilder.UseSqlServer(GetConnectionString());
     private string? GetConnectionString()
