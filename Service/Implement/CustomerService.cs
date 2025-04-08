@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Text;
 using AutoMapper;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Customer;
@@ -61,7 +62,7 @@ public class CustomerService : ICustomerService
                 return response;
             }
 
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            CreatePasswordHash(request.Password, out string hashedPassword);
             var roleToAssign = RoleName.Customer.ToString();
             var roleId = await _roleRepository.GetRoleIdByName(roleToAssign);
             if (roleId == null)
@@ -73,7 +74,7 @@ public class CustomerService : ICustomerService
             var User = new User
             {
                 Email = request.Email,
-                Password = Convert.ToBase64String(passwordHash),
+                Password = hashedPassword, // <-- Phải là "salt:hash"
                 Status = false,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now,
@@ -239,12 +240,13 @@ public class CustomerService : ICustomerService
             Messages = new []{"Customer deleted successfully."}
         };
     }
-    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    public void CreatePasswordHash(string password, out string hashedPassword)
     {
-        using (var hmac = new HMACSHA512())
+        using (var hmac = new HMACSHA256())
         {
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            var salt = hmac.Key;
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            hashedPassword = $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
         }
     }
 }

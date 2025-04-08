@@ -364,8 +364,8 @@ public class EmployeeService : IEmployeeService
             string newPassword = PasswordGenerator.GenerateRandomPassword(12);
 
             // Hash mật khẩu
-            var passwordHasher = new PasswordHasher<User>();
-            user.Password = passwordHasher.HashPassword(user, newPassword);
+            CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            user.Password = $"{Convert.ToBase64String(passwordSalt)}:{Convert.ToBase64String(passwordHash)}";
 
             _unitOfWork.Repository<User>().Update(user);
             _unitOfWork.Repository<Employee>().Update(employee);
@@ -374,6 +374,14 @@ public class EmployeeService : IEmployeeService
             // Gửi email chứa mật khẩu mới
             await SendEmailAsync(employee.Email, "Your New Password",
                 $"Your account has been approved. Your new password is: <strong>{newPassword}</strong>");
+        }
+    }
+    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using (var hmac = new HMACSHA512())
+        {
+            passwordSalt = hmac.Key;
+            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         }
     }
 

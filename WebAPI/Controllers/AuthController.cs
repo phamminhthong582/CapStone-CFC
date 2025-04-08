@@ -2,8 +2,10 @@
 using BusinessObject.DTO.Auth;
 using BusinessObject.DTO.Commons;
 using BusinessObject.DTO.Customer;
+using BusinessObject.DTO.Delivery;
 using BusinessObject.DTO.Employee;
 using BusinessObject.DTO.Response;
+using BusinessObject.Entities;
 using Core.Infrastructures;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -90,15 +92,15 @@ public class AuthController : ControllerBase
 
         return result;
     }
-    //[HttpPut("changedPasswordByCustomer")]
-    //public async Task<IActionResult> changedPasswordByCustomer(Guid customerId, string newPassword)
-    //{
-    //    await _authService.ChangedPaswordForCustomer(customerId, newPassword);
-    //    return Ok(new BaseResponseModel<string>(
-    //              statusCode: StatusCodes.Status200OK,
-    //              code: ResponseCodeConstants.SUCCESS,
-    //              data: "cập nhật sẩn phẩm thành công"));
-    //}
+    [HttpPut("changedPasswordByCustomer")]
+    public async Task<IActionResult> changedPasswordByCustomer(Guid customerId, string oldPassword,string newPassword)
+    {
+        await _authService.ChangedPaswordForCustomer(customerId, oldPassword,newPassword);
+        return Ok(new BaseResponseModel<string>(
+                  statusCode: StatusCodes.Status200OK,
+                  code: ResponseCodeConstants.SUCCESS,
+                  data: "cập nhật sẩn phẩm thành công"));
+    }
     [HttpPut("changedPasswordByEmployee")]
     //public async Task<IActionResult> changedPasswordByEmployee(Guid employeeId, string newPassword)
     //{
@@ -113,7 +115,7 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.VerifyEmail(id, token);
         if (result.ResultStatus == ResultStatus.Success.ToString())
-            return Redirect($"http://localhost:5243/swagger/index.html");
+            return Redirect($"https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/auth/");
 
         return Redirect($"https://giveawayproject.jettonetto.org/verify-email?verificationstatus=failed");
     }
@@ -136,15 +138,15 @@ public class AuthController : ControllerBase
                         code: ResponseCodeConstants.SUCCESS,
                         data: "Thêm sản phẩm mới thành công"));
     }
-    //[HttpPost("set-password-by-customer")]
-    //public async Task<IActionResult> SetPasswordForCustomer(string email, string NewPassword, string token)
-    //{
-    //    await _authService.SetPasswordForCustomer(email, NewPassword, token);
-    //    return Ok(new BaseResponseModel<string>(
-    //                    statusCode: StatusCodes.Status200OK,
-    //                    code: ResponseCodeConstants.SUCCESS,
-    //                    data: "Thêm sản phẩm mới thành công"));
-    //}
+    [HttpPost("set-password-by-customer")]
+    public async Task<IActionResult> SetPasswordForCustomer(string email, string NewPassword, string token)
+    {
+        await _authService.SetPasswordForCustomer(email, NewPassword, token);
+        return Ok(new BaseResponseModel<string>(
+                        statusCode: StatusCodes.Status200OK,
+                        code: ResponseCodeConstants.SUCCESS,
+                        data: "Thêm sản phẩm mới thành công"));
+    }
     [HttpPost("set-password-by-employee")]
     public async Task<IActionResult> SetPasswordForEmployee(string email, string NewPassword, string token)
     {
@@ -153,5 +155,23 @@ public class AuthController : ControllerBase
                         statusCode: StatusCodes.Status200OK,
                         code: ResponseCodeConstants.SUCCESS,
                         data: "Thêm sản phẩm mới thành công"));
+    }
+    [HttpGet("ProfileCustomer")]
+    public async Task<IActionResult> ProfileCustomer(Guid customerId)
+    {
+        var result = await _authService.ProfileCustomer(customerId);
+        return Ok(new BaseResponseModel<Customer>(
+          statusCode: StatusCodes.Status200OK,
+          code: ResponseCodeConstants.SUCCESS,
+          data: result));
+    }
+    [HttpGet("ProfileEmployee")]
+    public async Task<IActionResult> ProfileEmployee(Guid employee)
+    {
+        var result = await _authService.ProfileEmployee(employee);
+        return Ok(new BaseResponseModel<Employee>(
+          statusCode: StatusCodes.Status200OK,
+          code: ResponseCodeConstants.SUCCESS,
+          data: result));
     }
 }

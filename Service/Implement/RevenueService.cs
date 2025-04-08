@@ -310,5 +310,44 @@ namespace Service.Implement
             return revenueResponse; // Đảm bảo luôn trả về đầy đủ 12 tháng
         }
 
+        public async Task<IEnumerable<StoreRevenue>> GetAllStoreRevenue()
+        {
+            // Lấy danh sách các store
+            var stores = await _unitOfWork.GetRepo<Store>().Entities.ToListAsync();
+
+            // Lấy đơn hàng đã giao thành công (Revenue)
+            var ordersRevenue = await _unitOfWork.GetRepo<Order>().Entities
+                .Where(o => o.Status.Trim().ToLower() == "Received")
+                .ToListAsync();
+
+            // Lấy đơn hàng đã hoàn tiền (Loss)
+            var ordersLoss = await _unitOfWork.GetRepo<Order>().Entities
+                .Where(o => o.Status.Trim().ToLower() == "Accept refund")
+                .ToListAsync();
+
+            // Tính tổng doanh thu theo StoreId
+            var revenueByStore = ordersRevenue
+                .GroupBy(o => o.StoreId)
+                .ToDictionary(g => g.Key, g => g.Sum(o => o.OrderPrice));
+
+            // Tính tổng lỗ theo StoreId
+            var lossByStore = ordersLoss
+                .GroupBy(o => o.StoreId)
+                .ToDictionary(g => g.Key, g => g.Sum(o => o.OrderPrice));
+
+            // Gộp dữ liệu
+            var storeRevenues = stores.Select(store => new StoreRevenue
+            {
+                StoreId = store.StoreId,
+                StoreName = store.StoreName,
+                City = store.City,
+                District = store.District,
+                Address = store.Address,
+                Revenue = revenueByStore.ContainsKey(store.StoreId) ? revenueByStore[store.StoreId] : 0 - (lossByStore.ContainsKey(store.StoreId) ? lossByStore[store.StoreId] : 0),
+            }).ToList();
+
+            return storeRevenues;
+        }
+
     }
 }

@@ -5,6 +5,8 @@ using BusinessObject.DTO.Pagination;
 using BusinessObject.Entities;
 using Repository.Interface;
 using Service.Interface;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Service.Implement;
 
@@ -39,22 +41,93 @@ public class CommentService : ICommentService
         };
         return paginationResponse;
     }
+    public class ModerationResponse
+    {
+        public List<ModerationResult> Results { get; set; }
+    }
+
+    public class ModerationResult
+    {
+        public bool Flagged { get; set; }
+    }
+
+    public async Task<bool> IsInappropriateAsync(string content)
+    {
+        using var http = new HttpClient();
+        http.DefaultRequestHeaders.Add("Authorization", "Bearer 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");
+
+        var data = new { input = content };
+        var response = await http.PostAsJsonAsync("https://api.openai.com/v1/moderations", data);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine($"Moderation API failed with status {response.StatusCode}: {responseContent}");
+            return true; // fail-safe
+        }
+
+        try
+        {
+            var json = JsonDocument.Parse(responseContent);
+            var result = json.RootElement.GetProperty("results")[0];
+
+            bool flagged = result.GetProperty("flagged").GetBoolean();
+            if (flagged)
+            {
+                Console.WriteLine("Content flagged by moderation.");
+                return true;
+            }
+
+            var scores = result.GetProperty("category_scores");
+            foreach (var category in scores.EnumerateObject())
+            {
+                decimal score = category.Value.GetDecimal();
+                if (score > 0.8m) // tuỳ chỉnh ngưỡng nếu muốn nghiêm ngặt hơn
+                {
+                    Console.WriteLine($"Content has high score in '{category.Name}': {score}");
+                    return true;
+                }
+            }
+
+            return false; // không bị flag và không có điểm cao đáng nghi
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error parsing moderation response: {ex.Message}");
+            return true; // fail-safe nếu có lỗi
+        }
+    }
 
     public async Task<Result<CommentResponse>> CreateComment(CreateCommentRequest request)
     {
         var response = new Result<CommentResponse>();
+
         if (request.ProductId == null || request.CustomerId == null)
         {
             response.ResultStatus = ResultStatus.Error.ToString();
             response.Messages = new[] { "ProductId and CustomerId are required." };
             return response;
         }
+
         if (request.Rating == null || request.Rating < 1 || request.Rating > 5)
         {
             response.ResultStatus = ResultStatus.Error.ToString();
             response.Messages = new[] { "Rating must be between 1 and 5." };
             return response;
         }
+
+        if (!string.IsNullOrWhiteSpace(request.Feedback))
+        {
+            bool isInappropriate = await IsInappropriateAsync(request.Feedback);
+            if (isInappropriate)
+            {
+                response.ResultStatus = ResultStatus.Error.ToString();
+                response.Messages = new[] { "Feedback contains inappropriate or harmful language." };
+                return response;
+            }
+        }
+
         var comment = new Comment
         {
             ProductId = request.ProductId.Value,
@@ -63,7 +136,9 @@ public class CommentService : ICommentService
             Feedback = request.Feedback ?? string.Empty,
             Status = request.Status ?? true,
         };
+
         await _commentRepository.AddComment(comment);
+
         response.ResultStatus = ResultStatus.Success.ToString();
         response.Messages = new[] { "Comment created successfully." };
         response.Data = new CommentResponse
@@ -75,6 +150,7 @@ public class CommentService : ICommentService
             Feedback = comment.Feedback,
             Status = comment.Status,
         };
+
         return response;
     }
 
@@ -89,7 +165,7 @@ public class CommentService : ICommentService
             CustomerId = c.CustomerId,
             Rating = c.Rating,
             Status = c.Status,
-            CustomerName = c.Customer != null ? c.Customer.FullName : "Anonymous", 
+            CustomerName = c.Customer != null ? c.Customer.Email : "Anonymous", 
         }).ToList();
 
     }

@@ -128,6 +128,24 @@ namespace WebAPI.Controllers
               code: ResponseCodeConstants.SUCCESS,
               data: result));
         }
+        [HttpGet("GetOrder")]
+        public async Task<IActionResult> GetOrder()
+        {
+            var result = await orderService.GetOrder();
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
+        [HttpGet("GetRefundOrder")]
+        public async Task<IActionResult> GetRefundOrder()
+        {
+            var result = await orderService.GetRefundOrder();
+            return Ok(new BaseResponseModel<IEnumerable<OrderResponse>>(
+              statusCode: StatusCodes.Status200OK,
+              code: ResponseCodeConstants.SUCCESS,
+              data: result));
+        }
         [HttpPost("CreateOrder")]
         public async Task<IActionResult> CreateOrder(OrderRequest orderRequest, Guid CustomerId)
         {

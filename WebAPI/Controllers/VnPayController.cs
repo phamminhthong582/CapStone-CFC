@@ -41,7 +41,7 @@ namespace WebAPI.Controllers
                 if (response == null)
                 {
                     Console.WriteLine("Response is null");
-                    return Redirect("http://localhost:3000/payment-failure");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
                 }
 
                 Console.WriteLine($"Order Description: {response.OrderDescription}");
@@ -50,23 +50,23 @@ namespace WebAPI.Controllers
                 if (!Guid.TryParse(response.OrderDescription, out Guid orderId))
                 {
                     Console.WriteLine("Invalid Payment ID");
-                    return Redirect("http://localhost:5173/payment-failure");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
                 }
 
                 if (response.VnPayResponseCode == "00")
                 {
                     await _paymentService.CreatePayment(orderId);
-                    return Redirect("http://localhost:5173/payment-success");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-success");
                 }
                 else
                 {
-                    return Redirect("http://localhost:5173/payment-failure");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in Payment Callback: {ex.Message}");
-                return Redirect("http://localhost:5173/payment-failure");
+                return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
             }
         }
         [HttpPost("Deposit-vnpay-payment")]
@@ -91,7 +91,7 @@ namespace WebAPI.Controllers
                 if (response == null)
                 {
                     Console.WriteLine("Response is null");
-                    return Redirect("http://localhost:5173/payment-failure");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
                 }
 
                 Console.WriteLine($"Order Description: {response.OrderDescription}");
@@ -100,29 +100,29 @@ namespace WebAPI.Controllers
                 if (!Guid.TryParse(response.OrderDescription, out Guid walletId))
                 {
                     Console.WriteLine("Invalid Payment ID");
-                    return Redirect("http://localhost:5173/payment-failure");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
                 }
 
                 if (!double.TryParse(response.TotalPrice, out double totalPrice))
                 {
                     Console.WriteLine("Invalid Total Price");
-                    return Redirect("http://localhost:5173/payment-failure");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
                 }
 
                 if (response.VnPayResponseCode == "00")
                 {
                     await _walletService.DepositWallet(walletId, totalPrice / 100);
-                    return Redirect("http://localhost:5173/payment-success");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-success");
                 }
                 else
                 {
-                    return Redirect("http://localhost:5173/payment-failure");
+                    return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in Payment Callback: {ex.Message}");
-                return Redirect("http://localhost:5173/payment-failure");
+                return Redirect("http://capstone-cfc-fe-user.vercel.app/payment-failure");
             }
         }
 

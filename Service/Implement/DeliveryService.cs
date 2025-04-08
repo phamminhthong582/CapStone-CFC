@@ -49,8 +49,8 @@ namespace Service.Implement
                 note = deliveryRequest.note,
                 Fee = deliveryRequest.Fee,
                 PickupLocation = deliveryRequest.PickupLocation,
-                CustomerName = order.Customer.FullName,
-                CustomerPhone = order.Customer.Phone,
+                CustomerName = order.RecipientName,
+                CustomerPhone = order.Phone,
                 DeliveryLocation = string.Join(", ", order.DeliveryAddress, order.DeliveryDistrict, order.DeliveryCity),
                 DeliveryTime = order.RecipientTime,
                 Status = "Start",
@@ -139,6 +139,7 @@ namespace Service.Implement
         public async Task<IEnumerable<DeliveryResponse>> GetDeliveryByShipperId(Guid shipperId)
         {
             var deliverys = (await _unitOfWork.Repository<Delivery>().GetAllAsync()).Where(n => n.ShipperId == shipperId);
+
             var deliveryResponse = deliverys.Select(delivery => new DeliveryResponse
             {
                 DeliveryId = delivery.DeliveryId,
@@ -170,6 +171,10 @@ namespace Service.Implement
             delivery.DeliveryImage = updateDeliveryByShipperResponse.DeliveryImage;
             delivery.Status = updateDeliveryByShipperResponse.Status;   
             _unitOfWork.Repository<Delivery>().Update(delivery);
+            await _unitOfWork.CompleteAsync();
+            var order = await _unitOfWork.GetRepo<Order>().Entities.Where(m => m.OrderId == delivery.OrderId).FirstOrDefaultAsync();
+            order.Status = "Received";
+            _unitOfWork.Repository<Order>().Update(order);
             await _unitOfWork.CompleteAsync();
         }
 
