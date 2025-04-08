@@ -113,13 +113,18 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000","http://localhost:5173")
+            policy.WithOrigins(
+                    "https://localhost:5243",
+                    "http://localhost:3000",
+                    "http://localhost:5173",
+                    "https://capstone-cfc-fe-dashboard.vercel.app",
+                    "https://capstone-cfc-fe-user.vercel.app"
+                )
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
         });
 });
-
 
 var app = builder.Build();
 
@@ -149,11 +154,12 @@ else
     app.UseHsts();  // Kích hoạt HTTP Strict Transport Security (HSTS)
 }
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
-app.MapHub<ChatHub>("/chatHub");
+app.UseRouting();
+app.UseCors("AllowAll"); // sau routing
 app.UseAuthentication();
-app.MapHub<NotificationHub>("/notificationHub");
 app.UseAuthorization();
+app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 app.MapControllers();
 
 app.Run();

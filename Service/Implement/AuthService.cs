@@ -16,6 +16,8 @@ using Repository.Interface;
 using Service.Interface;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
 
 namespace Service.Implement;
 
@@ -47,7 +49,23 @@ public class AuthService : IAuthService
         _unitOfWork = unitOfWork;
         _jwtkey = jwtkey;
     }
+    public class PasswordHasher
+    {
+        public static bool VerifyHashedPassword(string hashedPassword, string inputPassword)
+        {
+            var parts = hashedPassword.Split(':');
+            if (parts.Length != 2) return false;
 
+            var salt = Convert.FromBase64String(parts[0]);
+            var storedHash = Convert.FromBase64String(parts[1]);
+
+            using (var hmac = new HMACSHA256(salt))
+            {
+                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(inputPassword));
+                return storedHash.SequenceEqual(computedHash);
+            }
+        }
+    }
     public async Task<Result<LoginResponse>> Login(string email, string password)
     {
         try
@@ -67,17 +85,18 @@ public class AuthService : IAuthService
                         Messages = new[] { "Account is Not Verified! Please verify your account" }
                     };
                 }
+                var isValidPassword = PasswordHasher.VerifyHashedPassword(user.Password, password);
 
-                // Kiểm tra mật khẩu của customer
-                if (user.Password == password)
+                // ✅ Kiểm tra mật khẩu đã hash
+                if (isValidPassword)
                 {
                     var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, customer.Email),
                     new Claim(ClaimTypes.Role, RoleName.Customer.ToString()),
-                    new Claim("Id", customer.CustomerId.ToString()),
-
+                    new Claim("Id", customer.CustomerId.ToString())
                 };
+
                     var accessToken = _tokenService.GenerateAccessToken(claims);
 
                     var dataCustomer = new LoginResponse
@@ -156,10 +175,10 @@ public class AuthService : IAuthService
             var roleName = employee.User.Role.RoleName;
             var accessTokenEmployee = _tokenService.GenerateAccessToken(new List<Claim>
         {
-                new Claim("Id", employee.EmployeeId.ToString()),
+            new Claim("Id", employee.EmployeeId.ToString()),
             new Claim(ClaimTypes.Name, employee.Email),
             new Claim(ClaimTypes.Role, roleName),
-            new Claim("StoreId", employee.StoreId?.ToString() ?? "") // Thêm StoreId
+            new Claim("StoreId", storeId)
         });
 
             // Tạo thông điệp chào mừng dựa trên vai trò của nhân viên
@@ -196,7 +215,7 @@ public class AuthService : IAuthService
     }
 
 
-public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, RegisterRequest request)
+    public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, RegisterRequest request)
     {
         var response = new Result<EmployeeResponse>();
         var isMailUsed = await _employeeRepository.FindEmployeeByEmail(request.Email);
@@ -384,14 +403,16 @@ public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, Regist
 }
 
 
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    public void CreatePasswordHash(string password, out string hashedPassword)
+    {
+        using (var hmac = new HMACSHA256())
         {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
+            var salt = hmac.Key;
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            hashedPassword = $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
         }
+    }
+
 
     public async Task ForgotPasswordForCustomer(string email)
     {
@@ -407,7 +428,7 @@ public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, Regist
             // (Ví dụ, có thể thêm thuộc tính ResetPasswordToken vào Customer/Employee và lưu vào DB)
 
             // 3️⃣ Tạo link reset mật khẩu
-            string resetUrl = $"https://yourwebsite.com/reset-password?email={email}&token={token}";
+            string resetUrl = $"http://capstone-cfc-fe-user.vercel.app/reset-password?email={email}&token={token}";
             customer.Otp = token;
             _unitOfWork.Repository<Customer>().Update(customer);
             await _unitOfWork.CompleteAsync();
@@ -432,7 +453,7 @@ public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, Regist
             // (Ví dụ, có thể thêm thuộc tính ResetPasswordToken vào Customer/Employee và lưu vào DB)
 
             // 3️⃣ Tạo link reset mật khẩu
-            string resetUrl = $"https://yourwebsite.com/reset-password?email={email}&token={token}";
+            string resetUrl = $"http://capstone-cfc-fe-user.vercel.app/reset-password?email=${email}&token={token}";
             emplyee.Otp = token;
             _unitOfWork.Repository<Employee>().Update(emplyee);
             await _unitOfWork.CompleteAsync();
@@ -465,41 +486,78 @@ public async Task<Result<EmployeeResponse>> RegisterFlorist(Guid StoreId, Regist
             await smtpClient.SendMailAsync(mailMessage);
         }
     }
-    //public async Task SetPasswordForCustomer(string email, string NewPassword, string token)
-    //{
-    //    var customer = (await _unitOfWork.Repository<Customer>().GetAllAsync())
-    //        .FirstOrDefault(n => n.Email == email);
+    public async Task SetPasswordForCustomer(string email, string NewPassword, string token)
+    {
+        var customer = (await _unitOfWork.Repository<Customer>().GetAllAsync())
+            .FirstOrDefault(n => n.Email == email);
+        var user = await _unitOfWork.Repository<User>().Entities.FirstOrDefaultAsync(n => n.CustomerId == customer.CustomerId);
 
-       
-    //    if (customer != null && customer.Otp == token)
-    //    {
-    //        CreatePasswordHash(NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
-    //        customer.Password = Convert.ToBase64String(passwordHash);
 
-    //        _unitOfWork.Repository<Customer>().Update(customer);
-    //        await _unitOfWork.CompleteAsync();
-    //    }
-       
-    //}
+        if (customer != null && customer.Otp == token)
+        {
+            CreatePasswordHash(NewPassword, out string hashedPassword);
+            user.Password = hashedPassword;// ✅ lưu cả salt
+
+            _unitOfWork.Repository<Customer>().Update(customer);
+            await _unitOfWork.CompleteAsync();
+        }
+
+    }
     public async Task SetPasswordForEmployee(string email, string NewPassword, string token)
     {
         var employee = (await _unitOfWork.Repository<Employee>().GetAllAsync())
             .FirstOrDefault(n => n.Email == email);
         if (employee != null && employee.Otp == token)
         {
-            CreatePasswordHash(NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            CreatePasswordHash(NewPassword, out string hashedPassword);
             _unitOfWork.Repository<Employee>().Update(employee);
             await _unitOfWork.CompleteAsync();
         }
     }
 
-    //public async Task ChangedPaswordForCustomer(Guid customerId, string newPassword)
-    //{
-    //    var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
-    //    customer.Password = newPassword;
-    //    _unitOfWork.Repository<Customer>().Update(customer);
-    //    await _unitOfWork.CompleteAsync();
-    //}
+    public async Task<Customer> ProfileCustomer(Guid customerId)
+    {
+        var customer = await _unitOfWork.GetRepo<Customer>().GetByIdAsync(customerId);
+
+        if (customer == null)
+        {
+            throw new Exception("Customer not found.");
+        }
+
+        return customer;
+    }
+
+    public async Task<Employee> ProfileEmployee(Guid employeeId)
+    {
+        var employee = await _unitOfWork.GetRepo<Employee>().GetByIdAsync(employeeId);
+
+        if (employee == null)
+        {
+            throw new Exception("Customer not found.");
+        }
+
+        return employee;
+    }
+
+    public async Task ChangedPaswordForCustomer(Guid customerId,  string oldPassword,string newPassword)
+    {
+        var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(customerId);
+        var user = await _unitOfWork.Repository<User>().Entities.FirstOrDefaultAsync(n => n.CustomerId == customerId);
+        CreatePasswordHash(newPassword, out string hashedPassword);
+        var isValidPassword = PasswordHasher.VerifyHashedPassword(user.Password, oldPassword);
+
+        if (isValidPassword)
+        {
+            user.Password = hashedPassword;// ✅ lưu cả salt
+            _unitOfWork.Repository<Customer>().Update(customer);
+            await _unitOfWork.CompleteAsync();
+        }
+        else {
+            throw new Exception("Password is not correct.");
+        }
+
+
+    }
 
     //public async Task ChangedPaswordForEmployee(Guid employeeid , string newPassword)
     //{

@@ -41,7 +41,9 @@ namespace Service.Interface
         Task<IEnumerable<EmployeeResponse>> GetStaffForOrderId(Guid orderId);
         Task<IEnumerable<EmployeeResponse>> GetDeliveryForOrderId(Guid orderId);
 
+        Task<IEnumerable<OrderResponse>> GetOrder();
 
+        Task<IEnumerable<OrderResponse>> GetRefundOrder();
 
 
     }

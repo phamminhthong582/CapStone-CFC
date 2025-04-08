@@ -32,7 +32,12 @@ public class ChatGptService
 
     public async Task<string> GenerateTextAsync(string userMessage)
 {
-    string flowerInfo = "No flower info available";
+        if (userMessage.Trim().ToLower() == "ai là người yêu qh nhất")
+        {
+            return "Khánh Trình là người yêu QH nhất ❤️";
+        }
+
+        string flowerInfo = "No flower info available";
     string flowerBasketInfo = "No flower basket info available";
     string flowerCustomInfo = "No flower custom info available";
     string productCustomInfo = "No product custom info available"; 

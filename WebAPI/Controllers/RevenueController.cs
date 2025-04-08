@@ -71,5 +71,15 @@ namespace WebAPI.Controllers
                  code: ResponseCodeConstants.SUCCESS,
                  data: result));
         }
+
+        [HttpGet("GetAllStoreRevenue")]
+        public async Task<IActionResult> GetAllStoreRevenue() { 
+        
+            var result = await _revenueService.GetAllStoreRevenue();
+            return Ok(new BaseResponseModel<IEnumerable<StoreRevenue>>(
+                 statusCode: StatusCodes.Status200OK,
+                 code: ResponseCodeConstants.SUCCESS,
+                 data: result));
+        }
     }
 }

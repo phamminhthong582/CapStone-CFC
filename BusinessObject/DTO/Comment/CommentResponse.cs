@@ -12,7 +12,7 @@ public class CommentResponse
 
     public string? Feedback { get; set; }
     
-    public string CustomerName { get; set; }
+    public string? CustomerName { get; set; }
 
     public bool? Status { get; set; }
 }

@@ -1,4 +1,6 @@
 ﻿using BusinessObject.DTO.Revenue;
+using BusinessObject.Entities;
+using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +23,10 @@ namespace Service.Interface
         Task<RevenueResponse> GetGeneralLoss();
 
         Task<TotalOrderResponse> GetTotalOrder();
+
+
+        Task<IEnumerable<StoreRevenue>> GetAllStoreRevenue();
+
 
     }
 }
