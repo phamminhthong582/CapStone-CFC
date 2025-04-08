@@ -14,11 +14,13 @@ public class MessageController : Controller
 {
     private readonly IMessageService _messageService;
     private readonly IHubContext<ChatHub> _hubContext;
+    private readonly INotiService _notiService;
 
-    public MessageController(IMessageService messageService, IHubContext<ChatHub> hubContext)
+    public MessageController(IMessageService messageService, IHubContext<ChatHub> hubContext,INotiService notiService)
     {
         _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
         _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
+        _notiService = notiService ?? throw new ArgumentNullException(nameof(notiService));
     }
 
     [HttpGet("chatrooms/{chatRoomId}/messages")]
@@ -63,7 +65,20 @@ public class MessageController : Controller
 
             await _hubContext.Clients.Group(request.ChatRoomId.ToString())
                 .SendAsync("ReceiveMessage", result.Data);
+
+            var notification = new Noti
+            {
+                FromUserId = request.SenderId,
+                ToUserId = request.ReceiveId,
+                RelatedId = request.ChatRoomId,
+                Type = "Message",
+                Message = "Bạn có một tin nhắn mới",
+            };
+            await _notiService.UpdateNotificationByRelatedIdAndToUserAsync(request.ChatRoomId ?? Guid.Empty, request.ReceiveId ?? Guid.Empty, notification);
+
             return Ok(result.Data);
+
+            
         }
 
         return BadRequest(result.Messages);

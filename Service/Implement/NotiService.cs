@@ -299,5 +299,61 @@ namespace Service.Implement
                 };
             }
         }
+
+        public async Task<Result<Noti?>> UpdateNotificationByRelatedIdAndToUserAsync(Guid relatedId, Guid toUserId, Noti updatedNoti)
+        {
+            try
+            {
+                
+                updatedNoti.IsRead = false;
+
+                
+                var updated = await _notiRepository.UpdateNotificationByRelatedIdAndToUserAsync(relatedId, toUserId, updatedNoti);
+
+                if (updated != null)
+                {
+                    await SendRealTimeNotificationAsync(updated);
+                    return new Result<Noti?>
+                    {
+                        Data = updated,
+                        ResultStatus = ResultStatus.Success.ToString(),
+                        Messages = new[] { "Notification updated successfully." }
+                    };
+                }
+
+                
+                var newNoti = new Noti
+                {
+                    NotiId = Guid.NewGuid(),
+                    RelatedId = relatedId,
+                    ToUserId = toUserId,
+                    FromUserId = updatedNoti.FromUserId,
+                    Type = updatedNoti.Type,
+                    Message = updatedNoti.Message,
+                    Status = updatedNoti.Status,
+                    IsRead = false,
+                    CreateAt = DateTime.UtcNow
+                };
+
+                var created = await _notiRepository.CreateNotificationAsync(newNoti);
+                await SendRealTimeNotificationAsync(created);
+
+                return new Result<Noti?>
+                {
+                    Data = created,
+                    ResultStatus = ResultStatus.Success.ToString(),
+                    Messages = new[] { "Notification created successfully." }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Result<Noti?>
+                {
+                    ResultStatus = ResultStatus.Error.ToString(),
+                    Messages = new[] { ex.Message }
+                };
+            }
+        }
+
     }
 }
