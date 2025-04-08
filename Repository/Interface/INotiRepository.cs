@@ -14,6 +14,7 @@ namespace Repository.Interface
         Task<int> GetUnreadCountAsync(Guid userId);
         Task<Noti?> GetNotificationByIdAsync(Guid notificationId);
         Task<Noti> CreateNotificationAsync(Noti notification);
+        Task<Noti?> UpdateNotificationByRelatedIdAndToUserAsync(Guid relatedId, Guid toUserId, Noti updatedNoti);
         Task<bool> MarkAsReadAsync(Guid notificationId);
         Task<bool> DeleteNotificationAsync(Guid notificationId);
     }
