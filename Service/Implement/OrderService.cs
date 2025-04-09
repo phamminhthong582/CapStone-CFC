@@ -2246,7 +2246,7 @@ namespace Service.Implement
                 var notification = new Noti
                 {
                     ToUserId = StaffId,
-                    Message = $"bạn có một đơn hàng cần sử lý",
+                    Message = $"bạn có một đơn hàng cần xử lý",
                     Type = "Order",
                     RelatedId = orderId,
                 };

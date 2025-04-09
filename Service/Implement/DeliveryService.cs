@@ -15,10 +15,12 @@ namespace Service.Implement
     public class DeliveryService : IDeliveryService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly INotiService _notiService;
 
-        public DeliveryService(IUnitOfWork unitOfWork)
+        public DeliveryService(IUnitOfWork unitOfWork, INotiService notiService)
         {
             _unitOfWork = unitOfWork;
+            _notiService = notiService;
         }
 
         public async Task CreateDelivery(DeliveryRequest deliveryRequest, Guid OrderId)
@@ -60,6 +62,22 @@ namespace Service.Implement
             // Lưu vào database
             await _unitOfWork.Repository<Delivery>().AddAsync(delivery);
             await _unitOfWork.CompleteAsync();
+            try
+            {
+                var notification = new Noti
+                {
+                    ToUserId = deliveryRequest.ShipperId,
+                    Message = "Bạn có một đơn giao hàng mới cần xử lý",
+                    Type = "Delivery",
+                    RelatedId = order.OrderId
+                };
+
+                await _notiService.CreateNotificationAsync(notification);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send notification: {ex.Message}");
+            }
         }
 
         public async Task<DeliveryResponse> GetDeliveryById(Guid DeliveryId)

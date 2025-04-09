@@ -16,17 +16,19 @@ namespace Service.Implement
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
+        private readonly INotiService _notiService;
 
-        public PaymentService(IUnitOfWork unitOfWork, IEmailService emailService)
+        public PaymentService(IUnitOfWork unitOfWork, IEmailService emailService, INotiService notiService)
         {
             _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _notiService = notiService;
         }
 
         public async Task CreatePayment(Guid OrderId)
         {
             var order = await _unitOfWork.Repository<Order>().Entities.Include(m => m.Customer).FirstOrDefaultAsync(n => n.OrderId == OrderId);
-          
+            var isPaymentCreated = false;
 
             if (order.Transfer == true && order.Status == "Pending Payment")
             {
@@ -48,9 +50,9 @@ namespace Service.Implement
                 await SendPaymentConfirmationEmail(order);
 
                 await _unitOfWork.CompleteAsync();
-
+                isPaymentCreated = true;
             }
-          
+
             else if (order.Transfer == false && order.Status == "Pending Payment")
             {
                 var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
@@ -71,7 +73,27 @@ namespace Service.Implement
                 await SendPaymentConfirmationEmail(order);
 
                 await _unitOfWork.CompleteAsync();
+                isPaymentCreated = true;
+            }
 
+           if(isPaymentCreated)
+            {
+                try
+                {
+                    var notification = new Noti
+                    {
+                        ToUserId = order.StoreId,
+                        Message = $"bạn có một đơn hàng cần xử lý",
+                        Type = "Order",
+                        RelatedId = order.OrderId
+                    };
+
+                    await _notiService.CreateNotificationAsync(notification);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                }
             }
 
 
