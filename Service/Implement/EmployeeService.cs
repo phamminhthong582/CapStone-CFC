@@ -364,8 +364,10 @@ public class EmployeeService : IEmployeeService
             string newPassword = PasswordGenerator.GenerateRandomPassword(12);
 
             // Hash mật khẩu
-            CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
-            user.Password = $"{Convert.ToBase64String(passwordSalt)}:{Convert.ToBase64String(passwordHash)}";
+            //CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+            CreatePasswordHash(newPassword, out string hashedPassword);
+
+            user.Password = hashedPassword;
 
             _unitOfWork.Repository<User>().Update(user);
             _unitOfWork.Repository<Employee>().Update(employee);
@@ -384,7 +386,15 @@ public class EmployeeService : IEmployeeService
             passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         }
     }
-
+    public void CreatePasswordHash(string password, out string hashedPassword)
+    {
+        using (var hmac = new HMACSHA256())
+        {
+            var salt = hmac.Key;
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            hashedPassword = $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
+        }
+    }
 
     public async Task Reject(Guid employeeId, string reason)
     {

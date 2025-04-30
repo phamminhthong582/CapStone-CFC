@@ -40,9 +40,12 @@ public partial class Order
     public bool? Delivery { get; set; }
     public bool? Wallet { get; set; }
     public string? Status { get; set; }
+    public Guid? DesignCustomId {  get; set; }
     public virtual Customer? Customer { get; set; }
+    public virtual DesignCustom? DesignCustom { get; set; }
 
     public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
+    public virtual ICollection<FailOrder> FailOrders { get; set; } = new List<FailOrder>();
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 

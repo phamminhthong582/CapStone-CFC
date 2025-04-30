@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.OrderDetails;
+﻿using BusinessObject.DTO.DesignCustom;
+using BusinessObject.DTO.OrderDetails;
 using BusinessObject.DTO.ProductCustom;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace BusinessObject.DTO.Order
 
         public Guid? ProductCustomId { get; set; }
         public ProductCustomResponse? ProductCustomResponse { get; set; }
+        public DesignCustomBuCustomerResponse? DesignCustomBuCustomerResponse {  get; set; }
 
         public Guid? CustomerId { get; set; }
 

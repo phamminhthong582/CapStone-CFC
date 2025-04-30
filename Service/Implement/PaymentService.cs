@@ -16,18 +16,22 @@ namespace Service.Implement
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
+        private readonly INotiService _notiService;
 
-        public PaymentService(IUnitOfWork unitOfWork, IEmailService emailService)
+        public PaymentService(IUnitOfWork unitOfWork, IEmailService emailService, INotiService notiService)
         {
             _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _notiService = notiService;
         }
 
         public async Task CreatePayment(Guid OrderId)
         {
-            var order = await _unitOfWork.Repository<Order>().Entities.Include(m => m.Customer).FirstOrDefaultAsync(n => n.OrderId == OrderId);
-          
-
+            var order = await _unitOfWork.Repository<Order>().Entities.Include(m => m.Customer).Include(n =>n.ProductCustom).FirstOrDefaultAsync(n => n.OrderId == OrderId);
+            var isPaymentCreated = false;
+            var designcustom = await _unitOfWork.Repository<DesignCustom>().Entities.FirstOrDefaultAsync(n => n.OrderId == OrderId);
+            var wallet = await _unitOfWork.Repository<Wallet>().Entities
+                .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
             if (order.Transfer == true && order.Status == "Pending Payment")
             {
                 var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
@@ -42,15 +46,43 @@ namespace Service.Implement
                     CreateAt = vietnamTime,
                     Status = "Payment Successfully",
                 };
-                order.Status = "Order Successfully";
                 await _unitOfWork.Repository<Payment>().AddAsync(payment);
-                _unitOfWork.Repository<Order>().Update(order);
-                await SendPaymentConfirmationEmail(order);
-
                 await _unitOfWork.CompleteAsync();
 
+                if (order.DesignCustomId == null) {
+                    order.Status = "Order Successfully";
+                    _unitOfWork.Repository<Order>().Update(order);
+                    await _unitOfWork.CompleteAsync();
+                }
+                else if(order.DesignCustomId != null)
+                {
+                    order.Status = "Arranging & Packing";
+
+                    _unitOfWork.Repository<Order>().Update(order);
+                    designcustom.Status = "Design Successfully";
+                    _unitOfWork.Repository<DesignCustom>().Update(designcustom);
+
+                    await _unitOfWork.CompleteAsync();
+
+                }
+                await SendPaymentConfirmationEmail(order);
+                //wallet.TotalPrice += payment.TotalPrice;
+                //_unitOfWork.Repository<Wallet>().Update(wallet);
+                //var incomeWallet = new IncomeWallet
+                //{
+                //    WalletID = wallet.WalletId,
+                //    IncomePrice = payment.TotalPrice,
+                //    Method = "Payment",
+                //    Status = "Successfull",
+                //    CreateAt = vietnamTime,
+                //    UpdateAt = vietnamTime,
+                //};
+                //await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+
+                await _unitOfWork.CompleteAsync();
+                isPaymentCreated = true;
             }
-          
+
             else if (order.Transfer == false && order.Status == "Pending Payment")
             {
                 var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
@@ -65,13 +97,62 @@ namespace Service.Implement
                     CreateAt = vietnamTime,
                     Status = "Payment Successfully",
                 };
-                order.Status = "Order Successfully";
                 await _unitOfWork.Repository<Payment>().AddAsync(payment);
-                _unitOfWork.Repository<Order>().Update(order);
-                await SendPaymentConfirmationEmail(order);
-
                 await _unitOfWork.CompleteAsync();
 
+                if (order.DesignCustomId != null)
+                {
+                    order.Status = "Order Successfully";
+                    _unitOfWork.Repository<Order>().Update(order);
+                    await _unitOfWork.CompleteAsync();
+
+                }
+                else if (order.DesignCustomId != null)
+                {
+                    order.Status = "Arranging & Packing";
+
+                    _unitOfWork.Repository<Order>().Update(order);
+                    designcustom.Status = "Design Successfully";
+                    _unitOfWork.Repository<DesignCustom>().Update(designcustom);
+
+                    await _unitOfWork.CompleteAsync();
+
+                }
+                await SendPaymentConfirmationEmail(order);
+                //wallet.TotalPrice += payment.TotalPrice;
+                //_unitOfWork.Repository<Wallet>().Update(wallet);
+                //var incomeWallet = new IncomeWallet
+                //{
+                //    WalletID = wallet.WalletId,
+                //    IncomePrice = payment.TotalPrice,
+                //    Method = "Payment",
+                //    Status = "Successfull",
+                //    CreateAt = vietnamTime,
+                //    UpdateAt = vietnamTime,
+                //};
+                //await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+                await _unitOfWork.CompleteAsync();
+                isPaymentCreated = true;
+            }
+
+           if(isPaymentCreated)
+            {
+                try
+                {
+                    var notification = new Noti
+                    {
+                        ToUserId = order.StoreId,
+                        Message = $"bạn có một đơn hàng cần xử lý",
+                        Type = "Order",
+                        RelatedId = order.OrderId
+                    };
+
+                    await _notiService.CreateNotificationAsync(notification);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to send notification: {ex.Message}");
+                }
             }
 
 

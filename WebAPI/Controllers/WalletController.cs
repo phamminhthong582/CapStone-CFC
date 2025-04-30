@@ -18,9 +18,19 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("GetWalletByCustomerId")]
-         public async Task<IActionResult> GetWalletByCustomerId(Guid CustomerId)
+        public async Task<IActionResult> GetWalletByCustomerId(Guid CustomerId)
         {
             var result = await walletService.GetWallet(CustomerId);
+            return Ok(new BaseResponseModel<WalletResponse>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+
+        }
+        [HttpGet("GetWalletByAdmin")]
+        public async Task<IActionResult> GetWalletByAdmin(Guid id)
+        {
+            var result = await walletService.GetWalletByAdmin(id);
             return Ok(new BaseResponseModel<WalletResponse>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,

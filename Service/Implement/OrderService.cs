@@ -2,13 +2,16 @@
 using BusinessObject.DTO.Chat;
 using BusinessObject.DTO.Check;
 using BusinessObject.DTO.Commons;
+using BusinessObject.DTO.DesignCustom;
 using BusinessObject.DTO.Employee;
+using BusinessObject.DTO.FailOrder;
 using BusinessObject.DTO.Flower;
 using BusinessObject.DTO.FlowerBasket;
 using BusinessObject.DTO.FlowerCustom;
 using BusinessObject.DTO.Message;
 using BusinessObject.DTO.Order;
 using BusinessObject.DTO.OrderDetails;
+using BusinessObject.DTO.Product;
 using BusinessObject.DTO.ProductCustom;
 using BusinessObject.DTO.Style;
 using BusinessObject.Entities;
@@ -24,13 +27,14 @@ using Repository.Implement;
 using Repository.Interface;
 using Service.Interface;
 using System;
-    using System.Collections.Generic;
-    using System.Linq;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static Service.Implement.CheckService;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.Implement
 {
@@ -43,8 +47,9 @@ namespace Service.Implement
         private readonly string _googleApiKey;
         private readonly INotiService _notiService;
         private readonly ILogger<OrderService> _logger;
-
-        public OrderService(IUnitOfWork unitOfWork,IConfiguration configuration, IChatRoomService chatRoomService, IMessageService messageService, IHttpClientFactory httpClientFactory, INotiService notiService, ILogger<OrderService> logger)
+        private readonly CloudinaryService _cloudinaryService;
+        private readonly IWalletService _walletService;
+        public OrderService(IUnitOfWork unitOfWork, IConfiguration configuration, IChatRoomService chatRoomService, IMessageService messageService, IHttpClientFactory httpClientFactory, INotiService notiService, ILogger<OrderService> logger, CloudinaryService cloudinaryService,IWalletService walletService)
         {
             _unitOfWork = unitOfWork;
             _chatRoomService = chatRoomService;
@@ -53,13 +58,11 @@ namespace Service.Implement
             _googleApiKey = configuration["GoogleMaps:ApiKey"]; // Lấy từ config
             _notiService = notiService;
             _logger = logger;
+            _cloudinaryService = cloudinaryService;
+            _walletService = walletService;
         }
 
-        public OrderService(IUnitOfWork unitOfWork, INotiService notiService)
-        {
-            _unitOfWork = unitOfWork;
-            _notiService = notiService;
-        }
+
 
         public async Task AutoUpdateOrder()
         {
@@ -504,18 +507,12 @@ namespace Service.Implement
                 var flowerCustom = await _unitOfWork.Repository<FlowerCustom>().Entities.Where(n => n.ProductCustomId == productCustom.ProductCustomId).ToListAsync();
 
 
-                
-                    _unitOfWork.Repository<ProductCustom>().Delete(productCustom);
-                    _unitOfWork.Repository<FlowerCustom>().DeleteRange(flowerCustom);
-                     _unitOfWork.Repository<Order>().Delete(order);
-                    await _unitOfWork.CompleteAsync();
 
-
-                
+                _unitOfWork.Repository<ProductCustom>().Delete(productCustom);
+                _unitOfWork.Repository<FlowerCustom>().DeleteRange(flowerCustom);
+                _unitOfWork.Repository<Order>().Delete(order);
+                await _unitOfWork.CompleteAsync();
             }
-
-         
-
             // Lưu thay đổi vào database
         }
 
@@ -677,7 +674,7 @@ namespace Service.Implement
                .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
                .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
                .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
-                                  .OrderByDescending(n => n.CreateAt)
+                                  .OrderByDescending(n => n.UpdateAt)
 
            .Where(order => order.CustomerId == CustomerID && order.Status == "Cancel")
            .ToListAsync();
@@ -984,6 +981,7 @@ namespace Service.Implement
                     .Include(m => m.ProductCustom).ThenInclude(a => a.FlowerBasket).ThenInclude( b => b.Category)
                     .Include(c => c.ProductCustom).ThenInclude(a => a.Style).ThenInclude(l => l.Category)
                     .Include(e => e.ProductCustom).ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
+                    .Include(p => p.DesignCustom)
                                        .OrderByDescending(n => n.CreateAt)
 
                 .Where(order => order.CustomerId == CustomerID  && order.Status != "Pending Payment" && order.Status != "Request refund" && order.Status != "Accept refund" && order.Status != "Refuse refund" && order.Status != "Cancel")
@@ -1004,7 +1002,7 @@ namespace Service.Implement
                 CustomerId = CustomerID,
                 Delivery = order.Delivery,
                 ProductCustomId = order.ProductCustomId,
-                   
+
                 ProductCustomResponse = order.ProductCustom != null ? new ProductCustomResponse
                 {
                     ProductCustomId = order.ProductCustomId,
@@ -1085,6 +1083,21 @@ namespace Service.Implement
                                         } : null
                                     }).ToList()
                 } : null,
+                DesignCustomBuCustomerResponse = order.DesignCustom != null ? new DesignCustomBuCustomerResponse
+                {
+                    DesignCustomId = order.DesignCustom.DesignCustomId,
+                    RequestImage = order.DesignCustom.RequestImage,
+                    RequestDescription = order.DesignCustom.RequestDescription,
+                    RequestPrice = order.DesignCustom.RequestPrice,
+                    RequestOccasion = order.DesignCustom.RequestOccasion,
+                    RequestMainColor = order.DesignCustom.RequestMainColor,
+                    RequestFlowerType = order.DesignCustom.RequestFlowerType,
+                    RequestCard = order.DesignCustom.RequestCard,
+                    ResponsePrice = order.DesignCustom.ResponsePrice,
+                    ResponseImage = order.DesignCustom.ResponseImage,
+                    ResponseDescription = order.DesignCustom.ResponseDescription,
+                    Status = order.DesignCustom.Status,
+                } : null,
                 StaffId = order.StaffId,
                 PromotionId = order.PromotionId,
                 PromotionName = order.Promotion?.PromotionName,
@@ -1122,6 +1135,7 @@ namespace Service.Implement
                         Status = orderDetail.Status
                     })
                     .ToList() ?? new List<OrderDetailsResponse>()
+
             });
 
             return orderResponse;
@@ -1142,7 +1156,7 @@ namespace Service.Implement
     .ThenInclude(a => a.Style).ThenInclude(l => l.Category)
 .Include(e => e.ProductCustom)
     .ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
-                 .Include(p => p.Staff)
+                 .Include(p => p.Staff).Include(p => p.DesignCustom)
                                     .OrderByDescending(n => n.CreateAt)
 
                 .FirstOrDefaultAsync(o => o.OrderId == OrderId);
@@ -1258,6 +1272,21 @@ namespace Service.Implement
                                            Status = a.Flower.Status,
                                        } : null
                                    }).ToList()
+                } : null,
+                DesignCustomBuCustomerResponse = order.DesignCustom != null ? new DesignCustomBuCustomerResponse
+                {
+                    DesignCustomId = order.DesignCustom.DesignCustomId,
+                    RequestImage = order.DesignCustom.RequestImage,
+                    RequestDescription = order.DesignCustom.RequestDescription,
+                    RequestPrice = order.DesignCustom.RequestPrice,
+                    RequestOccasion = order.DesignCustom.RequestOccasion,
+                    RequestMainColor = order.DesignCustom.RequestMainColor,
+                    RequestFlowerType = order.DesignCustom.RequestFlowerType,
+                    RequestCard = order.DesignCustom.RequestCard,
+                    ResponsePrice = order.DesignCustom.ResponsePrice,
+                    ResponseImage = order.DesignCustom.ResponseImage,
+                    ResponseDescription = order.DesignCustom.ResponseDescription,
+                    Status = order.DesignCustom.Status,
                 } : null,
                 StaffId = order.StaffId,
                 StaffFullName = order.Staff?.FullName ?? "N/A",
@@ -2246,7 +2275,7 @@ namespace Service.Implement
                 var notification = new Noti
                 {
                     ToUserId = StaffId,
-                    Message = $"bạn có một đơn hàng cần sử lý",
+                    Message = $"bạn có một đơn hàng cần xử lý",
                     Type = "Order",
                     RelatedId = orderId,
                 };
@@ -2579,6 +2608,121 @@ namespace Service.Implement
             });
 
             return orderResponse;
+        }
+
+        public async Task UpdateFailOrder(FailOrderRequest failOrderRequest, Guid orderId)
+        {
+            var order = await _unitOfWork.GetRepo<Order>().Entities
+             .Include(d => d.Promotion)
+             .Include(o => o.OrderDetails)
+                 .ThenInclude(od => od.Product)
+                .Include(m => m.ProductCustom)
+                 .ThenInclude(a => a.FlowerBasket).ThenInclude(b => b.Category)
+                .Include(c => c.ProductCustom)
+                 .ThenInclude(a => a.Style).ThenInclude(l => l.Category)
+                .Include(e => e.ProductCustom)
+                .ThenInclude(f => f.Accessory).ThenInclude(g => g.Category)
+                 .Include(p => p.Staff)
+                                    .OrderByDescending(n => n.CreateAt)
+
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+            var walletAdmin = await _unitOfWork.Repository<Wallet>().Entities
+             .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
+            var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(order.CustomerId);
+            var wallet = (await _unitOfWork.Repository<Wallet>().GetAllAsync()).FirstOrDefault(n => n.CustomerId == customer.CustomerId);
+            var delivery = await _unitOfWork.Repository<Delivery>().Entities.Where(k => k.OrderId == order.OrderId).FirstOrDefaultAsync();
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+            var folderName = $"Product";
+          
+            string Url = null;
+            if (failOrderRequest != null && failOrderRequest.ImageFail != null)
+            {
+                using var stream = failOrderRequest.ImageFail.OpenReadStream();
+                if (stream != null)
+                {
+                    Url = await _cloudinaryService.UploadImageAsync(stream, folderName);
+                }
+            }
+            order.Status = "Fail";
+            var payment = (await _unitOfWork.Repository<Payment>().GetAllAsync()).FirstOrDefault(n => n.OrderId == orderId);
+
+            _unitOfWork.GetRepo<Order>().Update(order);
+            double? price = order.OrderPrice;
+            if (order.Transfer == false)
+            {
+                price = price / 2;
+            }
+            bool a = await _walletService.CheckWallet(customer.CustomerId);
+           
+            var failOrder = new FailOrder
+            {
+                OrderId = order.OrderId,
+                ReasonFail = failOrderRequest.ReasonFail,
+                TimeDelay = failOrderRequest.TimeDelay,
+                ImageFail = Url,
+                Wallet = failOrderRequest.Wallet,
+                RefundPrice = price,
+                StaffId = order.StaffId,
+                DeliveryId = delivery?.DeliveryId, // Gán luôn nếu có
+                ShipperId = delivery?.ShipperId ,   // Gán luôn nếu có
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
+                Status = "Successfull",
+            };
+            if (a == false)
+            {
+                failOrder.Wallet = false;
+            }
+            if (failOrder.Wallet == true)
+            {
+                var refund = new Refund
+                {
+                    OrderId = order.OrderId,
+                    WallerId = wallet.WalletId,
+                    Price = price,
+                    CreateAt = vietnamTime,
+                    Status = "Refund Successfull",
+                    StoreId = order.StoreId,
+                };
+                await _unitOfWork.Repository<Refund>().AddAsync(refund);
+                var inComWallet = new IncomeWallet
+                {
+                    WalletID = wallet.WalletId,
+                    IncomePrice = price,
+                    Method = "Refund",
+                    Status = "Successfull",
+                    CreateAt = vietnamTime,
+                    UpdateAt = vietnamTime,
+                    OrderId = order.OrderId,
+
+                };
+                await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
+                await _unitOfWork.CompleteAsync();
+                walletAdmin.TotalPrice -= inComWallet.IncomePrice;
+                _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                var incomeWallet = new IncomeWallet
+                {
+                    WalletID = walletAdmin.WalletId,
+                    IncomePrice = -inComWallet.IncomePrice,
+                    Method = "Refund",
+                    Status = "Successfull",
+                    CreateAt = vietnamTime,
+                    UpdateAt = vietnamTime,
+                };
+                await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+                order.Refund = true;
+                payment.Status = "refund";
+                _unitOfWork.Repository<Payment>().Update(payment);
+                wallet.TotalPrice += order.OrderPrice;
+                _unitOfWork.Repository<Wallet>().Update(wallet);
+                await _unitOfWork.CompleteAsync();
+            }
+           await _unitOfWork.GetRepo<FailOrder>().AddAsync(failOrder);
+            await _unitOfWork.CompleteAsync();
+
+            
+
         }
     }
 }

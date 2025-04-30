@@ -72,6 +72,8 @@ public partial class CustomFlowerChainContext : DbContext
     public virtual DbSet<Accessory> Accessories { get; set; }
     public virtual DbSet<Noti> Notis { get; set; }
 
+    public virtual DbSet<FailOrder> FailOrders { get; set; }
+    public virtual DbSet<DesignCustom> DesignCustoms { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -161,7 +163,25 @@ public partial class CustomFlowerChainContext : DbContext
                 .HasForeignKey(d => d.ShipperId)
                 .HasConstraintName("FK_Delivery_Employee");
         });
+        modelBuilder.Entity<FailOrder>(entity =>
+        {
+            entity.ToTable("FailOrder");
 
+            entity.Property(e => e.FailOrderId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.TimeDelay).HasColumnType("datetime");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.FailOrders)
+                .HasForeignKey(d => d.OrderId)
+                .HasConstraintName("FK_FailOrders_Order");
+
+            entity.HasOne(d => d.Delivery).WithMany(p => p.FailOrders)
+     .HasForeignKey(d => d.DeliveryId)
+     .IsRequired(false) // <- Dòng này là quan trọng
+     .HasConstraintName("FK_FailOrders_Delivery");
+
+        });
         modelBuilder.Entity<Employee>(entity =>
         {
             entity.ToTable("Employee");
@@ -319,6 +339,13 @@ public partial class CustomFlowerChainContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade) // Khi xóa Order, ProductCustom cũng bị xóa
                 .HasConstraintName("FK_Order_ProductCustom");
 
+            modelBuilder.Entity<Order>()
+             .HasOne(o => o.DesignCustom)
+             .WithOne(pc => pc.Order)
+             .HasForeignKey<DesignCustom>(pc => pc.OrderId)
+             .OnDelete(DeleteBehavior.Cascade) // Khi xóa Order, DesignCustom cũng bị xóa
+             .HasConstraintName("FK_Order_DesignCustom");
+
             entity.HasOne(d => d.Promotion).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.PromotionId)
                 .HasConstraintName("FK_Order_Promotion");
@@ -399,6 +426,16 @@ public partial class CustomFlowerChainContext : DbContext
             entity.HasOne(d => d.Accessory).WithMany(p => p.ProductCustoms)
                .HasForeignKey(d => d.AccessoryId)
                .HasConstraintName("FK_ProductCustom_Accessory");
+        });
+        modelBuilder.Entity<DesignCustom>(entity =>
+        {
+            entity.ToTable("DesignCustom");
+
+            entity.Property(e => e.DesignCustomId).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
+
+
         });
 
         modelBuilder.Entity<ProductImage>(entity =>

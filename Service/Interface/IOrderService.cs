@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO.Employee;
+using BusinessObject.DTO.FailOrder;
 using BusinessObject.DTO.Order;
 using BusinessObject.Entities;
 using System;
@@ -44,6 +45,7 @@ namespace Service.Interface
         Task<IEnumerable<OrderResponse>> GetOrder();
 
         Task<IEnumerable<OrderResponse>> GetRefundOrder();
+        Task UpdateFailOrder(FailOrderRequest failOrderRequest, Guid orderId);
 
 
     }

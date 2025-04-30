@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO.Employee;
+using BusinessObject.DTO.FailOrder;
 using BusinessObject.DTO.Order;
 using BusinessObject.DTO.Product;
 using Core.Infrastructures;
@@ -241,6 +242,15 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> UpdateStatusOrderByStaffId(Guid orderId, string Status)
         {
             await orderService.UpdateStatusOrderByStaffId(orderId, Status);
+            return Ok(new BaseResponseModel<string>(
+                      statusCode: StatusCodes.Status200OK,
+                      code: ResponseCodeConstants.SUCCESS,
+                      data: "cập nhật sẩn phẩm thành công"));
+        }
+        [HttpPut("UpdateFailOrder")]
+        public async Task<IActionResult> UpdateFailOrder([FromForm] FailOrderRequest failOrderRequest, Guid orderId)
+        {
+            await orderService.UpdateFailOrder(failOrderRequest, orderId);
             return Ok(new BaseResponseModel<string>(
                       statusCode: StatusCodes.Status200OK,
                       code: ResponseCodeConstants.SUCCESS,
