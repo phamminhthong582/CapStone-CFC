@@ -98,10 +98,36 @@ namespace Service.Implement
             return walletResponse;
         }
 
+        public async Task<WalletResponse> GetWalletByAdmin(Guid id)
+        {
+            var wallet = await _unitOfWork.Repository<Wallet>()
+                                           .Entities
+                                           .FirstOrDefaultAsync(w => w.WalletId == id);
+
+            if (wallet == null)
+            {
+                throw new Exception("Wallet not found for this customer.");
+            }
+
+            var walletResponse = new WalletResponse
+            {
+                WalletId = wallet.WalletId,
+                CustomerId = wallet.CustomerId,
+                TotalPrice = wallet.TotalPrice,
+                UpdateAt = wallet.UpdateAt,
+                CreateAt = wallet.CreateAt,
+            };
+
+            return walletResponse;
+        }
+
         public async Task PaymentByWallet(Guid OrderId, string passwordWallet)
         {
-            var order = await _unitOfWork.GetRepo<Order>().GetByIdAsync(OrderId);
+            var order = await _unitOfWork.GetRepo<Order>().Entities.Include(m => m.DesignCustom).FirstOrDefaultAsync(n => n.OrderId == OrderId);
             var wallet = await _unitOfWork.GetRepo<Wallet>().Entities.Where(n => n.CustomerId == order.CustomerId).FirstOrDefaultAsync();
+            var designcustom = await _unitOfWork.Repository<DesignCustom>().Entities.FirstOrDefaultAsync(n => n.OrderId == OrderId);
+            var walletAdmin = await _unitOfWork.Repository<Wallet>().Entities
+                .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
             if (passwordWallet == wallet.PasswordWallet)
             {
                 if (order.Transfer == false) {
@@ -111,7 +137,13 @@ namespace Service.Implement
                          _unitOfWork.GetRepo<Wallet>().Update(wallet);
                         var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                         var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+                        if(order.DesignCustomId != null)
+                        {
+                            designcustom.Status = "Design Successfully";
+                            _unitOfWork.GetRepo<DesignCustom>().Update(designcustom);
+                            await _unitOfWork.CompleteAsync();
 
+                        }
                         var incomeWallet = new IncomeWallet
                         {
                             WalletID = wallet.WalletId,
@@ -124,7 +156,23 @@ namespace Service.Implement
                         };
                         await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
                         await _unitOfWork.CompleteAsync();
-                    }else
+                        walletAdmin.TotalPrice += (order.OrderPrice / 2);
+                        _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                        var inComeWallet = new IncomeWallet
+                        {
+                            WalletID = walletAdmin.WalletId,
+                            IncomePrice = (order.OrderPrice / 2),
+                            Method = "Payment",
+                            Status = "Successfull",
+                            CreateAt = vietnamTime,
+                            UpdateAt = vietnamTime,
+                        };
+                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(inComeWallet);
+                        await _unitOfWork.CompleteAsync();
+
+
+                    }
+                    else
                     {
                         throw new Exception("Wallet not found for this customer.");
 
@@ -138,7 +186,13 @@ namespace Service.Implement
                         wallet.TotalPrice -= order.OrderPrice;
                         var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
                         var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+                        if (order.DesignCustomId != null)
+                        {
+                            designcustom.Status = "Design Successfully";
+                            _unitOfWork.GetRepo<DesignCustom>().Update(designcustom);
+                            await _unitOfWork.CompleteAsync();
 
+                        }
                         var incomeWallet = new IncomeWallet
                         {
 
@@ -152,6 +206,19 @@ namespace Service.Implement
                         };
                         await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
                         _unitOfWork.GetRepo<Wallet>().Update(wallet);
+                        await _unitOfWork.CompleteAsync();
+                        walletAdmin.TotalPrice += order.OrderPrice;
+                        _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                        var inComeWallet = new IncomeWallet
+                        {
+                            WalletID = walletAdmin.WalletId,
+                            IncomePrice = order.OrderPrice,
+                            Method = "Payment",
+                            Status = "Successfull",
+                            CreateAt = vietnamTime,
+                            UpdateAt = vietnamTime,
+                        };
+                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(inComeWallet);
                         await _unitOfWork.CompleteAsync();
                     }
                 }

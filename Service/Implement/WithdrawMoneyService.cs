@@ -186,7 +186,8 @@ namespace Service.Implement
             var wallet = await _unitOfWork.Repository<Wallet>().Entities.FirstOrDefaultAsync(m => m.WalletId == withdrawMoney.WalletId);
             var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
-
+            var walletAdmin = await _unitOfWork.Repository<Wallet>().Entities
+            .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
             withdrawMoney.Status = status;
             if (status == "Successfull")
             {
@@ -201,6 +202,20 @@ namespace Service.Implement
 
                 };
                 await _unitOfWork.Repository<IncomeWallet>().AddAsync(incomWallet);
+                await _unitOfWork.CompleteAsync();
+                //walletAdmin.TotalPrice -= incomWallet.IncomePrice;
+                //_unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                //var inComeWallet = new IncomeWallet
+                //{
+                //    WalletID = walletAdmin.WalletId,
+                //    IncomePrice = incomWallet.IncomePrice,
+                //    Method = "Payment",
+                //    Status = "Successfull",
+                //    CreateAt = vietnamTime,
+                //    UpdateAt = vietnamTime,
+                //};
+                //await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(inComeWallet);
+                //await _unitOfWork.CompleteAsync();
 
             }
             if (status == "Failure")

@@ -4,16 +4,19 @@ using BusinessObject.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace BusinessObject.Migrations
+namespace BusinessObject.Entities
 {
     [DbContext(typeof(CustomFlowerChainContext))]
-    partial class CustomFlowerChainContextModelSnapshot : ModelSnapshot
+    [Migration("20250413120504_UpdateFailOrder")]
+    partial class UpdateFailOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -305,70 +308,6 @@ namespace BusinessObject.Migrations
                     b.ToTable("Delivery", (string)null);
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.DesignCustom", b =>
-                {
-                    b.Property<Guid>("DesignCustomId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("(newid())");
-
-                    b.Property<DateTime?>("CreateAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<Guid?>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestCard")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestFlowerType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestImage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestMainColor")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestOccasion")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RequestPrice")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResponseDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResponseImage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("ResponsePrice")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdateAt")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("DesignCustomId");
-
-                    b.HasIndex("OrderId")
-                        .IsUnique()
-                        .HasFilter("[OrderId] IS NOT NULL");
-
-                    b.ToTable("DesignCustom", (string)null);
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Employee", b =>
                 {
                     b.Property<Guid>("EmployeeId")
@@ -457,7 +396,7 @@ namespace BusinessObject.Migrations
                     b.Property<DateTime?>("CreateAt")
                         .HasColumnType("datetime");
 
-                    b.Property<Guid?>("DeliveryId")
+                    b.Property<Guid>("DeliveryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ImageFail")
@@ -857,9 +796,6 @@ namespace BusinessObject.Migrations
                     b.Property<string>("DeliveryDistrict")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("DeliveryDistrict");
-
-                    b.Property<Guid?>("DesignCustomId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
@@ -1527,17 +1463,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("Shipper");
                 });
 
-            modelBuilder.Entity("BusinessObject.Entities.DesignCustom", b =>
-                {
-                    b.HasOne("BusinessObject.Entities.Order", "Order")
-                        .WithOne("DesignCustom")
-                        .HasForeignKey("BusinessObject.Entities.DesignCustom", "OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("FK_Order_DesignCustom");
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("BusinessObject.Entities.Employee", b =>
                 {
                     b.HasOne("BusinessObject.Entities.Store", "Store")
@@ -1560,6 +1485,8 @@ namespace BusinessObject.Migrations
                     b.HasOne("BusinessObject.Entities.Delivery", "Delivery")
                         .WithMany("FailOrders")
                         .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK_FailOrders_Delivery");
 
                     b.HasOne("BusinessObject.Entities.Order", "Order")
@@ -1891,8 +1818,6 @@ namespace BusinessObject.Migrations
                     b.Navigation("ChatRooms");
 
                     b.Navigation("Deliveries");
-
-                    b.Navigation("DesignCustom");
 
                     b.Navigation("FailOrders");
 

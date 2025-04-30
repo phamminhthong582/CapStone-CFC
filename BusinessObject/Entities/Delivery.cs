@@ -29,4 +29,6 @@ public partial class Delivery
     public virtual Order? Order { get; set; }
 
     public virtual Employee? Shipper { get; set; }
+    public virtual ICollection<FailOrder> FailOrders { get; set; } = new List<FailOrder>();
+
 }

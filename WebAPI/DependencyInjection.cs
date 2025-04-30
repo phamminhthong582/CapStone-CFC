@@ -63,6 +63,9 @@ public static class DependencyInjection
         //Product
         services.AddScoped<IProductService, ProductService>();
 
+        //FailOrder
+        services.AddScoped<IFailOrderService, FailOrderService>();
+
         //Order
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IOrderRepository, OrderRepository>();
@@ -100,6 +103,7 @@ public static class DependencyInjection
         services.AddScoped<ICheckService, CheckService>();
         //Cloudinary
         services.AddSingleton<CloudinaryService>();
+        services.AddScoped<CloudinaryService>();
 
         //OpenAI
         services.AddHttpClient<OpenAIService>(); // Đăng ký HttpClient
@@ -129,6 +133,9 @@ public static class DependencyInjection
         //Noti
         services.AddScoped<INotiRepository, NotiRepository>();
         services.AddScoped<INotiService, NotiService>();
+
+        //DesignCustom
+        services.AddScoped<IDesignCustomService, DesignCustomService>();
 
         //logger
         services.AddLogging(builder =>

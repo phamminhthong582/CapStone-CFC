@@ -158,51 +158,69 @@ public class AuthService : IAuthService
                     Messages = new[] { "Account is not found" }
                 };
             }
-
+        
             if (employee.User.Role == null || string.IsNullOrEmpty(employee.User.Role.RoleName))
+             {
+                 return new Result<LoginResponse>
+                  {
+                        ResultStatus = ResultStatus.Error.ToString(),
+                        Messages = new[] { "Employee role is not defined." }
+                  };
+             }
+            if(employee != null)
             {
-                return new Result<LoginResponse>
+                if (user == null || user.Status == false)
                 {
-                    ResultStatus = ResultStatus.Error.ToString(),
-                    Messages = new[] { "Employee role is not defined." }
-                };
+                    return new Result<LoginResponse>
+                    {
+                        ResultStatus = ResultStatus.Error.ToString(),
+                        Messages = new[] { "Account is Not Verified! Please verify your account" }
+                    };
+                }
+                var isValidPassword = PasswordHasher.VerifyHashedPassword(user.Password, password);
+
+                if (isValidPassword)
+                {
+                    var storeId = employee.StoreId.HasValue ? employee.StoreId.ToString() : "";
+                    // Tạo token cho employee với StoreId
+                    var roleName = employee.User.Role.RoleName;
+                    var accessTokenEmployee = _tokenService.GenerateAccessToken(new List<Claim>
+                    {
+                    new Claim("Id", employee.EmployeeId.ToString()),
+                    new Claim(ClaimTypes.Name, employee.Email),
+                    new Claim(ClaimTypes.Role, roleName),
+                    new Claim("StoreId", storeId)
+                    });
+                    string welcomeMessage = roleName switch
+                    {
+                        nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
+                        nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
+                        nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
+                        _ => "Login successfully. Welcome"
+                    };
+
+                    var dataUser = new LoginResponse
+                    {
+                        AccessToken = accessTokenEmployee,
+                        Email = employee.Email,
+                        RoleName = roleName,
+                    };
+
+                    return new Result<LoginResponse>
+                    {
+                        Data = dataUser,
+                        Messages = new[] { welcomeMessage },
+                        ResultStatus = ResultStatus.Success.ToString()
+                    };
+                }
             }
 
             // Lấy thông tin StoreId (nếu có)
-            var storeId = employee.StoreId.HasValue ? employee.StoreId.ToString() : "";
+            return null;
 
-            // Tạo token cho employee với StoreId
-            var roleName = employee.User.Role.RoleName;
-            var accessTokenEmployee = _tokenService.GenerateAccessToken(new List<Claim>
-        {
-            new Claim("Id", employee.EmployeeId.ToString()),
-            new Claim(ClaimTypes.Name, employee.Email),
-            new Claim(ClaimTypes.Role, roleName),
-            new Claim("StoreId", storeId)
-        });
 
             // Tạo thông điệp chào mừng dựa trên vai trò của nhân viên
-            string welcomeMessage = roleName switch
-            {
-                nameof(RoleName.StoreManager) => "Login successfully. Welcome Store Manager",
-                nameof(RoleName.Florist) => "Login successfully. Welcome Florist",
-                nameof(RoleName.Courier) => "Login successfully. Welcome Courier",
-                _ => "Login successfully. Welcome"
-            };
 
-            var dataUser = new LoginResponse
-            {
-                AccessToken = accessTokenEmployee,
-                Email = employee.Email,
-                RoleName = roleName,
-            };
-
-            return new Result<LoginResponse>
-            {
-                Data = dataUser,
-                Messages = new[] { welcomeMessage },
-                ResultStatus = ResultStatus.Success.ToString()
-            };
         }
         catch (Exception e)
         {
@@ -470,7 +488,7 @@ public class AuthService : IAuthService
         using (var smtpClient = new SmtpClient("smtp.gmail.com"))
 
         {
-            smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "nmcf zksq weyr wphx");
+            smtpClient.Credentials = new NetworkCredential("minhthongpham9a2@gmail.com", "iiog jhst phat rfkp");
             smtpClient.EnableSsl = true;
             smtpClient.Port = 587; // Cổng SMTP (thay đổi theo nhà cung cấp)
 

@@ -34,12 +34,14 @@ namespace Service.Implement
             var wallet = (await _unitOfWork.Repository<Wallet>().GetAllAsync()).FirstOrDefault(n => n.CustomerId == customer.CustomerId);
             var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
-
+            var walletAdmin = await _unitOfWork.Repository<Wallet>().Entities
+               .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
             if (order.Transfer == false && order.Status != "Received")
             {
                 if (order.Status != "Order Successfully" && order.Status != "Delivery")
                 {
                     order.Status = "Cancel";
+                    order.UpdateAt = vietnamTime;
                     _unitOfWork.Repository<Order>().Update(order);
                     payment.Status = "Cancel deposit";
                     _unitOfWork.Repository<Payment>().Update(payment);
@@ -70,8 +72,25 @@ namespace Service.Implement
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
+                    await _unitOfWork.CompleteAsync();
 
+                    walletAdmin.TotalPrice -= inComWallet.IncomePrice;
+                    _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                    var incomeWallet = new IncomeWallet
+                    {
+                        WalletID = walletAdmin.WalletId,
+                        IncomePrice = -inComWallet.IncomePrice,
+                        Method = "Refund",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+
+                    await _unitOfWork.CompleteAsync();
                     order.Status = "Cancel";
+                    order.UpdateAt = vietnamTime;
+
                     order.Refund = true;
                     _unitOfWork.Repository<Order>().Update(order);
                     payment.Status = "refund";
@@ -103,17 +122,32 @@ namespace Service.Implement
                     var inComWallet = new IncomeWallet
                     {
                         WalletID = wallet.WalletId,
-                        IncomePrice = order.OrderPrice,
+                        IncomePrice = refundPrice,
                         Method = "Refund",
                         Status = "Successfull",
                         CreateAt = vietnamTime,
                         UpdateAt = vietnamTime,
                         OrderId = order.OrderId,
-
-
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
+                    await _unitOfWork.CompleteAsync();
+
+                    walletAdmin.TotalPrice -= inComWallet.IncomePrice;
+                    _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                    var incomeWallet = new IncomeWallet
+                    {
+                        WalletID = walletAdmin.WalletId,
+                        IncomePrice = -inComWallet.IncomePrice,
+                        Method = "Refund",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+
                     order.Status = "Cancel";
+                    order.UpdateAt = vietnamTime;
+
                     order.Refund = true;
                     _unitOfWork.Repository<Order>().Update(order);
                     payment.Status = "refund";
@@ -122,7 +156,7 @@ namespace Service.Implement
                     _unitOfWork.Repository<Wallet>().Update(wallet);
                     await _unitOfWork.CompleteAsync();
                 }
-                if (order.Status != "Order Successfully"&&timeUntilDelivery.TotalHours > 24 && order.Status != "Received")
+                else if (order.Status != "Order Successfully"&&timeUntilDelivery.TotalHours > 24 && order.Status != "Received")
                 {
 
                     double? refundPrice = order.OrderPrice * 70 / 100;
@@ -150,7 +184,23 @@ namespace Service.Implement
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
+                    await _unitOfWork.CompleteAsync();
+
+                    walletAdmin.TotalPrice -= inComWallet.IncomePrice;
+                    _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                    var incomeWallet = new IncomeWallet
+                    {
+                        WalletID = walletAdmin.WalletId,
+                        IncomePrice = -inComWallet.IncomePrice,
+                        Method = "Refund",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
                     order.Status = "Cancel";
+                    order.UpdateAt = vietnamTime;
+
                     order.Refund = true;
                     _unitOfWork.Repository<Order>().Update(order);
                     payment.Status = "refund";
@@ -167,7 +217,9 @@ namespace Service.Implement
                         OrderId = order.OrderId,
                         WallerId = wallet.WalletId,
                         Price = refundPrice,
-                        CreateAt = vietnamTime
+                        CreateAt = vietnamTime,
+                        Status = "Refund Successfull",
+                        StoreId = order.StoreId,
                     };
 
                     await _unitOfWork.Repository<Refund>().AddAsync(refund);
@@ -183,7 +235,23 @@ namespace Service.Implement
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
+                    await _unitOfWork.CompleteAsync();
+
+                    walletAdmin.TotalPrice -= inComWallet.IncomePrice;
+                    _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                    var incomeWallet = new IncomeWallet
+                    {
+                        WalletID = walletAdmin.WalletId,
+                        IncomePrice = -inComWallet.IncomePrice,
+                        Method = "Refund",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
                     order.Status = "Cancel";
+                    order.UpdateAt = vietnamTime;
+
                     order.Refund = true;
                     _unitOfWork.Repository<Order>().Update(order);
                     payment.Status = "refund";
@@ -193,7 +261,7 @@ namespace Service.Implement
 
                     await _unitOfWork.CompleteAsync();
                 }
-                if (order.Status != "Order Successfully" && timeUntilDelivery.TotalHours < 3 && order.Status != "Received")
+                else if (order.Status != "Order Successfully" && timeUntilDelivery.TotalHours < 3 && order.Status != "Received")
                 {
 
                     double? refundPrice = order.OrderPrice * 30 / 100;
@@ -218,7 +286,21 @@ namespace Service.Implement
 
                     };
                     await _unitOfWork.Repository<IncomeWallet>().AddAsync(inComWallet);
+                    await _unitOfWork.CompleteAsync();
+                    walletAdmin.TotalPrice -= inComWallet.IncomePrice;
+                    _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+                    var incomeWallet = new IncomeWallet
+                    {
+                        WalletID = walletAdmin.WalletId,
+                        IncomePrice = -inComWallet.IncomePrice,
+                        Method = "Refund",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
                     order.Status = "Cancel";
+                    order.UpdateAt = vietnamTime;
                     order.Refund = true;
                     _unitOfWork.Repository<Order>().Update(order);
                     payment.Status = "refund";

@@ -131,6 +131,7 @@ namespace Service.Implement
             var deliveryResponse = new DeliveryResponse
             {
                 DeliveryId = delivery.DeliveryId,
+                OrderId = delivery.OrderId,
                 ShipperId = delivery.ShipperId,
                 ShipperName = delivery.Shipper.FullName,
                 ShipperEmail= delivery.Shipper.Email,

@@ -115,7 +115,7 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.VerifyEmail(id, token);
         if (result.ResultStatus == ResultStatus.Success.ToString())
-            return Redirect($"https://customchainflower-ecbrb4bhfrguarb9.southeastasia-01.azurewebsites.net/api/auth/");
+            return Redirect($"https://capstone-cfc-fe-user.vercel.app/login");
 
         return Redirect($"https://giveawayproject.jettonetto.org/verify-email?verificationstatus=failed");
     }

@@ -111,7 +111,8 @@ public class FeedbackService : IFeedbackService
         var wallet = await _unitOfWork.GetRepo<Wallet>().Entities.FirstOrDefaultAsync(n => n.CustomerId == Order.CustomerId);
         Order.Status = status;
         _unitOfWork.Repository<Order>().Update(Order);
-
+        var walletAdmin = await _unitOfWork.Repository<Wallet>().Entities
+            .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
         if (status == "Accept refund")
         {
             wallet.TotalPrice += Order.OrderPrice;
@@ -145,6 +146,20 @@ public class FeedbackService : IFeedbackService
             payment.Status = "refund";
             _unitOfWork.Repository<Payment>().Update(payment);
             await _unitOfWork.CompleteAsync();
+            walletAdmin.TotalPrice -= incomeWallet.IncomePrice;
+            _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+            var inComeWallet = new IncomeWallet
+            {
+                WalletID = walletAdmin.WalletId,
+                IncomePrice = -incomeWallet.IncomePrice,
+                Method = "Refund",
+                Status = "Successfull",
+                CreateAt = vietnamTime,
+                UpdateAt = vietnamTime,
+            };
+            await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(inComeWallet);
+            await _unitOfWork.CompleteAsync();
+
         }
     }
     public async Task<FeedbackResponse> GetFeedBackByOrderId(Guid orderId)
