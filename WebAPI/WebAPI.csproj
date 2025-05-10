@@ -26,7 +26,11 @@
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
         <PackageReference Include="OpenAI.API" Version="1.0.0" />
     </ItemGroup>
-
+	<ItemGroup>
+		<Content Include="Service\MailTemplate\**\*.html">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Core\Core.csproj" />
       <ProjectReference Include="..\Service\Service.csproj" />

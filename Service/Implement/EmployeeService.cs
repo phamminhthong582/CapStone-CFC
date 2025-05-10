@@ -485,6 +485,10 @@ public class EmployeeService : IEmployeeService
     public async Task CreateManagerStore(Guid storeid, CreateManagerStoreRequest createManagerStoreRequest)
     {
 
+        // Hash mật khẩu
+        //CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
+        CreatePasswordHash(createManagerStoreRequest.Password, out string hashedPassword);
+
         var store = await _unitOfWork.Repository<Store>().GetByIdAsync(storeid);
         if (store == null)
         {
@@ -498,7 +502,7 @@ public class EmployeeService : IEmployeeService
         var User = new User
         {
             Email = createManagerStoreRequest.Email,
-            Password = createManagerStoreRequest.Password,
+            Password = hashedPassword,
             RoleId = Guid.Parse("a7ad79e3-a5e8-4e85-a672-41c95a2e37ac"),
             CreateAt = DateTime.Now,
             UpdateAt = DateTime.Now,

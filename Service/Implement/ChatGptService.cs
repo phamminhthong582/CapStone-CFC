@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BusinessObject.Entities;
 using Microsoft.Extensions.Configuration;
 using Repository.Interface; 
 
@@ -15,13 +16,16 @@ public class ChatGptService
     private readonly IFlowerCustomRepository _flowerCustomRepository;
     private readonly IProductCustomRepository _productCustomRepository;
     private const string OpenAiUrl = "https://api.openai.com/v1/chat/completions";
+    private readonly IUnitOfWork _unitOfWork;
 
     public ChatGptService(IConfiguration configuration, 
         IFlowerRepository flowerRepository, 
         IFlowerBasketRepository flowerBasketRepository , 
         IFlowerCustomRepository flowerCustomRepository,
-        IProductCustomRepository productCustomRepository)
+        IProductCustomRepository productCustomRepository,
+        IUnitOfWork unitOfWork)
     {
+        _unitOfWork = unitOfWork;
         _apiKey = configuration["OpenAI:ApiKey"];
         _httpClient = new HttpClient();
         _flowerRepository = flowerRepository;
@@ -37,10 +41,13 @@ public class ChatGptService
             return "Khánh Trình là người yêu QH nhất ❤️";
         }
 
-        string flowerInfo = "No flower info available";
+     string flowerInfo = "No flower info available";
     string flowerBasketInfo = "No flower basket info available";
     string flowerCustomInfo = "No flower custom info available";
-    string productCustomInfo = "No product custom info available"; 
+    string productCustomInfo = "No product custom info available";
+        string productInfo = "No product info available";
+
+  
 
     if (userMessage.Contains("flower"))
     {
@@ -58,10 +65,50 @@ public class ChatGptService
     {
         productCustomInfo = await _productCustomRepository.GetProductCustomInfoAsync(userMessage); 
     }
+        var designKeywords = new[] { "thiết kế", "tạo sản phẩm", "mẫu hoa", "gợi ý", "sản phẩm", "trang trí", "tư vấn" };
+        var birthdayKeywords = new[] { "sinh nhật", "birthday", "ngày sinh" };
 
-    string prompt = $"You are a chatbot assisting with a flower ordering system. The user asks: '{userMessage}'. Here is some information: {flowerInfo} {flowerBasketInfo} {flowerCustomInfo} {productCustomInfo}"; // Cập nhật prompt với thông tin sản phẩm tùy chỉnh
+        bool isDesignRequest = designKeywords.Any(k => userMessage.ToLower().Contains(k)) &&
+                               birthdayKeywords.Any(k => userMessage.ToLower().Contains(k));
+        string prompt;
 
-    var requestBody = new
+        if (isDesignRequest)
+        {
+            var flowerList = await _unitOfWork.GetRepo<Flower>().GetAllAsync();
+            var basketList = await _unitOfWork.GetRepo<FlowerBasket>().GetAllAsync();
+            var accessoryList = await _unitOfWork.GetRepo<Accessory>().GetAllAsync();
+            var typeList = await _unitOfWork.GetRepo<Type>().GetAllAsync();
+
+            var random = new Random();
+
+            // Random 3 hoa
+            var selectedFlowers = flowerList.OrderBy(x => random.Next()).Take(3).ToList();
+            // Random 1 giỏ
+            var selectedBasket = basketList.OrderBy(x => random.Next()).FirstOrDefault();
+            // Random 1 loại
+            var selectedType = typeList.OrderBy(x => random.Next()).FirstOrDefault();
+            // Random 2 phụ kiện
+            var selectedAccessories = accessoryList.OrderBy(x => random.Next()).Take(2).ToList();
+
+            var flowerDetails = string.Join(", ", selectedFlowers.Select(f => $"{f.FlowerName} ({f.Color})"));
+            var accessoryDetails = string.Join(", ", selectedAccessories.Select(a => a.Name));
+
+            prompt = $"\ud83c\udf38 Gợi ý thiết kế hoa sinh nhật:\n" +
+                     $"- Hoa: {flowerDetails}\n" +
+                     $"- Giỏ hoa: {selectedBasket?.FlowerBasketName}\n" +
+                     $"- Loại sản phẩm: {selectedType?.Name}\n" +
+                     $"- Phụ kiện kèm theo: {accessoryDetails}";
+
+            // Trả về response này (ví dụ thông qua bot hoặc UI)
+        }
+        prompt = $"You are a friendly and creative assistant in a flower ordering service. The user wants to design a flower product for a birthday. User said: '{userMessage}'.\n" +
+                  $"Please suggest a beautiful flower arrangement using the available options below:\n" +
+                  $"- \ud83c\udf38 Flowers: {flowerInfo}\n" +
+                  $"- \ud83e\udfba Flower Baskets: {flowerBasketInfo}\n" +
+                  $"- \ud83c\udf80 Accessories: {flowerCustomInfo}\n" +
+                  $"- \ud83c\udff7\ufe0f Product Types: {productCustomInfo}\n" +
+                  $"Describe your design in a warm, helpful tone.";
+        var requestBody = new
     {
         model = "gpt-3.5-turbo", 
         messages = new[] 

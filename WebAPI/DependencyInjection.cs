@@ -13,6 +13,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfra(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddMemoryCache(); // Thêm dòng này
+
         //Unit of work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

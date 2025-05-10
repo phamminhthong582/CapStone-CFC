@@ -81,6 +81,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     );
 });
+
 string? jwtIssuer = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtIssuer];
 string? jwtKey = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtKey];
 string? jwtAudience = builder.Configuration[BusinessObject.DTO.Commons.JwtConstants.JwtAudience];

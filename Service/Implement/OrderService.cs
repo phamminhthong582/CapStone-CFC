@@ -2627,7 +2627,7 @@ namespace Service.Implement
 
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
             var walletAdmin = await _unitOfWork.Repository<Wallet>().Entities
-             .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
+             .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("5ec81b98-2896-4275-89b4-17572f0f6c34"));
             var customer = await _unitOfWork.Repository<Customer>().GetByIdAsync(order.CustomerId);
             var wallet = (await _unitOfWork.Repository<Wallet>().GetAllAsync()).FirstOrDefault(n => n.CustomerId == customer.CustomerId);
             var delivery = await _unitOfWork.Repository<Delivery>().Entities.Where(k => k.OrderId == order.OrderId).FirstOrDefaultAsync();

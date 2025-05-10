@@ -117,7 +117,7 @@ namespace Service.Implement
                     _logger.LogError($"Error in AutoUpdateOrderService: {ex.Message}");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1000), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(2000), stoppingToken);
             }
         }
     }

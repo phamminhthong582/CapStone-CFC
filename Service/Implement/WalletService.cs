@@ -127,113 +127,120 @@ namespace Service.Implement
             var wallet = await _unitOfWork.GetRepo<Wallet>().Entities.Where(n => n.CustomerId == order.CustomerId).FirstOrDefaultAsync();
             var designcustom = await _unitOfWork.Repository<DesignCustom>().Entities.FirstOrDefaultAsync(n => n.OrderId == OrderId);
             var walletAdmin = await _unitOfWork.Repository<Wallet>().Entities
-                .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("55d9964b-8543-4b74-96d6-e0ab2ce86d3f"));
-            if (passwordWallet == wallet.PasswordWallet)
+                .FirstOrDefaultAsync(n => n.WalletId == Guid.Parse("5ec81b98-2896-4275-89b4-17572f0f6c34"));
+
+            if (wallet == null)
+                throw new Exception("Customer wallet not found.");
+
+            if (walletAdmin == null)
+                throw new Exception("Admin wallet not found.");
+
+            if (passwordWallet != wallet.PasswordWallet)
+                throw new Exception("Invalid wallet password.");
+
+            var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
+
+            if (order.Transfer == false)
             {
-                if (order.Transfer == false) {
-                    if (wallet.TotalPrice > order.OrderPrice/2) {
-                        await _paymentService.CreatePayment(OrderId);
-                        wallet.TotalPrice -= order.OrderPrice / 2;
-                         _unitOfWork.GetRepo<Wallet>().Update(wallet);
-                        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-                        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
-                        if(order.DesignCustomId != null)
-                        {
-                            designcustom.Status = "Design Successfully";
-                            _unitOfWork.GetRepo<DesignCustom>().Update(designcustom);
-                            await _unitOfWork.CompleteAsync();
-
-                        }
-                        var incomeWallet = new IncomeWallet
-                        {
-                            WalletID = wallet.WalletId,
-                            IncomePrice = -(order.OrderPrice / 2),
-                            Method = "Payment",
-                            Status = "Successfull",
-                            CreateAt = vietnamTime,
-                            UpdateAt = vietnamTime,
-                            OrderId = OrderId,
-                        };
-                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
-                        await _unitOfWork.CompleteAsync();
-                        walletAdmin.TotalPrice += (order.OrderPrice / 2);
-                        _unitOfWork.Repository<Wallet>().Update(walletAdmin);
-                        var inComeWallet = new IncomeWallet
-                        {
-                            WalletID = walletAdmin.WalletId,
-                            IncomePrice = (order.OrderPrice / 2),
-                            Method = "Payment",
-                            Status = "Successfull",
-                            CreateAt = vietnamTime,
-                            UpdateAt = vietnamTime,
-                        };
-                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(inComeWallet);
-                        await _unitOfWork.CompleteAsync();
-
-
-                    }
-                    else
-                    {
-                        throw new Exception("Wallet not found for this customer.");
-
-                    }
-                }
-                else if (order.Transfer == true)
+                var halfPrice = order.OrderPrice / 2;
+                if (wallet.TotalPrice > halfPrice)
                 {
-                    if (wallet.TotalPrice > order.OrderPrice )
+                    await _paymentService.CreatePayment(OrderId);
+                    wallet.TotalPrice -= halfPrice;
+                    _unitOfWork.GetRepo<Wallet>().Update(wallet);
+
+                    if (order.DesignCustomId != null)
                     {
-                        await _paymentService.CreatePayment(OrderId);
-                        wallet.TotalPrice -= order.OrderPrice;
-                        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-                        var vietnamTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
-                        if (order.DesignCustomId != null)
-                        {
-                            designcustom.Status = "Design Successfully";
-                            _unitOfWork.GetRepo<DesignCustom>().Update(designcustom);
-                            await _unitOfWork.CompleteAsync();
-
-                        }
-                        var incomeWallet = new IncomeWallet
-                        {
-
-                            WalletID = wallet.WalletId,
-                            IncomePrice = -(order.OrderPrice),
-                            Method = "Payment",
-                            Status = "Successfull",
-                            OrderId = OrderId,
-                            CreateAt = vietnamTime,
-                            UpdateAt = vietnamTime,
-                        };
-                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
-                        _unitOfWork.GetRepo<Wallet>().Update(wallet);
-                        await _unitOfWork.CompleteAsync();
-                        walletAdmin.TotalPrice += order.OrderPrice;
-                        _unitOfWork.Repository<Wallet>().Update(walletAdmin);
-                        var inComeWallet = new IncomeWallet
-                        {
-                            WalletID = walletAdmin.WalletId,
-                            IncomePrice = order.OrderPrice,
-                            Method = "Payment",
-                            Status = "Successfull",
-                            CreateAt = vietnamTime,
-                            UpdateAt = vietnamTime,
-                        };
-                        await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(inComeWallet);
-                        await _unitOfWork.CompleteAsync();
+                        designcustom.Status = "Design Successfully";
+                        _unitOfWork.GetRepo<DesignCustom>().Update(designcustom);
                     }
+
+                    var incomeWallet = new IncomeWallet
+                    {
+                        WalletID = wallet.WalletId,
+                        IncomePrice = -halfPrice,
+                        Method = "Payment",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                        OrderId = OrderId,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+
+                    walletAdmin.TotalPrice += halfPrice;
+                    _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+
+                    var adminIncome = new IncomeWallet
+                    {
+                        WalletID = walletAdmin.WalletId,
+                        IncomePrice = halfPrice,
+                        Method = "Payment",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(adminIncome);
+
+                    await _unitOfWork.CompleteAsync();
                 }
                 else
                 {
-                    throw new Exception("Wallet not found for this customer.");
-
+                    throw new Exception("Insufficient balance in wallet.");
                 }
             }
+            else if (order.Transfer == true)
+            {
+                if (wallet.TotalPrice > order.OrderPrice)
+                {
+                    await _paymentService.CreatePayment(OrderId);
+                    wallet.TotalPrice -= order.OrderPrice;
+                    _unitOfWork.GetRepo<Wallet>().Update(wallet);
 
+                    if (order.DesignCustomId != null)
+                    {
+                        designcustom.Status = "Design Successfully";
+                        _unitOfWork.GetRepo<DesignCustom>().Update(designcustom);
+                    }
+
+                    var incomeWallet = new IncomeWallet
+                    {
+                        WalletID = wallet.WalletId,
+                        IncomePrice = -order.OrderPrice,
+                        Method = "Payment",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                        OrderId = OrderId,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(incomeWallet);
+
+                    walletAdmin.TotalPrice += order.OrderPrice;
+                    _unitOfWork.Repository<Wallet>().Update(walletAdmin);
+
+                    var adminIncome = new IncomeWallet
+                    {
+                        WalletID = walletAdmin.WalletId,
+                        IncomePrice = order.OrderPrice,
+                        Method = "Payment",
+                        Status = "Successfull",
+                        CreateAt = vietnamTime,
+                        UpdateAt = vietnamTime,
+                    };
+                    await _unitOfWork.GetRepo<IncomeWallet>().AddAsync(adminIncome);
+
+                    await _unitOfWork.CompleteAsync();
+                }
+                else
+                {
+                    throw new Exception("Insufficient balance in wallet.");
+                }
+            }
             else
             {
-                throw new Exception("Wallet not found for this customer.");
-
+                throw new Exception("Unknown transfer type.");
             }
         }
+
     }
 }
