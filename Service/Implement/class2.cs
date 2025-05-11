@@ -128,6 +128,10 @@ namespace Service.Implement
                 double meters = element.distance.value;
                 return (true, meters / 1000.0, CALCULATION_SUCCESS);
             }
+            catch (HttpRequestException httpEx)
+            {
+                return (false, null, $"{API_CONNECTION_ERROR}: {httpEx.Message}");
+            }
             catch (JsonException jsonEx)
             {
                 return (false, null, $"{INVALID_RESPONSE_FORMAT}: {jsonEx.Message}");
