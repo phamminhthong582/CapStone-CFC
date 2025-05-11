@@ -138,6 +138,7 @@ namespace Service.Implement
             }
         }
 
+        //1
         public class GoogleDistanceMatrixResponse
         {
             public List<Row> rows { get; set; }
